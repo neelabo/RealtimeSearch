@@ -1,0 +1,38 @@
+﻿<Window x:Class="RealtimeSearch.ConfigWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+        Title="{Binding WindowTitle}" Height="367" Width="600">
+    
+    <Window.CommandBindings>
+        <CommandBinding Command="New" Executed="New_Executed" />
+        <CommandBinding Command="Open" Executed="Open_Executed" />
+        <CommandBinding Command="Save" Executed="Save_Executed" CanExecute="Save_CanExecute"/>
+        <CommandBinding Command="SaveAs" Executed="SaveAs_Executed" />
+    </Window.CommandBindings>
+
+
+    <Window.Resources>
+        <CollectionViewSource x:Key="sortedPaths" Source="{Binding IndexPaths}">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription Direction="Ascending"/>
+                <!-- PropertyName="Length" />-->
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+    </Window.Resources>
+    <Grid>
+        <ListBox x:Name="listBox1" Margin="10,29,10,116" ItemsSource="{Binding Source={StaticResource sortedPaths}}" SelectedIndex="{Binding IndexSelect}" AllowDrop="True" PreviewDragOver="ListBox_PreviewDragOver" Drop="ListBox_Drop"/>
+        <Button Content="閉じる" Margin="0,0,10,10" Height="24" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" Click="Button_Click"/>
+        <CheckBox Content="クリップボードを監視" IsChecked="{Binding IsMonitorClipboard}" HorizontalAlignment="Left" Margin="10,0,0,74" RenderTransformOrigin="0.486,4.333" Height="18" VerticalAlignment="Bottom"/>
+        <Button x:Name="buttonAdd" Content="+" Margin="0,0,34,92" Click="buttonAdd_Click" RenderTransformOrigin="3.378,5.25" Height="24" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="24"/>
+        <Button x:Name="ButtonDel" Content="-" Margin="0,0,10,92" HorizontalAlignment="Right" Width="24" Height="24" VerticalAlignment="Bottom" RenderTransformOrigin="1.625,0.542" Click="ButtonDel_Click"/>
+        <Button x:Name="buttonCancel" Content="キャンセル" Margin="0,0,90,9" Height="24" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" Click="buttonCancel_Click"/>
+        <Menu Height="24" VerticalAlignment="Top">
+            <MenuItem Header="ファイル(_F)">
+                <MenuItem Header="設定のインポート"  Command="Open"/>
+                <MenuItem Header="設定のエクスポート" Command="SaveAs" />
+            </MenuItem>
+        </Menu>
+
+    </Grid>
+</Window>
