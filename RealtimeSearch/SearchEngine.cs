@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -24,6 +25,16 @@ namespace RealtimeSearch
         }
     }
 
+    public class ReIndexCommand : MyCommand
+    {
+        public override void Exec()
+        {
+            SearchEngine.CommandReIndex();
+        }
+    }
+
+
+
 
     public class SearchCommand : MyCommand
     {
@@ -34,10 +45,39 @@ namespace RealtimeSearch
         }
     }
 
-
-
-    public class SearchEngine
+    public enum SearchEngineState
     {
+        None,
+        Index,
+        Search,
+    }
+
+
+    public class SearchEngine : INotifyPropertyChanged
+    {
+        #region NotifyPropertyChanged
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = "")
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(name));
+            }
+        }
+        #endregion
+
+        //public SearchEngineState State
+
+        #region Property: State
+        private SearchEngineState _State;
+        public SearchEngineState State
+        {
+            get { return _State; }
+            set { _State = value; OnPropertyChanged(); }
+        }
+        #endregion
+
 
 
         private SemaphoreSlim CountSemaphore;
@@ -79,9 +119,22 @@ namespace RealtimeSearch
         {
             lock (thisLock)
             {
-                CommandList.ForEach(n => { if (n is IndexCommand) n.IsCancel = true; });
+                CommandList.ForEach(cmd => { if (cmd is IndexCommand || cmd is ReIndexCommand) cmd.IsCancel = true; });
 
                 CommandList.Add(new IndexCommand() { SearchEngine = this, Paths = paths });
+                CountSemaphore.Release();
+            }
+        }
+
+
+        // 再インデックス化リクエスト
+        public void ReIndexRequest()
+        {
+            lock (thisLock)
+            {
+                if (CommandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
+
+                CommandList.Add(new ReIndexCommand() { SearchEngine = this });
                 CountSemaphore.Release();
             }
         }
@@ -92,7 +145,7 @@ namespace RealtimeSearch
         {
             lock (thisLock)
             {
-                CommandList.ForEach(n => { if (n is SearchCommand) n.IsCancel = true; });
+                CommandList.ForEach(cmd => { if (cmd is SearchCommand) cmd.IsCancel = true; });
 
                 CommandList.Add(new SearchCommand() { SearchEngine = this, Keyword = keyword });
                 CountSemaphore.Release();
@@ -124,13 +177,24 @@ namespace RealtimeSearch
 
         public void CommandIndex(string[] paths)
         {
+            State = SearchEngineState.Index;
             Index.Initialize(paths);
+            State = SearchEngineState.None;
+        }
+
+        public void CommandReIndex()
+        {
+            State = SearchEngineState.Index;
+            Index.Initialize();
+            State = SearchEngineState.None;
         }
 
         public void CommandSearch(string keyword)
         {
+            State = SearchEngineState.Search;
             Index.Check(keyword);
             ResultChanged?.Invoke(this, null);
+            State = SearchEngineState.None;
         }
     }
 }

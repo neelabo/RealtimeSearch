@@ -14,9 +14,25 @@ namespace RealtimeSearch
 {
     public class MainWindowVM : INotifyPropertyChanged
     {
+        #region NotifyPropertyChanged
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = "")
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(name));
+            }
+        }
+        #endregion
+
         public FileList Files { get; set; }
 
+        public ICommand CommandSearch { get; set; }
+        public ICommand CommandReIndex { get; set; }
+    
 
+#if false
         volatile bool _SearchLock;
         public bool SearchLock
         {
@@ -25,38 +41,43 @@ namespace RealtimeSearch
         }
       
         private bool keywordDarty;
-        private string keyword;
+#endif
+
+        private string _Keyword;
         public string Keyword
         {
-            get { return keyword; }
+            get { return _Keyword; }
             set
             {
                 var regex = new System.Text.RegularExpressions.Regex(@"\s+");
                 string newKeyword = regex.Replace(value, " ");
-                if (keyword != newKeyword) keywordDarty = true;
-                keyword = newKeyword;
-                NotifyPropertyChanged("Keyword");
+                //if (keyword != newKeyword) keywordDarty = true;
+                _Keyword = newKeyword;
+                OnPropertyChanged();
             }
         }
 
+#if false
         private string searchKeyword;
         public string SearchKeyword
         {
             get { return searchKeyword; }
-            set { searchKeyword = value; NotifyPropertyChanged("SearchKeyword"); }
+            set { searchKeyword = value; OnPropertyChanged(); }
         }
+#endif
 
-        //
-        private string status;
-        public string Status
+        // メッセージだね
+        private string _Information;
+        public string Information
         {
-            get { return status; }
-            set { status = value; NotifyPropertyChanged("Status"); }
+            get { return _Information; }
+            set { _Information = value; OnPropertyChanged(); }
         }
 
         //private Index index;
-        private SearchEngine SearchEngine;
+        public SearchEngine SearchEngine { get; set; }
 
+        //
         private ConfigViewModel configViewModel;
         public ConfigViewModel ConfigViewModel
         {
@@ -73,16 +94,6 @@ namespace RealtimeSearch
             }
         }
 
-        #region PropertyChanged
-        public event PropertyChangedEventHandler PropertyChanged;
-        private void NotifyPropertyChanged(String info)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(info));
-            }
-        }
-        #endregion
 
 
         [System.Diagnostics.Conditional("DEBUG")]
@@ -98,15 +109,16 @@ namespace RealtimeSearch
             Files = new FileList();
 
             SearchEngine = new SearchEngine();
-            //SearchEngine.IndexRequest(ConfigViewModel.IndexPaths.ToArray());
+            SearchEngine.Start();
 
             ConfigViewModel = new ConfigViewModel();
 
-            //fileDatabase = new FileDatabase(ConfigViewModel.IndexPaths);
-            //if (Clipboard.ContainsText()) keyword = Clipboard.GetText();
+            CommandSearch = new RelayCommand(Search);
+            CommandReIndex = new RelayCommand(ReIndex);
 
             SearchEngine.ResultChanged += SearchEngine_ResultChanged;
         }
+
 
         private void SearchEngine_ResultChanged(object sender, EventArgs e)
         {
@@ -118,13 +130,18 @@ namespace RealtimeSearch
                 //__Sleep(10);
             }
 
-            Status = string.Format("{0} 個の項目", SearchEngine.Index.matches.Count);
+            Information = string.Format("{0} 個の項目", SearchEngine.Index.matches.Count);
         }
 
+
+#if false
+        //
         public void StartSearchEngine()
         {
-            SearchEngine.Start();
+            //SearchEngine.Start();
         }
+#endif
+
 
         //
         public void UpdateConfig()
@@ -137,48 +154,59 @@ namespace RealtimeSearch
             }
         }
 
+        //
+        public void ReIndex()
+        {
+            SearchEngine.ReIndexRequest();
+        }
+#if false
         // インデックス作成
         // Note: SearchEngine版では不要？
         public void GenerateIndex()
         {
-            SearchLock = true;
+            //SearchLock = true;
 
             // TODO: データベース初期化
-            Status = "初期化中";
+            Information = "初期化中";
 
             //fileDatabase = new FileDatabase();
             //index.Initialize(); 
 
             //__Sleep(5000);
 
-            Status = "";
+            Information = "";
 
-            SearchLock = false;
+            //SearchLock = false;
         }
+#endif
 
+#if false
         // えーとねえ。
         public bool CanSearch()
         {
-            return (!string.IsNullOrEmpty(Keyword) && keywordDarty && !SearchLock);
+            //return (!string.IsNullOrEmpty(Keyword) && keywordDarty && !SearchLock);
+            return true;
         }
+#endif
 
+#if false
         public void SetKeyworkdDarty()
         {
             keywordDarty = true;
         }
-
+#endif
 
         // 検索
         // Note: SearchEngineではこの構造自体変更が必要
         // Note: SearchEngine.Index.matchesの直接アクセスはダメです
         public void Search()
         {
-            SearchLock = true;
+            //SearchLock = true;
 
-            SearchKeyword = Keyword;
+            //SearchKeyword = Keyword;
 
-            Status = "検索中...";
-            keywordDarty = false;
+            //Information = "検索中...";
+            //keywordDarty = false;
 
             // 検索
             //index.Check(Keyword);
@@ -199,29 +227,23 @@ namespace RealtimeSearch
             Status = string.Format("{0} 個の項目", SearchEngine.Index.matches.Count);
 #endif
 
-            SearchLock = false;
+            //SearchLock = false;
         }
     }
 
-    // 
+    // ファイルサイズを表示用に整形する
     [ValueConversion(typeof(long), typeof(string))]
     class FileSizeConverter : IValueConverter
     {
-#region IValueConverter メンバ
-
-        //
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             long size = (long)value;
             return string.Format("{0:#,0} KB", (size + 1024 - 1) / 1024);
         }
 
-        //
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             throw new NotImplementedException();
         }
-
-#endregion
     }
 }

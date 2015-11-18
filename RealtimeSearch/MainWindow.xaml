@@ -78,12 +78,12 @@
                 <!--<Image Source="Resources/config.png"/>-->
                 <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="20">&#xE713;</TextBlock>
             </Button>
-            <Button DockPanel.Dock="Right" x:Name="buttonResearch" Click="buttonResearch_Click" Margin="4,0,0,0">
+            <Button DockPanel.Dock="Right" x:Name="buttonResearch" Command="{Binding CommandReIndex}" Margin="4,0,0,0">
                 <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="20">&#xE72C;</TextBlock>
             </Button>
             <Grid>
                 <TextBox x:Name="keyword" Height="32" Padding="0,0,40,0" Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"  KeyDown="keyword_KeyDown" MaxLines="256" VerticalContentAlignment="Center"/>
-                <Button HorizontalAlignment="Right" Click="Button_Click" > <!--BorderThickness="0" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}">-->
+                <Button HorizontalAlignment="Right" Command="{Binding CommandSearch}"> <!--BorderThickness="0" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}">-->
                     <!--<Image Source="Resources/search.png" />-->
                     <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="20">&#xE11A;</TextBlock>
                 </Button>
@@ -95,9 +95,10 @@
         -->
 
 
-        <!--<StatusBar DockPanel.Dock="Bottom" >-->
+        <StatusBar DockPanel.Dock="Bottom" >
+            <TextBlock Text="{Binding SearchEngine.State}"/>
             <TextBlock DockPanel.Dock="Bottom" Margin="2" x:Name="status" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Status}" TextDecorations="{x:Null}" />
-        <!--</StatusBar>-->
+        </StatusBar>
 
         <Grid>
             <ListView x:Name="listView01" Foreground="Black" ButtonBase.Click="GridViewColumnHeader_ClickHandler" ItemsSource="{Binding Files}" >

@@ -86,9 +86,16 @@ namespace RealtimeSearch
             this.Topmost = true;
 #endif
 
-            vm.StartSearchEngine();
+            //vm.StartSearchEngine();
         }
 
+        // new
+        public void Search()
+        {
+            vm.Search();
+        }
+
+#if false
         //
         public async void Search()
         {
@@ -107,6 +114,7 @@ namespace RealtimeSearch
 #endif
             }
         }
+#endif
 
         //
         public async void clipboardWatcher_DrawClipboard(object sender, System.EventArgs e)
@@ -151,13 +159,10 @@ namespace RealtimeSearch
         //
         private void Window_ContentRendered(object sender, EventArgs e)
         {
+            // 設定読み込み
             System.Reflection.Assembly myAssembly = System.Reflection.Assembly.GetEntryAssembly();
             defaultConfigPath = System.IO.Path.GetDirectoryName(myAssembly.Location) + "\\Default.yaml";
-
-            // アウト！
-            //throw new Exception("HOGE");
-
-            // 設定読み込み
+            
             if (System.IO.File.Exists(defaultConfigPath))
             {
                 vm.ConfigViewModel.Load(defaultConfigPath);
@@ -169,9 +174,11 @@ namespace RealtimeSearch
             ClipboardListner = new ClipboardListner(this);
             ClipboardListner.ClipboardUpdate += clipboardWatcher_DrawClipboard;
 
-            Research();
+            // これ余分だろ
+            // Research();
         }
 
+#if false
         //
         private void buttonResearch_Click(object sender, RoutedEventArgs e)
         {
@@ -183,7 +190,8 @@ namespace RealtimeSearch
         {
 #if true
             // インデックス作成
-            vm.GenerateIndex();
+            //vm.GenerateIndex();
+            vm.ReIndex();
 #else
             this.buttonResearch.IsEnabled = false;
 
@@ -196,6 +204,7 @@ namespace RealtimeSearch
             this.buttonResearch.IsEnabled = true;
 #endif
         }
+#endif
 
         //
         void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -206,12 +215,14 @@ namespace RealtimeSearch
             System.Diagnostics.Process.Start(file.Path);
         }
 
+#if false
         //
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            vm.SetKeyworkdDarty();
+            //vm.SetKeyworkdDarty();
             Search();
         }
+#endif
 
         private void buttonSetting_Click(object sender, RoutedEventArgs e)
         {
@@ -228,7 +239,8 @@ namespace RealtimeSearch
                 vm.ConfigViewModel = svm;
 
                 this.DataContext = vm; // リバインド
-                Research();
+                //Research();
+                vm.ReIndex();
             }
 
             //this.Close();
@@ -238,7 +250,7 @@ namespace RealtimeSearch
         {
             if (e.Key == Key.Enter)
             {
-                vm.SetKeyworkdDarty();
+                //vm.SetKeyworkdDarty();
                 Search();
             }
         }
@@ -246,13 +258,15 @@ namespace RealtimeSearch
         Point start;
         ListViewItem downed;
 
-                
+
+        // ファイルのドラッグ判定開始
         private void PreviewMouseDown_Event(object sender, MouseButtonEventArgs e)        
         {
             downed = sender as ListViewItem;
             start = e.GetPosition(downed);
         }
 
+        // ファイルのドラッグ開始
         private void PreviewMouseMove_Event(object sender, System.Windows.Input.MouseEventArgs e)
         {
             //MessageBox.Show("AAA");
@@ -281,23 +295,13 @@ namespace RealtimeSearch
                         data.SetData(DataFormats.FileDrop, paths);
                         DragDrop.DoDragDrop(s, data, DragDropEffects.Copy);
                     }
-
-#if false
-                    {
-                        DataObject data = new DataObject();
-                        string[] paths = { pn.Path };
-                        data.SetData(DataFormats.FileDrop, paths);
-                        DragDrop.DoDragDrop(s, data, DragDropEffects.Copy);
-                    }
-                    //DragDrop.DoDragDrop(sender, sender.Content, DragDropEffects.Copy);
-#endif
                 }
 
             }
 
         }
 
-        // コピー
+        // ファイル名のコピー
         void Copy_Executed(object target, ExecutedRoutedEventArgs e)
         {
             File file = (e.Parameter ?? this.listView01.SelectedItem) as File;
@@ -309,7 +313,7 @@ namespace RealtimeSearch
         }
 
 
-        ////
+        //// リストのソート用
 
         GridViewColumnHeader _lastHeaderClicked = null;
         ListSortDirection _lastDirection = ListSortDirection.Ascending;
