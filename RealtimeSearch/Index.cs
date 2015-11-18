@@ -15,7 +15,7 @@ using Microsoft.VisualBasic;
 namespace RealtimeSearch
 {
     //
-    class Index
+    public class Index
     {
         string[] roots;
 
@@ -24,10 +24,21 @@ namespace RealtimeSearch
         public string[] keys;
         public List<File> matches;
 
+        public Index()
+        {
+        }
+
         //
         public Index(Collection<string> paths)
         {
             roots = paths.ToArray<string>();
+        }
+
+        //
+        public void Initialize(string[] paths)
+        {
+            roots = paths;
+            Initialize();
         }
 
         //

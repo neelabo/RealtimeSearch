@@ -12,7 +12,7 @@ using System.ComponentModel;
 
 namespace RealtimeSearch
 {
-    public class ViewModel : INotifyPropertyChanged
+    public class MainWindowVM : INotifyPropertyChanged
     {
         public FileList Files { get; set; }
 
@@ -54,7 +54,8 @@ namespace RealtimeSearch
             set { status = value; NotifyPropertyChanged("Status"); }
         }
 
-        private Index index;
+        //private Index index;
+        private SearchEngine SearchEngine;
 
         private ConfigViewModel configViewModel;
         public ConfigViewModel ConfigViewModel
@@ -66,7 +67,9 @@ namespace RealtimeSearch
             set
             {
                 configViewModel = value;
-                index = new Index(ConfigViewModel.IndexPaths);
+                //index = new Index(ConfigViewModel.IndexPaths);
+                //SearchEngine = new SearchEngine();
+                //SearchEngine.IndexRequest(ConfigViewModel.IndexPaths.ToArray());
             }
         }
 
@@ -90,14 +93,37 @@ namespace RealtimeSearch
 
 
         //
-        public ViewModel()
+        public MainWindowVM()
         {
             Files = new FileList();
+
+            SearchEngine = new SearchEngine();
+            //SearchEngine.IndexRequest(ConfigViewModel.IndexPaths.ToArray());
 
             ConfigViewModel = new ConfigViewModel();
 
             //fileDatabase = new FileDatabase(ConfigViewModel.IndexPaths);
             //if (Clipboard.ContainsText()) keyword = Clipboard.GetText();
+
+            SearchEngine.ResultChanged += SearchEngine_ResultChanged;
+        }
+
+        private void SearchEngine_ResultChanged(object sender, EventArgs e)
+        {
+            // 検索結果リスト作成
+            this.Files.Clear();
+            foreach (var match in SearchEngine.Index.matches)
+            {
+                this.Files.Add(match);
+                //__Sleep(10);
+            }
+
+            Status = string.Format("{0} 個の項目", SearchEngine.Index.matches.Count);
+        }
+
+        public void StartSearchEngine()
+        {
+            SearchEngine.Start();
         }
 
         //
@@ -106,11 +132,13 @@ namespace RealtimeSearch
             if (ConfigViewModel.IsDarty)
             {
                 ConfigViewModel.IsDarty = false;
-                index = new Index(ConfigViewModel.IndexPaths);
+                //index = new Index(ConfigViewModel.IndexPaths);
+                SearchEngine.IndexRequest(ConfigViewModel.IndexPaths.ToArray());
             }
         }
 
         // インデックス作成
+        // Note: SearchEngine版では不要？
         public void GenerateIndex()
         {
             SearchLock = true;
@@ -119,9 +147,9 @@ namespace RealtimeSearch
             Status = "初期化中";
 
             //fileDatabase = new FileDatabase();
-            index.Initialize();
+            //index.Initialize(); 
 
-            __Sleep(5000);
+            //__Sleep(5000);
 
             Status = "";
 
@@ -141,6 +169,8 @@ namespace RealtimeSearch
 
 
         // 検索
+        // Note: SearchEngineではこの構造自体変更が必要
+        // Note: SearchEngine.Index.matchesの直接アクセスはダメです
         public void Search()
         {
             SearchLock = true;
@@ -151,18 +181,23 @@ namespace RealtimeSearch
             keywordDarty = false;
 
             // 検索
-            index.Check(Keyword);
+            //index.Check(Keyword);
+            SearchEngine.SearchRequest(Keyword);
+
+#if false
+            // 待たないとねえ,,
 
             // 検索結果リスト作成
             this.Files.Clear();
-            foreach (var match in index.matches)
+            foreach (var match in SearchEngine.Index.matches)
             {
                 this.Files.Add(match);
 
                 __Sleep(10);
             }
 
-            Status = string.Format("{0} 個の項目", index.matches.Count);
+            Status = string.Format("{0} 個の項目", SearchEngine.Index.matches.Count);
+#endif
 
             SearchLock = false;
         }
@@ -172,7 +207,7 @@ namespace RealtimeSearch
     [ValueConversion(typeof(long), typeof(string))]
     class FileSizeConverter : IValueConverter
     {
-        #region IValueConverter メンバ
+#region IValueConverter メンバ
 
         //
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -187,6 +222,6 @@ namespace RealtimeSearch
             throw new NotImplementedException();
         }
 
-        #endregion
+#endregion
     }
 }

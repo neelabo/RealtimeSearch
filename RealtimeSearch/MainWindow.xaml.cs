@@ -58,7 +58,7 @@ namespace RealtimeSearch
     /// </summary>
     public partial class MainWindow : Window
     {
-        ViewModel vm = new ViewModel();
+        MainWindowVM vm = new MainWindowVM();
 
         //ClipboardWatcher clipboardWatcher;
         ClipboardListner ClipboardListner;
@@ -81,7 +81,12 @@ namespace RealtimeSearch
         //
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+#if DEBUG
+#else
             this.Topmost = true;
+#endif
+
+            vm.StartSearchEngine();
         }
 
         //
@@ -131,8 +136,6 @@ namespace RealtimeSearch
         //
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            //Properties.Settings.Default.ConfigFile = vm.ConfigViewModel.Config.Path;
-            //Properties.Settings.Default.Save();
         }
 
 
@@ -161,10 +164,8 @@ namespace RealtimeSearch
                 vm.UpdateConfig();
             }
 
-            // クリップボード監視
-            //this.clipboardWatcher = new ClipboardWatcher(new System.Windows.Interop.WindowInteropHelper(this).Handle);
-            //this.clipboardWatcher.DrawClipboard += clipboardWatcher_DrawClipboard;
 
+            // クリップボード監視
             ClipboardListner = new ClipboardListner(this);
             ClipboardListner.ClipboardUpdate += clipboardWatcher_DrawClipboard;
 
@@ -178,8 +179,12 @@ namespace RealtimeSearch
         }
 
         //
-        private async void Research()
+        private void Research()
         {
+#if true
+            // インデックス作成
+            vm.GenerateIndex();
+#else
             this.buttonResearch.IsEnabled = false;
 
             // インデックス作成
@@ -189,6 +194,7 @@ namespace RealtimeSearch
             Search();
 
             this.buttonResearch.IsEnabled = true;
+#endif
         }
 
         //
@@ -214,10 +220,6 @@ namespace RealtimeSearch
             //
             var win = new ConfigWindow(svm);
             win.ShowDialog();
-            // vm.UpdateSetting();
-
-            //string hoge = svm.Setting.Serialize();
-            //MessageBox.Show(hoge);
 
             if (svm.IsDarty)
             {
