@@ -194,7 +194,7 @@ namespace RealtimeSearch
                 // 処理
                 if (Command.IsCancel) continue;
 #if DEBUG
-                await Task.Delay(1000);
+                //await Task.Delay(1000);
 #endif
                 Command.Exec();
                 Command = null;

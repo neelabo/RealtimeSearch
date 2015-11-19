@@ -97,13 +97,18 @@ namespace RealtimeSearch
             OpenPlace = new CommandOpenPlace();
             CopyFileName = new CommandCopyFileName();
 
-            //ToNormalisedWord("ＡＢＣ０１２");
-            //ToNormalisedWord("ABCＡＢＣ。｡いろはﾊﾞイロハｲﾛﾊ＃：");
+            //ToNormalisedWord("ＡＢＣ０１２巻");
+            //ToNormalisedWord("ABCＡＢＣ。｡　い ろはﾊﾞイロハｲﾛﾊ＃：");
         }
 
         //
         public static string ToNormalisedWord(string src)
         {
+            string s = src.Normalize(NormalizationForm.FormKC);
+            s = Strings.StrConv(s, VbStrConv.Katakana); // ひらがなをカタカナ区別しない
+            s = s.Replace(" ", ""); // 空白を削除する
+            return s;
+#if false
             //  new Regex("[０-９Ａ-Ｚａ-ｚ：－　]+")
             // 
             string s = src;
@@ -114,6 +119,7 @@ namespace RealtimeSearch
             //s = Strings.StrConv(s, VbStrConv.Narrow); // 全角文字を半角文字にする
 
             return s;
+#endif
         }
     }
 
@@ -184,7 +190,7 @@ namespace RealtimeSearch
 
     public static class FileInfo
     {
-        #region SHGetFileInfo
+#region SHGetFileInfo
         // SHGetFileInfo関数
         [DllImport("shell32.dll", CharSet = CharSet.Auto)]
         //[DllImport("shell32.dll")]
@@ -216,7 +222,7 @@ namespace RealtimeSearch
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)]
             public string szTypeName;
         };
-        #endregion
+#endregion
 
 #if false
         //VB 関数をC#に移植する: Chr()

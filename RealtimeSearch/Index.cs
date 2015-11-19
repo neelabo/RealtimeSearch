@@ -79,7 +79,9 @@ namespace RealtimeSearch
         /// <param name="source">検索キーの元</param>
         public void SetKeys(string source)
         {
-            const string splitter = @"[\s\W]+";
+            //const string splitter = @"[\s\W]+"; // 記号も無視
+            const string splitter = @"[\s]+";
+
             // 入力文字列を整列
             // 空白、改行文字でパーツ分け
             string s = new Regex("^" + splitter).Replace(source, "");
@@ -88,7 +90,15 @@ namespace RealtimeSearch
 
             for (int i = 0; i < keys.Length; ++i )
             {
-                keys[i] = File.ToNormalisedWord(keys[i]);
+                var t = File.ToNormalisedWord(keys[i]);
+
+                // 正規表現記号をエスケープ
+                t = Regex.Escape(t);
+
+                // (数値)部分を0*(数値)という正規表現に変換
+                t = new Regex(@"0*(\d+)").Replace(t, match => "0*" + match.Groups[1]);
+
+                keys[i] = t;
             }
         }
 
@@ -98,22 +108,25 @@ namespace RealtimeSearch
         /// </summary>
         public void ListUp()
         {
-            matches = new List<File>();
-            matches.AddRange(files);
+            var entrys = files;
 
-            foreach(var key in keys)
+            foreach (var key in keys)
             {
+                var regex = new Regex(key, RegexOptions.Compiled);
+
                 var list = new List<File>();
-                foreach(var file in matches)
+                foreach(var file in entrys)
                 {
-                    if (file.NormalizedWord.IndexOf(key) >= 0)
+                    //if (file.NormalizedWord.IndexOf(key) >= 0)
+                    if (regex.Match(file.NormalizedWord).Success)
                     {
                         list.Add(file);
                     }
                 }
-                matches = list;
+                entrys = list;
             }
-        }
 
+            matches = entrys;
+        }
     }
 }
