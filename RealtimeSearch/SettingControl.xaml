@@ -1,0 +1,23 @@
+﻿<UserControl x:Class="RealtimeSearch.SettingControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RealtimeSearch"
+             mc:Ignorable="d" 
+             d:DesignHeight="400" d:DesignWidth="300" Loaded="SettingControl_Loaded">
+
+    <Border x:Name="BaseControl" Background="#FFF8F8F8" BorderBrush="Gray" BorderThickness="1" >
+        <StackPanel Margin="16" >
+            <TextBlock Text="検索パス" />
+            <ListBox x:Name="listBox1" Height="200" ItemsSource="{Binding CollectionViewSource.View}"  AllowDrop="True" PreviewDragOver="ListBox_PreviewDragOver" Drop="ListBox_Drop"/>
+            <DockPanel LastChildFill="False">
+                <Button x:Name="ButtonDel" DockPanel.Dock="Right" Content="-"  Width="24" Height="24" Click="ButtonDel_Click"/>
+                <Button x:Name="buttonAdd" DockPanel.Dock="Right"  Content="+"  Width="24" Height="24" Click="buttonAdd_Click" />
+            </DockPanel>
+            <CheckBox Content="常に手前に表示" IsChecked="{Binding Setting.IsTopmost}" />
+            <CheckBox Content="クリップボードを監視" IsChecked="{Binding Setting.IsMonitorClipboard}" />
+        </StackPanel>
+    </Border>
+
+</UserControl>

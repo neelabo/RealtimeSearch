@@ -58,12 +58,7 @@ namespace RealtimeSearch
     /// </summary>
     public partial class MainWindow : Window
     {
-        MainWindowVM vm = new MainWindowVM();
-
-        //ClipboardWatcher clipboardWatcher;
-        ClipboardListner ClipboardListner;
-
-        string defaultConfigPath;
+        MainWindowVM VM;
 
         //
         public MainWindow()
@@ -74,139 +69,26 @@ namespace RealtimeSearch
             // タイトルに[Debug]を入れる
             this.Title += " [Debug]";
 #endif
-            
-            this.DataContext = vm;
+
+            VM = new MainWindowVM();
+            this.DataContext = VM;
         }
 
-        //
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-#if DEBUG
-#else
-            this.Topmost = true;
-#endif
-
-            //vm.StartSearchEngine();
-        }
-
-        // new
-        public void Search()
-        {
-            vm.Search();
-        }
-
-#if false
-        //
-        public async void Search()
-        {
-            // 検索できる状態ならば
-            if (vm.CanSearch())
-            {
-                // 検索
-                vm.Status = "検索中...";
-                await Task.Run(() => vm.Search());
-
-#if false
-                // ウィンドウをアクティブにする
-                this.Activate();
-                this.Topmost = true;
-                this.Topmost = false;
-#endif
-            }
-        }
-#endif
-
-        //
-        public async void clipboardWatcher_DrawClipboard(object sender, System.EventArgs e)
-        {
-            if (vm.ConfigViewModel.IsMonitorClipboard && Clipboard.ContainsText())
-            {
-                // どうにも例外(CLIPBRD_E_CANT_OPEN)が発生してしまうのでリトライさせることにした
-                RETRY:
-                try
-                {
-                    // キーワード設定
-                    vm.Keyword = Clipboard.GetText();
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.Message);
-
-                    await Task.Delay(100);
-                    goto RETRY;
-                }
-
-                // 検索
-                Search();
-            }
-        }
-
-        //
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
+            // 設定読み込み
+            VM.Open(this);
         }
 
 
         private void Window_Closed(object sender, EventArgs e)
         {
             // 強制保存
-            vm.ConfigViewModel.Save(defaultConfigPath);
-
-            //this.clipboardWatcher.Dispose();
-            ClipboardListner.Dispose();
+            VM.Close();
         }
 
-        //
-        private void Window_ContentRendered(object sender, EventArgs e)
-        {
-            // 設定読み込み
-            System.Reflection.Assembly myAssembly = System.Reflection.Assembly.GetEntryAssembly();
-            defaultConfigPath = System.IO.Path.GetDirectoryName(myAssembly.Location) + "\\Default.yaml";
-            
-            if (System.IO.File.Exists(defaultConfigPath))
-            {
-                vm.ConfigViewModel.Load(defaultConfigPath);
-                vm.UpdateConfig();
-            }
 
-
-            // クリップボード監視
-            ClipboardListner = new ClipboardListner(this);
-            ClipboardListner.ClipboardUpdate += clipboardWatcher_DrawClipboard;
-
-            // これ余分だろ
-            // Research();
-        }
-
-#if false
-        //
-        private void buttonResearch_Click(object sender, RoutedEventArgs e)
-        {
-            Research();
-        }
-
-        //
-        private void Research()
-        {
-#if true
-            // インデックス作成
-            //vm.GenerateIndex();
-            vm.ReIndex();
-#else
-            this.buttonResearch.IsEnabled = false;
-
-            // インデックス作成
-            await Task.Run(() => vm.GenerateIndex());
-
-            // 必要があれば検索を行う
-            Search();
-
-            this.buttonResearch.IsEnabled = true;
-#endif
-        }
-#endif
-
-        //
         void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             File file = ((ListViewItem)sender).Content as File;
@@ -215,45 +97,16 @@ namespace RealtimeSearch
             System.Diagnostics.Process.Start(file.Path);
         }
 
-#if false
-        //
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            //vm.SetKeyworkdDarty();
-            Search();
-        }
-#endif
 
-        private void buttonSetting_Click(object sender, RoutedEventArgs e)
-        {
-            var svm= new ConfigViewModel(vm.ConfigViewModel.Config.Clone());
-
-            //
-            var win = new ConfigWindow(svm);
-            win.ShowDialog();
-
-            if (svm.IsDarty)
-            {
-                svm.IsDarty = false;
-                //vm.SettingViewModel.Setting = svm.Setting;
-                vm.ConfigViewModel = svm;
-
-                this.DataContext = vm; // リバインド
-                //Research();
-                vm.ReIndex();
-            }
-
-            //this.Close();
-        }
 
         private void keyword_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
-                //vm.SetKeyworkdDarty();
-                Search();
+                VM.Search();
             }
         }
+
 
         Point start;
         ListViewItem downed;
@@ -388,6 +241,21 @@ namespace RealtimeSearch
             dataView.SortDescriptions.Add(sd);
             dataView.Refresh();
         }
+
+
+
+        private void SettingButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.SettingControl.Visibility == Visibility.Visible)
+            {
+                this.SettingControl.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                this.SettingControl.Visibility = Visibility.Visible;
+            }
+        }
+
 
     }
 }

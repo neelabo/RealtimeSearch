@@ -11,6 +11,7 @@ namespace RealtimeSearch
     public abstract class MyCommand
     {
         public SearchEngine SearchEngine { get; set; }
+        public int SerialNumber { get; set; }
         public bool IsCancel { get; set; }
         public abstract void Exec();
     }
@@ -23,6 +24,10 @@ namespace RealtimeSearch
         {
             SearchEngine.CommandIndex(Paths);
         }
+        public override string ToString()
+        {
+            return $"Index.{SerialNumber}";
+        }
     }
 
     public class ReIndexCommand : MyCommand
@@ -30,6 +35,10 @@ namespace RealtimeSearch
         public override void Exec()
         {
             SearchEngine.CommandReIndex();
+        }
+        public override string ToString()
+        {
+            return $"ReIndex.{SerialNumber}";
         }
     }
 
@@ -42,6 +51,10 @@ namespace RealtimeSearch
         public override void Exec()
         {
             SearchEngine.CommandSearch(Keyword);
+        }
+        public override string ToString()
+        {
+            return $"Search.{SerialNumber}:{Keyword}";
         }
     }
 
@@ -78,6 +91,16 @@ namespace RealtimeSearch
         }
         #endregion
 
+        #region Property: Command
+        private MyCommand _Command;
+        public MyCommand Command
+        {
+            get { return _Command; }
+            set { _Command = value; OnPropertyChanged(); }
+        }
+        #endregion
+
+
 
 
         private SemaphoreSlim CountSemaphore;
@@ -85,6 +108,8 @@ namespace RealtimeSearch
         private Object thisLock = new Object();
 
         private List<MyCommand> CommandList;
+
+        private int SerialNumber;
 
         private Task WorkerTask;
 
@@ -104,15 +129,14 @@ namespace RealtimeSearch
             CountSemaphore = new SemaphoreSlim(0);
 
             CommandList = new List<MyCommand>();
-
-            //WorkerTask = WorkAsync();
         }
+
 
         public void Start()
         {
-            //WorkerTask.Start();
             WorkerTask = Task.Run(() => WorkAsync());
         }
+
 
         // インデックス化リクエスト
         public void IndexRequest(string[] paths)
@@ -121,7 +145,7 @@ namespace RealtimeSearch
             {
                 CommandList.ForEach(cmd => { if (cmd is IndexCommand || cmd is ReIndexCommand) cmd.IsCancel = true; });
 
-                CommandList.Add(new IndexCommand() { SearchEngine = this, Paths = paths });
+                CommandList.Add(new IndexCommand() { SearchEngine = this, SerialNumber = this.SerialNumber++, Paths = paths });
                 CountSemaphore.Release();
             }
         }
@@ -134,7 +158,7 @@ namespace RealtimeSearch
             {
                 if (CommandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
 
-                CommandList.Add(new ReIndexCommand() { SearchEngine = this });
+                CommandList.Add(new ReIndexCommand() { SearchEngine = this, SerialNumber = this.SerialNumber++ });
                 CountSemaphore.Release();
             }
         }
@@ -147,7 +171,7 @@ namespace RealtimeSearch
             {
                 CommandList.ForEach(cmd => { if (cmd is SearchCommand) cmd.IsCancel = true; });
 
-                CommandList.Add(new SearchCommand() { SearchEngine = this, Keyword = keyword });
+                CommandList.Add(new SearchCommand() { SearchEngine = this, SerialNumber = this.SerialNumber++, Keyword = keyword });
                 CountSemaphore.Release();
             }
         }
@@ -160,18 +184,20 @@ namespace RealtimeSearch
                 // コマンドがあることをSemaphoreで検知する
                 await CountSemaphore.WaitAsync();
 
-                MyCommand command;
-
                 lock (thisLock)
                 {
                     // コマンド取り出し
-                    command = CommandList[0];
+                    Command = CommandList[0];
                     CommandList.RemoveAt(0);
                 }
 
                 // 処理
-                if (command.IsCancel) continue;
-                command.Exec();
+                if (Command.IsCancel) continue;
+#if DEBUG
+                await Task.Delay(1000);
+#endif
+                Command.Exec();
+                Command = null;
             }
         }
 

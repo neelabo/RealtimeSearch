@@ -32,6 +32,8 @@ namespace RealtimeSearch
         {
             if (ClipboardUpdate != null)
             {
+                if (_window.IsActive) return;
+
                 _window.Dispatcher.BeginInvoke(new Action(() =>
                 {
                     ClipboardUpdate(this, EventArgs.Empty);
@@ -75,13 +77,6 @@ namespace RealtimeSearch
             {
                 NotifyClipboardUpdate();
             }
-
-#if false
-            else if (msg == WM_CLOSE)
-            {
-                Debug.WriteLine("WM_CLOSE");
-            }
-#endif
 
             return IntPtr.Zero;
         }

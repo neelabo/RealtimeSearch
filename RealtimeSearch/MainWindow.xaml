@@ -3,11 +3,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:RealtimeSearch"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="RealtimeSearch.MainWindow"
-        Title="RealtimeSearch" Height="600" Width="800" Loaded="Window_Loaded" Closing="Window_Closing" ContentRendered="Window_ContentRendered" Icon="Resources/search.ico" Closed="Window_Closed">
+        Title="RealtimeSearch" Height="600" Width="800" Icon="Resources/search.ico" 
+        Topmost="{Binding Setting.IsTopmost}"
+        Loaded="Window_Loaded" Closed="Window_Closed" >
 
 
 
     <Window.Resources>
+
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
 
 
         <Style TargetType="{x:Type ListViewItem}">
@@ -71,98 +75,111 @@
         <CommandBinding Command="Copy" Executed="Copy_Executed" />
     </Window.CommandBindings>
 
-    <DockPanel Margin="4">
+    <Grid  Margin="4">
+        <DockPanel>
 
-        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
-            <Button DockPanel.Dock="Right" x:Name="buttonSetting" Click="buttonSetting_Click" > <!-- ="32" Height="32" -Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}">-->
-                <!--<Image Source="Resources/config.png"/>-->
-                <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="20">&#xE713;</TextBlock>
-            </Button>
-            <Button DockPanel.Dock="Right" x:Name="buttonResearch" Command="{Binding CommandReIndex}" Margin="4,0,0,0">
-                <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="20">&#xE72C;</TextBlock>
-            </Button>
-            <Grid>
-                <TextBox x:Name="keyword" Height="32" Padding="0,0,40,0" Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"  KeyDown="keyword_KeyDown" MaxLines="256" VerticalContentAlignment="Center"/>
-                <Button HorizontalAlignment="Right" Command="{Binding CommandSearch}"> <!--BorderThickness="0" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}">-->
-                    <!--<Image Source="Resources/search.png" />-->
-                    <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="20">&#xE11A;</TextBlock>
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
+
+                <Button DockPanel.Dock="Right" x:Name="SettingButton" Click="SettingButton_Click">
+                    <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="20">&#xE713;</TextBlock>
                 </Button>
-                
-            </Grid>
-        </DockPanel>
-        <!--
+
+                <Button DockPanel.Dock="Right" x:Name="buttonResearch" Command="{Binding CommandReIndex}" Margin="4,0,0,0">
+                    <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="20">&#xE72C;</TextBlock>
+                </Button>
+                <Grid>
+                    <TextBox x:Name="keyword" Height="32" Padding="0,0,40,0" Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"  KeyDown="keyword_KeyDown" MaxLines="256" VerticalContentAlignment="Center"/>
+                    <Button HorizontalAlignment="Right" Command="{Binding CommandSearch}">
+                        <!--BorderThickness="0" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}">-->
+                        <!--<Image Source="Resources/search.png" />-->
+                        <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="20">&#xE11A;</TextBlock>
+                    </Button>
+
+                </Grid>
+            </DockPanel>
+            <!--
         <TextBlock DockPanel.Dock="Top" Margin="2" TextWrapping="NoWrap" Text="{Binding SearchKeyword}" VerticalAlignment="Top" Foreground="#FF3C3C3C"/>
         -->
 
 
-        <StatusBar DockPanel.Dock="Bottom" >
-            <TextBlock Text="{Binding SearchEngine.State}"/>
-            <TextBlock DockPanel.Dock="Bottom" Margin="2" x:Name="status" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Status}" TextDecorations="{x:Null}" />
-        </StatusBar>
+            <StatusBar DockPanel.Dock="Bottom" >
+                <TextBlock Text="{Binding SearchEngine.Command}"/>
+                <TextBlock DockPanel.Dock="Bottom" Margin="2" x:Name="status" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Status}" TextDecorations="{x:Null}" />
+            </StatusBar>
 
-        <Grid>
-            <ListView x:Name="listView01" Foreground="Black" ButtonBase.Click="GridViewColumnHeader_ClickHandler" ItemsSource="{Binding Files}" >
-                <!-- ItemContainerStyle="{StaticResource ListViewItemStyle}">-->
+            <Grid>
+                <ListView x:Name="listView01" Foreground="Black" ButtonBase.Click="GridViewColumnHeader_ClickHandler" ItemsSource="{Binding Files}" >
+                    <!-- ItemContainerStyle="{StaticResource ListViewItemStyle}">-->
 
-                <ListView.Resources>
+                    <ListView.Resources>
 
-                    <DataTemplate x:Key="myHeader">
-                        <Label Content="{Binding Header, RelativeSource={RelativeSource AncestorType={x:Type GridViewColumn}}}"/>
-                    </DataTemplate>
+                        <DataTemplate x:Key="myHeader">
+                            <Label Content="{Binding Header, RelativeSource={RelativeSource AncestorType={x:Type GridViewColumn}}}"/>
+                        </DataTemplate>
 
-                    <DataTemplate x:Key="ItemFileNameTemplate">
-                        <StackPanel Orientation="Horizontal">
-                            <Image Source="{Binding IconSource}" Margin="0,0,4,2"/>
-                            <TextBlock Text="{Binding FileName}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
-                        </StackPanel>
-                    </DataTemplate>
+                        <DataTemplate x:Key="ItemFileNameTemplate">
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="{Binding IconSource}" Margin="0,0,4,2"/>
+                                <TextBlock Text="{Binding FileName}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </DataTemplate>
 
-                    <local:FileSizeConverter x:Key="FileSizeConverter"/>
-                    <DataTemplate x:Key="ItemSizeTemplate">
-                        <TextBlock Text="{Binding Size, Converter={StaticResource FileSizeConverter}}" HorizontalAlignment="Right"/>
-                    </DataTemplate>
+                        <local:FileSizeConverter x:Key="FileSizeConverter"/>
+                        <DataTemplate x:Key="ItemSizeTemplate">
+                            <TextBlock Text="{Binding Size, Converter={StaticResource FileSizeConverter}}" HorizontalAlignment="Right"/>
+                        </DataTemplate>
 
-                </ListView.Resources>
+                    </ListView.Resources>
 
-                <ListView.View>
-                    <GridView ColumnHeaderTemplate="{StaticResource HeaderTemplateNormal}">
-                        <GridViewColumn Width="400" CellTemplate="{StaticResource ItemFileNameTemplate}">
-                            <GridViewColumnHeader Content="名前" Tag="FileName"/>
-                        </GridViewColumn>
+                    <ListView.View>
+                        <GridView ColumnHeaderTemplate="{StaticResource HeaderTemplateNormal}">
+                            <GridViewColumn Width="400" CellTemplate="{StaticResource ItemFileNameTemplate}">
+                                <GridViewColumnHeader Content="名前" Tag="FileName"/>
+                            </GridViewColumn>
 
-                        <!--<GridViewColumn Header="名前" Width="400" DisplayMemberBinding="{Binding FileName}" />-->
-                        <GridViewColumn Header="更新日時" Width="96" DisplayMemberBinding="{Binding LastWriteTime}" />
-                        <GridViewColumn Header="種類" Width="96" DisplayMemberBinding="{Binding TypeName}"/>
-                        <GridViewColumn Width="96" CellTemplate="{StaticResource ItemSizeTemplate}">
-                            <GridViewColumnHeader Content="サイズ" Tag="Size"/>
-                        </GridViewColumn>
-                        <!--<GridViewColumn Header="サイズ" Width="96" DisplayMemberBinding="{Binding Size}" />-->
-                        <GridViewColumn Header="フォルダー" Width="96" DisplayMemberBinding="{Binding DirectoryName}"/>
-                    </GridView>
-                </ListView.View>
-            </ListView>
-            
-            <TextBlock x:Name="textBlock_Busy" TextWrapping="Wrap" Text="処理しています ..." Margin="0,32,0,0" TextAlignment="Center" Foreground="Gray">
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Visibility" Value="Hidden"/>
-                        <Style.Triggers>
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding SearchLock}" Value="True"/>
-                                    <Condition Binding="{Binding Files.Count}" Value="0"/>
-                                </MultiDataTrigger.Conditions>
-                                <MultiDataTrigger.Setters>
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </MultiDataTrigger.Setters>
-                            </MultiDataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-            </TextBlock>
+                            <!--<GridViewColumn Header="名前" Width="400" DisplayMemberBinding="{Binding FileName}" />-->
+                            <GridViewColumn Header="更新日時" Width="96" DisplayMemberBinding="{Binding LastWriteTime}" />
+                            <GridViewColumn Header="種類" Width="96" DisplayMemberBinding="{Binding TypeName}"/>
+                            <GridViewColumn Width="96" CellTemplate="{StaticResource ItemSizeTemplate}">
+                                <GridViewColumnHeader Content="サイズ" Tag="Size"/>
+                            </GridViewColumn>
+                            <!--<GridViewColumn Header="サイズ" Width="96" DisplayMemberBinding="{Binding Size}" />-->
+                            <GridViewColumn Header="フォルダー" Width="96" DisplayMemberBinding="{Binding DirectoryName}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
 
-        </Grid>
+                <TextBlock x:Name="textBlock_Busy" TextWrapping="Wrap" Text="処理しています ..." Margin="0,32,0,0" TextAlignment="Center" Foreground="Gray">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Hidden"/>
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding SearchLock}" Value="True"/>
+                                        <Condition Binding="{Binding Files.Count}" Value="0"/>
+                                    </MultiDataTrigger.Conditions>
+                                    <MultiDataTrigger.Setters>
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </MultiDataTrigger.Setters>
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
 
-    </DockPanel>
+            </Grid>
+
+        </DockPanel>
+
+        <local:SettingControl x:Name="SettingControl" Margin="0,36,0,0" HorizontalAlignment="Right" Width="420"
+                              Visibility="Hidden"
+                              Setting="{Binding Setting}"
+                              />
+        <!--
+                  Visibility="{Binding ElementName=SettingToggleButton, Path=IsChecked, Converter={StaticResource BoolToVisibility}}" />
+        -->
+
+    </Grid>
 
 </Window>

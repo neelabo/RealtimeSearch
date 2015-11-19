@@ -8,7 +8,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.ComponentModel;
-
+using System.Diagnostics;
 
 namespace RealtimeSearch
 {
@@ -32,17 +32,6 @@ namespace RealtimeSearch
         public ICommand CommandReIndex { get; set; }
     
 
-#if false
-        volatile bool _SearchLock;
-        public bool SearchLock
-        {
-            get { return _SearchLock; }
-            set { _SearchLock = value; NotifyPropertyChanged("SearchLock"); }
-        }
-      
-        private bool keywordDarty;
-#endif
-
         private string _Keyword;
         public string Keyword
         {
@@ -51,21 +40,11 @@ namespace RealtimeSearch
             {
                 var regex = new System.Text.RegularExpressions.Regex(@"\s+");
                 string newKeyword = regex.Replace(value, " ");
-                //if (keyword != newKeyword) keywordDarty = true;
                 _Keyword = newKeyword;
                 OnPropertyChanged();
             }
         }
-
-#if false
-        private string searchKeyword;
-        public string SearchKeyword
-        {
-            get { return searchKeyword; }
-            set { searchKeyword = value; OnPropertyChanged(); }
-        }
-#endif
-
+  
         // メッセージだね
         private string _Information;
         public string Information
@@ -77,24 +56,16 @@ namespace RealtimeSearch
         //private Index index;
         public SearchEngine SearchEngine { get; set; }
 
-        //
-        private ConfigViewModel configViewModel;
-        public ConfigViewModel ConfigViewModel
+        #region Property: Setting
+        private Setting _Setting;
+        public Setting Setting
         {
-            get
-            {
-                return configViewModel;
-            }
-            set
-            {
-                configViewModel = value;
-                //index = new Index(ConfigViewModel.IndexPaths);
-                //SearchEngine = new SearchEngine();
-                //SearchEngine.IndexRequest(ConfigViewModel.IndexPaths.ToArray());
-            }
+            get { return _Setting; }
+            set { _Setting = value; OnPropertyChanged(); }
         }
+        #endregion
 
-
+        private ClipboardListner ClipboardListner;
 
         [System.Diagnostics.Conditional("DEBUG")]
         private void __Sleep(int ms)
@@ -111,13 +82,82 @@ namespace RealtimeSearch
             SearchEngine = new SearchEngine();
             SearchEngine.Start();
 
-            ConfigViewModel = new ConfigViewModel();
-
             CommandSearch = new RelayCommand(Search);
             CommandReIndex = new RelayCommand(ReIndex);
 
             SearchEngine.ResultChanged += SearchEngine_ResultChanged;
         }
+
+
+        //
+        public void Open(Window window)
+        {
+            // 設定の読み込み
+            System.Reflection.Assembly myAssembly = System.Reflection.Assembly.GetEntryAssembly();
+            string defaultConfigPath = System.IO.Path.GetDirectoryName(myAssembly.Location) + "\\UserSetting.xml";
+
+            if (System.IO.File.Exists(defaultConfigPath))
+            {
+                Setting = Setting.Load(defaultConfigPath);
+                UpdateSetting();
+            }
+            else
+            {
+                Setting = new Setting();
+            }
+
+            // Bindng Events
+            Setting.SearchPaths.CollectionChanged += SearchPaths_CollectionChanged;
+
+            // クリップボード監視
+            ClipboardListner = new ClipboardListner(window);
+            ClipboardListner.ClipboardUpdate += ClipboardListner_DrawClipboard;
+        }
+
+
+        private void SearchPaths_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            SearchEngine.IndexRequest(Setting.SearchPaths.ToArray());
+        }
+
+
+        public async void ClipboardListner_DrawClipboard(object sender, System.EventArgs e)
+        {
+            // どうにも例外(CLIPBRD_E_CANT_OPEN)が発生してしまうのでリトライさせることにした
+            RETRY:
+            try
+            {
+                if (Setting.IsMonitorClipboard && Clipboard.ContainsText())
+                {
+                    // キーワード設定
+                    Keyword = Clipboard.GetText();
+
+                    // 検索
+                    Search();
+                }
+            }
+            catch (System.Runtime.InteropServices.COMException ex)
+            {
+                Debug.WriteLine(ex.Message);
+
+                await Task.Delay(100);
+                goto RETRY;
+            }
+        }
+
+
+        //
+        public void Close()
+        {
+            // クリップボード監視終了
+            ClipboardListner.Dispose();
+
+            // 設定の保存
+            System.Reflection.Assembly myAssembly = System.Reflection.Assembly.GetEntryAssembly();
+            string defaultConfigPath = System.IO.Path.GetDirectoryName(myAssembly.Location) + "\\UserSetting.xml";
+            Setting.Save(defaultConfigPath);
+        }
+
 
 
         private void SearchEngine_ResultChanged(object sender, EventArgs e)
@@ -133,103 +173,28 @@ namespace RealtimeSearch
             Information = string.Format("{0} 個の項目", SearchEngine.Index.matches.Count);
         }
 
-
-#if false
-        //
-        public void StartSearchEngine()
+        // ##
+        public void UpdateSetting()
         {
-            //SearchEngine.Start();
-        }
-#endif
-
-
-        //
-        public void UpdateConfig()
-        {
-            if (ConfigViewModel.IsDarty)
+            if (Setting.SearchPaths != null)
             {
-                ConfigViewModel.IsDarty = false;
-                //index = new Index(ConfigViewModel.IndexPaths);
-                SearchEngine.IndexRequest(ConfigViewModel.IndexPaths.ToArray());
+                SearchEngine.IndexRequest(Setting.SearchPaths.ToArray());
             }
         }
 
-        //
+        // インデックス再構築
         public void ReIndex()
         {
             SearchEngine.ReIndexRequest();
         }
-#if false
-        // インデックス作成
-        // Note: SearchEngine版では不要？
-        public void GenerateIndex()
-        {
-            //SearchLock = true;
-
-            // TODO: データベース初期化
-            Information = "初期化中";
-
-            //fileDatabase = new FileDatabase();
-            //index.Initialize(); 
-
-            //__Sleep(5000);
-
-            Information = "";
-
-            //SearchLock = false;
-        }
-#endif
-
-#if false
-        // えーとねえ。
-        public bool CanSearch()
-        {
-            //return (!string.IsNullOrEmpty(Keyword) && keywordDarty && !SearchLock);
-            return true;
-        }
-#endif
-
-#if false
-        public void SetKeyworkdDarty()
-        {
-            keywordDarty = true;
-        }
-#endif
 
         // 検索
-        // Note: SearchEngineではこの構造自体変更が必要
-        // Note: SearchEngine.Index.matchesの直接アクセスはダメです
         public void Search()
         {
-            //SearchLock = true;
-
-            //SearchKeyword = Keyword;
-
-            //Information = "検索中...";
-            //keywordDarty = false;
-
-            // 検索
-            //index.Check(Keyword);
             SearchEngine.SearchRequest(Keyword);
-
-#if false
-            // 待たないとねえ,,
-
-            // 検索結果リスト作成
-            this.Files.Clear();
-            foreach (var match in SearchEngine.Index.matches)
-            {
-                this.Files.Add(match);
-
-                __Sleep(10);
-            }
-
-            Status = string.Format("{0} 個の項目", SearchEngine.Index.matches.Count);
-#endif
-
-            //SearchLock = false;
         }
     }
+
 
     // ファイルサイズを表示用に整形する
     [ValueConversion(typeof(long), typeof(string))]
