@@ -5,7 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="RealtimeSearch.MainWindow"
         Title="RealtimeSearch" Height="600" Width="800" Icon="Resources/search.ico" 
         Topmost="{Binding Setting.IsTopmost}"
-        Loaded="Window_Loaded" Closed="Window_Closed" >
+        Loaded="Window_Loaded" Closing="Window_Closing" Closed="Window_Closed" SourceInitialized="Window_SourceInitialized" >
 
 
 
@@ -63,8 +63,8 @@
             <Setter Property="Background" Value="{x:Null}"/>
             <Setter Property="BorderBrush" Value="{x:Null}"/>
             <Setter Property="Foreground" Value="#FF227BAE"/>
-            <Setter Property="Width" Value="32" />
-            <Setter Property="Height" Value="32"/>
+            <Setter Property="Width" Value="26" />
+            <Setter Property="Height" Value="26"/>
         </Style>
 
     </Window.Resources>
@@ -75,20 +75,22 @@
         <CommandBinding Command="Copy" Executed="Copy_Executed" />
     </Window.CommandBindings>
 
-    <Grid  Margin="4">
+    <Grid  Margin="2">
         <DockPanel>
 
-            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4" >
 
-                <Button DockPanel.Dock="Right" x:Name="SettingButton" Click="SettingButton_Click">
+                <Button DockPanel.Dock="Right" x:Name="SettingButton" Click="SettingButton_Click" Margin="4,0,0,0">
                     <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="20">&#xE713;</TextBlock>
                 </Button>
 
+                <!--
                 <Button DockPanel.Dock="Right" x:Name="buttonResearch" Command="{Binding CommandReIndex}" Margin="4,0,0,0">
                     <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="20">&#xE72C;</TextBlock>
                 </Button>
+                -->
                 <Grid>
-                    <TextBox x:Name="keyword" Height="32" Padding="0,0,40,0" Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"  KeyDown="keyword_KeyDown" MaxLines="256" VerticalContentAlignment="Center"/>
+                    <TextBox x:Name="keyword" Padding="0,0,40,0" Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"  KeyDown="keyword_KeyDown" MaxLines="256" VerticalContentAlignment="Center" BorderThickness="1,1,1,1" BorderBrush="#FFDDDDDD"/>
                     <Button HorizontalAlignment="Right" Command="{Binding CommandSearch}">
                         <!--BorderThickness="0" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}">-->
                         <!--<Image Source="Resources/search.png" />-->
@@ -101,14 +103,15 @@
         <TextBlock DockPanel.Dock="Top" Margin="2" TextWrapping="NoWrap" Text="{Binding SearchKeyword}" VerticalAlignment="Top" Foreground="#FF3C3C3C"/>
         -->
 
-
+<!--
             <StatusBar DockPanel.Dock="Bottom" >
                 <TextBlock Text="{Binding SearchEngine.Command}"/>
                 <TextBlock DockPanel.Dock="Bottom" Margin="2" x:Name="status" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Status}" TextDecorations="{x:Null}" />
             </StatusBar>
+-->
 
             <Grid>
-                <ListView x:Name="listView01" Foreground="Black" ButtonBase.Click="GridViewColumnHeader_ClickHandler" ItemsSource="{Binding Files}" >
+                <ListView x:Name="listView01" Foreground="Black" ButtonBase.Click="GridViewColumnHeader_ClickHandler" ItemsSource="{Binding Files}" BorderThickness="0" >
                     <!-- ItemContainerStyle="{StaticResource ListViewItemStyle}">-->
 
                     <ListView.Resources>
@@ -119,7 +122,7 @@
 
                         <DataTemplate x:Key="ItemFileNameTemplate">
                             <StackPanel Orientation="Horizontal">
-                                <Image Source="{Binding FileInfo.IconSource}" Margin="0,0,4,2"/>
+                                <Image Source="{Binding FileInfo.IconSource}" Margin="0,0,4,0"/>
                                 <TextBlock Text="{Binding FileName}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
                         </DataTemplate>

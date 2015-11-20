@@ -53,7 +53,10 @@ namespace RealtimeSearch
             get { return _IsTopmost; }
             set { _IsTopmost = value; OnPropertyChanged(); }
         }
-    	#endregion
+        #endregion
+
+        [DataMember]
+        public WINDOWPLACEMENT? WindowPlacement { set; get; }
 
         //[YamlDotNet.Serialization.YamlIgnore]
         //public string Path { set; get; }

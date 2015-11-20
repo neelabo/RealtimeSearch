@@ -15,6 +15,8 @@ using System.Windows.Shapes;
 
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Windows.Interop;
+using System.Runtime.InteropServices;
 
 /*
  * - [v] 右クリックでファイルを開く 
@@ -69,22 +71,38 @@ namespace RealtimeSearch
             // タイトルに[Debug]を入れる
             this.Title += " [Debug]";
 #endif
-
             VM = new MainWindowVM();
             this.DataContext = VM;
         }
 
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_SourceInitialized(object sender, EventArgs e)
         {
             // 設定読み込み
-            VM.Open(this);
+            VM.Open();
+
+            // ウィンドウ座標復元
+            VM.RestoreWindowPlacement(this);
+        }
+
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            // クリップボード監視開始
+            VM.StartClipboardMonitor(this);
+        }
+
+
+        private void Window_Closing(object sender, EventArgs e)
+        {
+            // ウィンドウ座標保存
+            VM.StoreWindowPlacement(this);
         }
 
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            // 強制保存
+            // 設定保存
             VM.Close();
         }
 
@@ -244,6 +262,13 @@ namespace RealtimeSearch
 
         private void SettingButton_Click(object sender, RoutedEventArgs e)
         {
+            var window = new SettingWindow();
+            window.Owner = this;
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            window.DataContext = VM;
+            window.ShowDialog();
+
+#if false
             if (this.SettingControl.Visibility == Visibility.Visible)
             {
                 this.SettingControl.Visibility = Visibility.Hidden;
@@ -252,8 +277,8 @@ namespace RealtimeSearch
             {
                 this.SettingControl.Visibility = Visibility.Visible;
             }
+#endif
         }
-
 
     }
 }

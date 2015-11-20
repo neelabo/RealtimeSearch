@@ -9,6 +9,8 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Windows.Interop;
+using System.Runtime.InteropServices;
 
 namespace RealtimeSearch
 {
@@ -91,7 +93,7 @@ namespace RealtimeSearch
 
 
         //
-        public void Open(Window window)
+        public void Open()
         {
             // 設定の読み込み
             System.Reflection.Assembly myAssembly = System.Reflection.Assembly.GetEntryAssembly();
@@ -109,7 +111,11 @@ namespace RealtimeSearch
 
             // Bindng Events
             Setting.SearchPaths.CollectionChanged += SearchPaths_CollectionChanged;
+        }
 
+
+        public void StartClipboardMonitor(Window window)
+        { 
             // クリップボード監視
             ClipboardListner = new ClipboardListner(window);
             ClipboardListner.ClipboardUpdate += ClipboardListner_DrawClipboard;
@@ -158,6 +164,33 @@ namespace RealtimeSearch
             string defaultConfigPath = System.IO.Path.GetDirectoryName(myAssembly.Location) + "\\UserSetting.xml";
             Setting.Save(defaultConfigPath);
         }
+
+
+        public void RestoreWindowPlacement(Window window)
+        {
+            if (Setting.WindowPlacement == null) return;
+
+            var placement = (WINDOWPLACEMENT)Setting.WindowPlacement;
+            placement.length = Marshal.SizeOf(typeof(WINDOWPLACEMENT));
+            placement.flags = 0;
+            placement.showCmd = (placement.showCmd == SW.SHOWMINIMIZED) ? SW.SHOWNORMAL : placement.showCmd;
+
+            var hwnd = new WindowInteropHelper(window).Handle;
+            NativeMethods.SetWindowPlacement(hwnd, ref placement);
+        }
+
+
+        public void StoreWindowPlacement(Window window)
+        {
+            WINDOWPLACEMENT placement;
+            var hwnd = new WindowInteropHelper(window).Handle;
+            NativeMethods.GetWindowPlacement(hwnd, out placement);
+
+            Setting.WindowPlacement = placement;
+        }
+
+
+
 
 
 
