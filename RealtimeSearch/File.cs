@@ -26,7 +26,7 @@ namespace RealtimeSearch
         public string Path
         {
             get { return path; }
-            set { path = value; NormalizedWord = ToNormalisedWord(FileName); }
+            set { path = value; NormalizedWord = ToNormalisedWord(FileName); FileInfo = new FileInfo(path); }
         }
         public string DirectoryName
         {
@@ -40,6 +40,10 @@ namespace RealtimeSearch
 
         public string NormalizedWord;
 
+
+        public FileInfo FileInfo { get; private set; }
+
+#if false
         /// <summary>
         /// ファイルサイズ
         /// </summary>
@@ -86,6 +90,7 @@ namespace RealtimeSearch
                 return lastWriteTime;
             }
         }
+#endif
 
         public ICommand OpenFile { set; get; }
         public ICommand OpenPlace { set; get; }
@@ -188,6 +193,7 @@ namespace RealtimeSearch
     }
 
 
+#if false
     public static class FileInfo
     {
 #region SHGetFileInfo
@@ -317,7 +323,7 @@ namespace RealtimeSearch
             return fileInfo.LastWriteTime;
         }
     }
-
+#endif
 
 
 }

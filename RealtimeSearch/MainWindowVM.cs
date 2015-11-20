@@ -203,7 +203,7 @@ namespace RealtimeSearch
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             long size = (long)value;
-            return string.Format("{0:#,0} KB", (size + 1024 - 1) / 1024);
+            return (size >= 0) ? string.Format("{0:#,0} KB", (size + 1024 - 1) / 1024) : null;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

@@ -119,14 +119,14 @@
 
                         <DataTemplate x:Key="ItemFileNameTemplate">
                             <StackPanel Orientation="Horizontal">
-                                <Image Source="{Binding IconSource}" Margin="0,0,4,2"/>
+                                <Image Source="{Binding FileInfo.IconSource}" Margin="0,0,4,2"/>
                                 <TextBlock Text="{Binding FileName}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
                         </DataTemplate>
 
                         <local:FileSizeConverter x:Key="FileSizeConverter"/>
                         <DataTemplate x:Key="ItemSizeTemplate">
-                            <TextBlock Text="{Binding Size, Converter={StaticResource FileSizeConverter}}" HorizontalAlignment="Right"/>
+                            <TextBlock Text="{Binding FileInfo.Size, Converter={StaticResource FileSizeConverter}}" HorizontalAlignment="Right"/>
                         </DataTemplate>
 
                     </ListView.Resources>
@@ -138,8 +138,8 @@
                             </GridViewColumn>
 
                             <!--<GridViewColumn Header="名前" Width="400" DisplayMemberBinding="{Binding FileName}" />-->
-                            <GridViewColumn Header="更新日時" Width="96" DisplayMemberBinding="{Binding LastWriteTime}" />
-                            <GridViewColumn Header="種類" Width="96" DisplayMemberBinding="{Binding TypeName}"/>
+                            <GridViewColumn Header="更新日時" Width="96" DisplayMemberBinding="{Binding FileInfo.LastWriteTime}" />
+                            <GridViewColumn Header="種類" Width="96" DisplayMemberBinding="{Binding FileInfo.TypeName}"/>
                             <GridViewColumn Width="96" CellTemplate="{StaticResource ItemSizeTemplate}">
                                 <GridViewColumnHeader Content="サイズ" Tag="Size"/>
                             </GridViewColumn>

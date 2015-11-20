@@ -120,10 +120,15 @@ namespace RealtimeSearch
         //
         public event EventHandler ResultChanged;
 
+        //
+
+        public static SearchEngine Current { get; private set; }
 
         //
         public SearchEngine()
         {
+            Current = this;
+
             Index = new Index();
 
             CountSemaphore = new SemaphoreSlim(0);
@@ -194,7 +199,7 @@ namespace RealtimeSearch
                 // 処理
                 if (Command.IsCancel) continue;
 #if DEBUG
-                //await Task.Delay(1000);
+                await Task.Delay(1000);
 #endif
                 Command.Exec();
                 Command = null;
@@ -204,14 +209,14 @@ namespace RealtimeSearch
         public void CommandIndex(string[] paths)
         {
             State = SearchEngineState.Index;
-            Index.Initialize(paths);
+            Index.Collect(paths);
             State = SearchEngineState.None;
         }
 
         public void CommandReIndex()
         {
             State = SearchEngineState.Index;
-            Index.Initialize();
+            Index.Collect();
             State = SearchEngineState.None;
         }
 

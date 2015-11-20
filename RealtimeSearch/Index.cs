@@ -15,53 +15,133 @@ using Microsoft.VisualBasic;
 namespace RealtimeSearch
 {
     //
+    public class IndexSubset : IDisposable
+    {
+        public string Path { get; private set; }
+
+        public List<File> Files { get; private set; }
+
+        public bool IsDarty { get; private set; }
+
+        private FileSystemWatcher FileSystemWatcher;
+
+
+        public IndexSubset(string path)
+        {
+            Path = path;
+            Files = new List<File>();
+            IsDarty = true;
+
+            FileSystemWatcher = new FileSystemWatcher();
+            FileSystemWatcher.Path = Path;
+            FileSystemWatcher.IncludeSubdirectories = true;
+            FileSystemWatcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            FileSystemWatcher.Created += Watcher_Changed;
+            FileSystemWatcher.Deleted += Watcher_Changed;
+            FileSystemWatcher.Renamed += Watcher_Renamed;
+        }
+
+
+        public void Collect()
+        {
+            if (!IsDarty) return;
+            IsDarty = false;
+
+            Files.Clear();
+
+            try
+            {
+                foreach (string file in Directory.GetFileSystemEntries(Path, "*", SearchOption.AllDirectories))
+                {
+                    Files.Add(new File() { Path = file });
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            // フォルダ監視開始
+            FileSystemWatcher.EnableRaisingEvents = true;
+        }
+        
+        private void Watcher_Changed(object sender, FileSystemEventArgs e)
+        {
+            IsDarty = true;
+            SearchEngine.Current.ReIndexRequest();
+        }
+
+        private void Watcher_Renamed(object sender, RenamedEventArgs e)
+        {
+            IsDarty = true;
+            SearchEngine.Current.ReIndexRequest();
+        }
+
+        public void Dispose()
+        {
+            FileSystemWatcher.Dispose();
+        }
+    }
+
+
+
+
+    //
     public class Index
     {
         string[] roots;
 
-        public List<File> files;
+        public Dictionary<string, IndexSubset> IndexDictionary { get; private set; }
 
         public string[] keys;
         public List<File> matches;
 
         public Index()
         {
+            IndexDictionary = new Dictionary<string, IndexSubset>();
         }
 
-        //
-        public Index(Collection<string> paths)
-        {
-            roots = paths.ToArray<string>();
-        }
 
         //
-        public void Initialize(string[] paths)
+        public void Collect(string[] paths)
         {
             roots = paths;
-            Initialize();
+            Collect();
         }
 
         //
-        public void Initialize()
+        public void Collect()
         {
-            files = new List<File>();
+            var newDinctionary = new Dictionary<string, IndexSubset>();
 
             foreach (var root in roots)
             {
-                try
+                IndexSubset sub;
+
+                if (!IndexDictionary.ContainsKey(root))
                 {
-                    foreach (string file in Directory.GetFiles(root, "*", SearchOption.AllDirectories))
-                    {
-                        //files.Add(Path.GetFileName(file));
-                        files.Add(new File() { Path = file });
-                    }
+                    sub = new IndexSubset(root);
                 }
-                catch(Exception)
+                else
                 {
-                    // 何もしない
+                    sub = IndexDictionary[root];
+                }
+
+                sub.Collect();
+                newDinctionary.Add(root, sub);
+            }
+
+            // 再登録されなかったパスの後処理を行う
+            foreach (var a in IndexDictionary)
+            {
+                if (!newDinctionary.ContainsValue(a.Value))
+                {
+                    a.Value.Dispose();
                 }
             }
+
+            IndexDictionary = newDinctionary;
         }
+
 
         /// <summary>
         /// 検索
@@ -102,13 +182,24 @@ namespace RealtimeSearch
             }
         }
 
+
+        private IEnumerable<File> AllFiles()
+        {
+            foreach(var part in IndexDictionary)
+            {
+                foreach (var file in part.Value.Files)
+                    yield return file;
+            }
+        }
+
         /// <summary>
         /// 検索メイン
         /// 検索キーに適応するファイルをリストアップする
         /// </summary>
         public void ListUp()
         {
-            var entrys = files;
+            //var entrys = files;
+            var entrys = AllFiles();
 
             foreach (var key in keys)
             {
@@ -126,7 +217,7 @@ namespace RealtimeSearch
                 entrys = list;
             }
 
-            matches = entrys;
+            matches = entrys.ToList();
         }
     }
 }

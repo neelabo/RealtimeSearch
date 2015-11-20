@@ -101,6 +101,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ClipboardListner.cs" />
+    <Compile Include="FileInfo.cs" />
     <Compile Include="Setting.cs" />
     <Compile Include="File.cs" />
     <Compile Include="MainWindowVM.cs" />
