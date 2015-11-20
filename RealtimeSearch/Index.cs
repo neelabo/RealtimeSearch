@@ -164,9 +164,17 @@ namespace RealtimeSearch
 
             // 入力文字列を整列
             // 空白、改行文字でパーツ分け
-            string s = new Regex("^" + splitter).Replace(source, "");
+             string s = new Regex("^" + splitter).Replace(source, "");
             s = new Regex(splitter + "$").Replace(s, "");
             this.keys = new Regex(splitter).Split(s);
+
+#if false
+            if (string.IsNullOrEmpty(keys[0]))
+            {
+                keys = null;
+                return;
+            }
+#endif
 
             for (int i = 0; i < keys.Length; ++i )
             {
@@ -178,7 +186,7 @@ namespace RealtimeSearch
                 // (数値)部分を0*(数値)という正規表現に変換
                 t = new Regex(@"0*(\d+)").Replace(t, match => "0*" + match.Groups[1]);
 
-                keys[i] = t;
+                keys[i] = (t == "") ? "^$" : t;
             }
         }
 
@@ -198,9 +206,15 @@ namespace RealtimeSearch
         /// </summary>
         public void ListUp()
         {
-            //var entrys = files;
-            var entrys = AllFiles();
+#if false
+            if (keys == null)
+            {
+                matches = new List<File>();
+                return;
+            }
+#endif
 
+            var entrys = AllFiles();
             foreach (var key in keys)
             {
                 var regex = new Regex(key, RegexOptions.Compiled);
@@ -208,7 +222,6 @@ namespace RealtimeSearch
                 var list = new List<File>();
                 foreach(var file in entrys)
                 {
-                    //if (file.NormalizedWord.IndexOf(key) >= 0)
                     if (regex.Match(file.NormalizedWord).Success)
                     {
                         list.Add(file);

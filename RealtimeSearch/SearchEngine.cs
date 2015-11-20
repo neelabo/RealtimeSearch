@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -201,7 +202,16 @@ namespace RealtimeSearch
 #if DEBUG
                 await Task.Delay(1000);
 #endif
-                Command.Exec();
+                try
+                {
+                    Command.Exec();
+                }
+                catch (Exception e)
+                {
+                    // エラーはスルー
+                    Debug.WriteLine(e.Message);
+                }
+
                 Command = null;
             }
         }

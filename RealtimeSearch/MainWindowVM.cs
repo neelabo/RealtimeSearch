@@ -42,6 +42,7 @@ namespace RealtimeSearch
                 string newKeyword = regex.Replace(value, " ");
                 _Keyword = newKeyword;
                 OnPropertyChanged();
+                Search(500);
             }
         }
   
@@ -191,8 +192,48 @@ namespace RealtimeSearch
         // 検索
         public void Search()
         {
-            SearchEngine.SearchRequest(Keyword);
+            Search(0);
         }
+
+        // 遅延検索
+        public void Search(int delay)
+        {
+            lock (lockObject)
+            {
+                delayTimer = delay;
+                if (delayTask == null)
+                {
+                    delayTask = Task.Run(SearchAsync);
+                }
+            }
+        }
+
+        object lockObject = new object();
+
+        Task delayTask;
+        int delayTimer;
+
+        //
+        private async Task SearchAsync()
+        {
+            while (delayTimer > 0)
+            {
+                lock (lockObject)
+                {
+                    delayTimer -= 20;
+                }
+                await Task.Delay(20);
+            }
+            
+            SearchEngine.SearchRequest(Keyword);
+
+            lock (lockObject)
+            {
+                delayTask = null;
+            }
+        }
+
+
     }
 
 

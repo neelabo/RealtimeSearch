@@ -122,8 +122,6 @@ namespace RealtimeSearch
         // ファイルのドラッグ開始
         private void PreviewMouseMove_Event(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            //MessageBox.Show("AAA");
-
             var s = sender as ListViewItem;
             var pn = s.Content as File;
 

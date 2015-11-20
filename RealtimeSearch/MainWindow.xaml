@@ -172,13 +172,11 @@
 
         </DockPanel>
 
-        <local:SettingControl x:Name="SettingControl" Margin="0,36,0,0" HorizontalAlignment="Right" Width="420"
-                              Visibility="Hidden"
-                              Setting="{Binding Setting}"
-                              />
-        <!--
-                  Visibility="{Binding ElementName=SettingToggleButton, Path=IsChecked, Converter={StaticResource BoolToVisibility}}" />
-        -->
+        <Border x:Name="SettingControl" Visibility="Hidden" HorizontalAlignment="Right" Width="420" Margin="0,36,0,0" Background="#FFF8F8F8" BorderBrush="Gray" BorderThickness="1">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" >
+                <local:SettingControl Setting="{Binding Setting}"  />
+            </ScrollViewer>
+        </Border>
 
     </Grid>
 
