@@ -28,7 +28,29 @@ namespace RealtimeSearch
         }
         #endregion
 
-        public FileList Files { get; set; }
+#if DEBUG
+        private string DefaultWindowTitle = "RealtimeSearch [Debug]";
+#else
+        private string DefaultWindowTitle = "RealtimeSearch";
+#endif
+
+        public string WindowTitle
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(SearchEngine.CurrentKeyword))
+                {
+                    return DefaultWindowTitle;
+                }
+                else
+                {
+                    return SearchEngine.CurrentKeyword + " - " + DefaultWindowTitle;
+                }
+            }
+        }
+
+        //public FileList Files { get; set; }
+        public List<File> Files { get; set; }
 
         public ICommand CommandSearch { get; set; }
         public ICommand CommandReIndex { get; set; }
@@ -44,7 +66,7 @@ namespace RealtimeSearch
                 string newKeyword = regex.Replace(value, " ");
                 _Keyword = newKeyword;
                 OnPropertyChanged();
-                Search(500);
+                Search(200);
             }
         }
   
@@ -59,14 +81,16 @@ namespace RealtimeSearch
         //private Index index;
         public SearchEngine SearchEngine { get; set; }
 
-        #region Property: Setting
+#region Property: Setting
         private Setting _Setting;
         public Setting Setting
         {
             get { return _Setting; }
             set { _Setting = value; OnPropertyChanged(); }
         }
-        #endregion
+#endregion
+
+
 
         private ClipboardListner ClipboardListner;
 
@@ -80,7 +104,7 @@ namespace RealtimeSearch
         //
         public MainWindowVM()
         {
-            Files = new FileList();
+            //Files = new FileList();
 
             SearchEngine = new SearchEngine();
             SearchEngine.Start();
@@ -194,17 +218,35 @@ namespace RealtimeSearch
 
 
 
-        private void SearchEngine_ResultChanged(object sender, EventArgs e)
+        private void SearchEngine_ResultChanged(object sender, int count)
         {
+            if (count <= 0)
+            {
+                Files = new List<File>();
+                Information = "";
+            }
+            else
+            {
+                Files = SearchEngine.Index.matches;
+                Information = string.Format("{0} 個の項目", Files.Count);
+            }
+
+            OnPropertyChanged(nameof(Files));
+            OnPropertyChanged(nameof(WindowTitle));
+
+#if false
             // 検索結果リスト作成
             this.Files.Clear();
+
+            if (count <= 0) return;
+
             foreach (var match in SearchEngine.Index.matches)
             {
                 this.Files.Add(match);
                 //__Sleep(10);
             }
 
-            Information = string.Format("{0} 個の項目", SearchEngine.Index.matches.Count);
+#endif
         }
 
         // ##
@@ -285,4 +327,38 @@ namespace RealtimeSearch
             throw new NotImplementedException();
         }
     }
+
+
+    // コマンド状態を処理中表示に変換する
+    [ValueConversion(typeof(MyCommand), typeof(Visibility))]
+    class CommandToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            var cmd = (MyCommand)value;
+            return (cmd != null) ? Visibility.Visible : Visibility.Hidden;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    // 文字列状態を処理中表示に変換する
+    [ValueConversion(typeof(string), typeof(Visibility))]
+    class StringToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            var s = (string)value;
+            return string.IsNullOrEmpty(s) ? Visibility.Hidden : Visibility.Visible;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
 }

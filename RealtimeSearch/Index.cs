@@ -36,8 +36,8 @@ namespace RealtimeSearch
             FileSystemWatcher.Path = Path;
             FileSystemWatcher.IncludeSubdirectories = true;
             FileSystemWatcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName;
-            FileSystemWatcher.Created += Watcher_Changed;
-            FileSystemWatcher.Deleted += Watcher_Changed;
+            FileSystemWatcher.Created += Watcher_Created;
+            FileSystemWatcher.Deleted += Watcher_Deleted;
             FileSystemWatcher.Renamed += Watcher_Renamed;
         }
 
@@ -47,33 +47,92 @@ namespace RealtimeSearch
             if (!IsDarty) return;
             IsDarty = false;
 
-            Files.Clear();
-
-            try
-            {
-                foreach (string file in Directory.GetFileSystemEntries(Path, "*", SearchOption.AllDirectories))
-                {
-                    Files.Add(new File() { Path = file });
-                }
-            }
-            catch (Exception)
-            {
-            }
-
             // フォルダ監視開始
             FileSystemWatcher.EnableRaisingEvents = true;
+
+            Files.Clear();
+            Add(Path);
         }
-        
+
+
+        // 追加
+        public void Add(string path)
+        {
+            try
+            {
+                Files.Add(new File() { Path = path });
+
+                if (Directory.Exists(path))
+                {
+                    foreach (string file in Directory.GetFiles(path))
+                    {
+                        Files.Add(new File() { Path = file });
+                    }
+                    foreach (string directory in Directory.GetDirectories(path))
+                    {
+                        Add(directory);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+            }
+        }
+
+        // 削除
+        public void Remove(string path)
+        {
+            Debug.WriteLine(Files.Count);
+
+            string dir = path + "\\";
+            Files.RemoveAll(f => f.Path == path || f.Path.StartsWith(dir));
+
+            Debug.WriteLine(Files.Count);
+        }
+
+
+        class FileComparer : EqualityComparer<File>
+        {
+            public override bool Equals(File p1, File p2)
+            {
+                return (p1.Path == p2.Path);
+            }
+
+            public override int GetHashCode(File p)
+            {
+                return p.Path.GetHashCode();
+            }
+        }
+
+        public void Distinct()
+        {
+            Files = Files.Distinct(new FileComparer()).ToList();
+        }
+
+/*
         private void Watcher_Changed(object sender, FileSystemEventArgs e)
         {
             IsDarty = true;
             SearchEngine.Current.ReIndexRequest();
         }
+*/
+
+        private void Watcher_Created(object sender, FileSystemEventArgs e)
+        {
+            SearchEngine.Current.AddIndexRequest(Path, e.FullPath);
+        }
+
+        private void Watcher_Deleted(object sender, FileSystemEventArgs e)
+        {
+            SearchEngine.Current.RemoveIndexRequest(Path, e.FullPath);
+        }
+
 
         private void Watcher_Renamed(object sender, RenamedEventArgs e)
         {
-            IsDarty = true;
-            SearchEngine.Current.ReIndexRequest();
+            SearchEngine.Current.RemoveIndexRequest(Path, e.OldFullPath);
+            SearchEngine.Current.AddIndexRequest(Path, e.FullPath);
         }
 
         public void Dispose()
@@ -143,6 +202,39 @@ namespace RealtimeSearch
         }
 
 
+        public void AddPath(string root, List<string> paths)
+        {
+            if (!IndexDictionary.ContainsKey(root))
+            {
+                return;
+            }
+
+            foreach (var path in paths)
+            {
+                // これが重い
+                //if (IndexDictionary[root].Files.Any(f => f.Path == path)) continue;
+
+                IndexDictionary[root].Add(path);
+            }
+
+            //IndexDictionary[root].Files.Distinct()
+
+            IndexDictionary[root].Distinct();
+        }
+
+
+        public void RemovePath(string root, string path)
+        {
+            if (!IndexDictionary.ContainsKey(root))
+            {
+                return;
+            }
+
+            IndexDictionary[root].Remove(path);
+        }
+
+
+
         /// <summary>
         /// 検索
         /// </summary>
@@ -206,13 +298,12 @@ namespace RealtimeSearch
         /// </summary>
         public void ListUp()
         {
-#if false
-            if (keys == null)
+            if (keys == null || keys[0] == "^$")
             {
                 matches = new List<File>();
                 return;
             }
-#endif
+
 
             var entrys = AllFiles();
             foreach (var key in keys)

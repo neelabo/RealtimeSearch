@@ -11,10 +11,12 @@ using System.ComponentModel;
 using System.Collections.ObjectModel;
 //using Microsoft.VisualBasic;
 
+using System.IO;
 
 
 namespace RealtimeSearch
 {
+    // 数が尋常でないので、軽量にすべき
     public class File
     {
         private string path;
@@ -23,27 +25,36 @@ namespace RealtimeSearch
             get { return path; }
             set { path = value; NormalizedWord = ToNormalisedWord(FileName); FileInfo = new FileInfo(path); }
         }
+        //private string _DirectoryName;
         public string DirectoryName
         {
             get
             {
-                string dir = System.IO.Path.GetDirectoryName(path);
-                return System.IO.Path.GetFileName(dir) + " (" + System.IO.Path.GetDirectoryName(dir) + ")";
+                //if (_DirectoryName == null)
+                //{
+                    string dir = System.IO.Path.GetDirectoryName(path);
+                    string parentDir = System.IO.Path.GetDirectoryName(dir);
+                    return (parentDir == null) ? dir : System.IO.Path.GetFileName(dir) + " (" + parentDir + ")";
+                //}
+                //return _DirectoryName;
             }
         }
         public string FileName { get { return System.IO.Path.GetFileName(path); } }
 
         public string NormalizedWord;
 
+        //public bool IsDirectory;
+
         // ファイル情報
         public FileInfo FileInfo { get; private set; }
 
-        public ICommand OpenFile { set; get; }
-        public ICommand OpenPlace { set; get; }
-        public ICommand CopyFileName { set; get; }
+        public static ICommand OpenFile { set; get; }
+        public static ICommand OpenPlace { set; get; }
+        public static ICommand CopyFileName { set; get; }
 
         public File()
         {
+            // これヤバイ。RootedCommand化すべき
             OpenFile = new CommandOpenFileItem();
             OpenPlace = new CommandOpenPlace();
             CopyFileName = new CommandCopyFileName();
@@ -113,20 +124,5 @@ namespace RealtimeSearch
         }
     }
 
-    // 
-    public class FileList : ObservableCollection<File>
-    {
-        public FileList()
-        {
-            // 複数スレッドからコレクション操作できるようにする
-            System.Windows.Data.BindingOperations.EnableCollectionSynchronization(this, new object());
-        }
-
-        public void Add(string path)
-        {
-            var file = new File() { Path = path };
-            Add(file);
-        }
-    }
 
 }

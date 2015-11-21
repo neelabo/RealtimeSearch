@@ -69,7 +69,7 @@ namespace RealtimeSearch
 
 #if DEBUG
             // タイトルに[Debug]を入れる
-            this.Title += " [Debug]";
+            //this.Title += " [Debug]";
 #endif
             VM = new MainWindowVM();
             this.DataContext = VM;

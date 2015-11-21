@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:RealtimeSearch"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="RealtimeSearch.MainWindow"
-        Title="RealtimeSearch" Height="600" Width="800" Icon="Resources/search.ico" 
+        Title="{Binding WindowTitle}" Height="600" Width="800" Icon="Resources/search.ico" 
         Topmost="{Binding Setting.IsTopmost}"
         Loaded="Window_Loaded" Closing="Window_Closing" Closed="Window_Closed" SourceInitialized="Window_SourceInitialized" >
 
@@ -12,6 +12,8 @@
     <Window.Resources>
 
         <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+        <local:CommandToVisibilityConverter x:Key="CommandToVisibility"/>
+        <local:StringToVisibilityConverter x:Key="StringToVisibility"/>
 
 
         <Style TargetType="{x:Type ListViewItem}">
@@ -103,16 +105,26 @@
         <TextBlock DockPanel.Dock="Top" Margin="2" TextWrapping="NoWrap" Text="{Binding SearchKeyword}" VerticalAlignment="Top" Foreground="#FF3C3C3C"/>
         -->
 
-<!--
-            <StatusBar DockPanel.Dock="Bottom" >
-                <TextBlock Text="{Binding SearchEngine.Command}"/>
-                <TextBlock DockPanel.Dock="Bottom" Margin="2" x:Name="status" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Status}" TextDecorations="{x:Null}" />
-            </StatusBar>
--->
+
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Background="#FFF8F8F8">
+                <TextBlock Margin="2" TextWrapping="NoWrap" Text="{Binding SearchEngine.CommandCount, StringFormat={}{0}\, }" />
+                <TextBlock Margin="2" TextWrapping="NoWrap" Text="{Binding SearchEngine.Command}" />
+            </StackPanel>
+            <TextBlock DockPanel.Dock="Bottom" Margin="2" x:Name="status" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Information}" TextDecorations="{x:Null}" />
+
+
 
             <Grid>
-                <ListView x:Name="listView01" Foreground="Black" ButtonBase.Click="GridViewColumnHeader_ClickHandler" ItemsSource="{Binding Files}" BorderThickness="0" >
+                <ListView x:Name="listView01" Foreground="Black" ButtonBase.Click="GridViewColumnHeader_ClickHandler" ItemsSource="{Binding Files}" BorderThickness="0" 
+                          ScrollViewer.CanContentScroll="True"
+                          VirtualizingPanel.IsVirtualizing="True"
+                          VirtualizingPanel.VirtualizationMode="Recycling">
+
+
+
                     <!-- ItemContainerStyle="{StaticResource ListViewItemStyle}">-->
+                    
+                    
 
                     <ListView.Resources>
 
@@ -134,6 +146,12 @@
 
                     </ListView.Resources>
 
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Orientation="Vertical" CanVerticallyScroll="True"/>
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+
                     <ListView.View>
                         <GridView ColumnHeaderTemplate="{StaticResource HeaderTemplateNormal}">
                             <GridViewColumn Width="400" CellTemplate="{StaticResource ItemFileNameTemplate}">
@@ -144,7 +162,7 @@
                             <GridViewColumn Header="更新日時" Width="96" DisplayMemberBinding="{Binding FileInfo.LastWriteTime}" />
                             <GridViewColumn Header="種類" Width="96" DisplayMemberBinding="{Binding FileInfo.TypeName}"/>
                             <GridViewColumn Width="96" CellTemplate="{StaticResource ItemSizeTemplate}">
-                                <GridViewColumnHeader Content="サイズ" Tag="Size"/>
+                                <GridViewColumnHeader Content="サイズ" Tag="FileInfo.Size"/>
                             </GridViewColumn>
                             <!--<GridViewColumn Header="サイズ" Width="96" DisplayMemberBinding="{Binding Size}" />-->
                             <GridViewColumn Header="フォルダー" Width="96" DisplayMemberBinding="{Binding DirectoryName}"/>
@@ -152,24 +170,10 @@
                     </ListView.View>
                 </ListView>
 
-                <TextBlock x:Name="textBlock_Busy" TextWrapping="Wrap" Text="処理しています ..." Margin="0,32,0,0" TextAlignment="Center" Foreground="Gray">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Visibility" Value="Hidden"/>
-                            <Style.Triggers>
-                                <MultiDataTrigger>
-                                    <MultiDataTrigger.Conditions>
-                                        <Condition Binding="{Binding SearchLock}" Value="True"/>
-                                        <Condition Binding="{Binding Files.Count}" Value="0"/>
-                                    </MultiDataTrigger.Conditions>
-                                    <MultiDataTrigger.Setters>
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </MultiDataTrigger.Setters>
-                                </MultiDataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
+                <TextBlock x:Name="textBlock_Busy" TextWrapping="Wrap" Margin="0,40,0,0" TextAlignment="Center" Foreground="Gray"
+                           Text="{Binding Path=SearchEngine.StateMessage}" 
+                           Visibility="{Binding Path=SearchEngine.StateMessage, Converter={StaticResource StringToVisibility}}"/>
+
 
             </Grid>
 
