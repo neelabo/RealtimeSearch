@@ -203,8 +203,11 @@ namespace RealtimeSearch
             File file = (target as ListView)?.SelectedItem as File;
             if (file != null)
             {
-                // ここで編集をON
-                // 名前変更ダイアログ？コントロール？
+                if (!System.IO.File.Exists(file.Path) && !System.IO.Directory.Exists(file.Path))
+                {
+                    MessageBox.Show($"{file.Path} が見つかりません。", "", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
 
                 var dialog = new RenameWindow(file);
                 dialog.Owner = this;
@@ -217,10 +220,17 @@ namespace RealtimeSearch
         // ファイルを開く
         void Open_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            foreach (var item in (target as ListView)?.SelectedItems)
+            var items = (target as ListView)?.SelectedItems;
+
+            if (items == null || items.Count > 10) return;
+
+            foreach (var item in items)
             {
                 File file = item as File;
-                if (file != null) Process.Start(file.Path);
+                if (file != null && (System.IO.File.Exists(file.Path) || System.IO.Directory.Exists(file.Path)))
+                {
+                    Process.Start(file.Path);
+                }
             }
         }
 
@@ -228,10 +238,17 @@ namespace RealtimeSearch
         // ファイルの場所を開く
         void OpenPlace_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            foreach (var item in (target as ListView)?.SelectedItems)
+            var items = (target as ListView)?.SelectedItems;
+
+            if (items == null || items.Count > 10) return;
+
+            foreach (var item in items)
             {
                 File file = item as File;
-                if (file != null) Process.Start("explorer.exe", "/select,\"" + file.Path + "\""); 
+                if (file != null && (System.IO.File.Exists(file.Path) || System.IO.Directory.Exists(file.Path)))
+                {
+                    Process.Start("explorer.exe", "/select,\"" + file.Path + "\"");
+                }
             }
         }
 

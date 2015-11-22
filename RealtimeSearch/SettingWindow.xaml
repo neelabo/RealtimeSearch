@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RealtimeSearch"
         mc:Ignorable="d"
-        Title="設定" Height="340" Width="460" WindowStyle="ToolWindow" >
+        Title="設定" Height="340" Width="460" ResizeMode="NoResize" Icon="Resources/RealtimeSearch.ico">
     <Grid>
         <local:SettingControl Setting="{Binding Setting}"/>
     </Grid>

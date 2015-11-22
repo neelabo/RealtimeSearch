@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RealtimeSearch"
         mc:Ignorable="d"
-        Title="名前の変更" Height="96" Width="515" WindowStyle="ToolWindow">
+        Title="名前の変更" Height="96" Width="515" Icon="Resources/RealtimeSearch.ico" ResizeMode="NoResize">
     <StackPanel Margin="4" >
         <!--<TextBlock Text="新しい名前"/>-->
         <TextBox x:Name="TextBox"  Text="{Binding NewName, UpdateSourceTrigger=PropertyChanged}" MaxLines="1" MaxLength="256" Margin="0,4"/>
