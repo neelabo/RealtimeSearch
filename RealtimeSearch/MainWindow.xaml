@@ -9,6 +9,11 @@
 
 
 
+    <Window.CommandBindings>
+        <CommandBinding Command="Open" Executed="Open_Executed" />
+        <CommandBinding Command="Copy" Executed="Copy_Executed" />
+    </Window.CommandBindings>
+
     <Window.Resources>
 
         <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
@@ -22,12 +27,21 @@
             <EventSetter Event="UIElement.PreviewMouseMove" Handler="PreviewMouseMove_Event"/>
             <EventSetter Event="UIElement.PreviewMouseDown" Handler="PreviewMouseDown_Event"/>
 
+            <!--<EventSetter Event="UIElement.KeyDown" Handler="PreviewMouseDown_Event"/>-->
+
+
             <Setter Property="ContextMenu">
                 <Setter.Value>
                     <ContextMenu>
-                        <MenuItem Header="開く(_O)" Command="{Binding OpenFile}" CommandParameter="{Binding .}"/>
-                        <MenuItem Header="ファイルの場所を開く(_I)" Command="{Binding OpenPlace}" CommandParameter="{Binding .}"/>
-                        <MenuItem Header="ファイル名をコピーする(_C)" Command="Copy" CommandParameter="{Binding .}"/>
+                        <MenuItem Header="開く(_O)" Command="{x:Static local:MainWindow.OpenCommand}" />
+                        <MenuItem Header="ファイルの場所を開く(_I)" Command="{x:Static local:MainWindow.OpenPlaceCommand}" />
+                        <Separator/>
+                        <MenuItem Header="ファイルをコピーする(_C)" Command="Copy" />
+                        <Separator/>
+                        <MenuItem Header="名前の変更(_M)" Command="{x:Static local:MainWindow.RenameCommand}" CommandParameter="{Binding .}"/>
+                        <MenuItem Header="名前をコピーする" Command="{x:Static local:MainWindow.CopyNameCommand}" />
+                        <Separator/>
+                        <MenuItem Header="プロパティ"/>
                     </ContextMenu>
                 </Setter.Value>
             </Setter>
@@ -73,10 +87,6 @@
 
 
 
-    <Window.CommandBindings>
-        <CommandBinding Command="Copy" Executed="Copy_Executed" />
-    </Window.CommandBindings>
-
     <Grid  Margin="2">
         <DockPanel>
 
@@ -116,15 +126,18 @@
 
             <Grid>
                 <ListView x:Name="listView01" Foreground="Black" ButtonBase.Click="GridViewColumnHeader_ClickHandler" ItemsSource="{Binding Files}" BorderThickness="0" 
-                          ScrollViewer.CanContentScroll="True"
+                          >
+                    <!--
+                    ScrollViewer.CanContentScroll="True"
                           VirtualizingPanel.IsVirtualizing="True"
-                          VirtualizingPanel.VirtualizationMode="Recycling">
+                          VirtualizingPanel.VirtualizationMode="Recycling">-->
 
-
+                    <ListView.CommandBindings>
+                        <!--<CommandBinding x:Name="OpenEx" Command="{x:Static local:MainWindow.OpenCommand}" Executed="Open_Executed" />-->
+                        <CommandBinding Command="Copy" Executed="Copy_Executed" />
+                    </ListView.CommandBindings>
 
                     <!-- ItemContainerStyle="{StaticResource ListViewItemStyle}">-->
-                    
-                    
 
                     <ListView.Resources>
 

@@ -22,17 +22,5 @@ namespace RealtimeSearch.Properties {
                 return defaultInstance;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Default.yaml")]
-        public string ConfigFile {
-            get {
-                return ((string)(this["ConfigFile"]));
-            }
-            set {
-                this["ConfigFile"] = value;
-            }
-        }
     }
 }

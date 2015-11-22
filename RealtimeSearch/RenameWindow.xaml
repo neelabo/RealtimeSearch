@@ -1,0 +1,16 @@
+﻿<Window x:Class="RealtimeSearch.RenameWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RealtimeSearch"
+        mc:Ignorable="d"
+        Title="名前の変更" Height="96" Width="515" WindowStyle="ToolWindow">
+    <StackPanel Margin="4" >
+        <!--<TextBlock Text="新しい名前"/>-->
+        <TextBox x:Name="TextBox"  Text="{Binding NewName, UpdateSourceTrigger=PropertyChanged}" MaxLines="1" MaxLength="256" Margin="0,4"/>
+        <DockPanel LastChildFill="False">
+            <Button DockPanel.Dock="Right" Content="OK" Width="64" Click="Button_Click" />
+        </DockPanel>
+    </StackPanel>
+</Window>

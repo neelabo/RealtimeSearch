@@ -17,8 +17,19 @@ using System.IO;
 namespace RealtimeSearch
 {
     // 数が尋常でないので、軽量にすべき
-    public class File
+    public class File : INotifyPropertyChanged
     {
+        #region PropertyChanged
+        public event PropertyChangedEventHandler PropertyChanged;
+        public void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = "")
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(name));
+            }
+        }
+        #endregion
+
         private string path;
         public string Path
         {
@@ -48,16 +59,20 @@ namespace RealtimeSearch
         // ファイル情報
         public FileInfo FileInfo { get; private set; }
 
+#if false
         public static ICommand OpenFile { set; get; }
         public static ICommand OpenPlace { set; get; }
         public static ICommand CopyFileName { set; get; }
+#endif
 
         public File()
         {
+#if false
             // これヤバイ。RootedCommand化すべき
             OpenFile = new CommandOpenFileItem();
             OpenPlace = new CommandOpenPlace();
             CopyFileName = new CommandCopyFileName();
+#endif
 
             //ToNormalisedWord("ＡＢＣ０１２巻");
             //ToNormalisedWord("ABCＡＢＣabc。｡　い ろはﾊﾞイロハｲﾛﾊ＃：");
@@ -77,6 +92,7 @@ namespace RealtimeSearch
         }
     }
 
+#if false
     //
     public class CommandOpenFileItem : ICommand
     {
@@ -123,6 +139,6 @@ namespace RealtimeSearch
             System.Windows.Clipboard.SetDataObject(text);
         }
     }
-
+#endif
 
 }

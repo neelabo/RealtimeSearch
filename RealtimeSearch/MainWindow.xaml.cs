@@ -73,6 +73,8 @@ namespace RealtimeSearch
 #endif
             VM = new MainWindowVM();
             this.DataContext = VM;
+
+            RegistRoutedCommand();
         }
 
 
@@ -170,16 +172,97 @@ namespace RealtimeSearch
 
         }
 
-        // ファイル名のコピー
+
+
+        //public static readonly ICommand OpenCommand = new RoutedCommand("OpenCommand", typeof(MainWindow));
+        public static readonly RoutedCommand OpenCommand = new RoutedCommand();
+        public static readonly ICommand OpenPlaceCommand = new RoutedCommand("OpenPlaceCommand", typeof(MainWindow));
+        public static readonly ICommand CopyNameCommand = new RoutedCommand("CopyNameCommand", typeof(MainWindow));
+        public static readonly RoutedCommand RenameCommand = new RoutedCommand();
+
+        void RegistRoutedCommand()
+        {
+            OpenCommand.InputGestures.Add(new KeyGesture(Key.Enter, ModifierKeys.None, "Enter"));
+            var openCommandBinding = new CommandBinding(OpenCommand, Open_Executed);
+            listView01.CommandBindings.Add(openCommandBinding);
+
+            var openPlaceCommandBinding = new CommandBinding(OpenPlaceCommand, OpenPlace_Executed);
+            listView01.CommandBindings.Add(openPlaceCommandBinding);
+
+            var copyNameCommandBinding = new CommandBinding(CopyNameCommand, CopyName_Executed);
+            listView01.CommandBindings.Add(copyNameCommandBinding);
+
+            RenameCommand.InputGestures.Add(new KeyGesture(Key.F2, ModifierKeys.None, "F2"));
+            var renameCommandBinding = new CommandBinding(RenameCommand, Rename_Executed);
+            listView01.CommandBindings.Add(renameCommandBinding);
+        }
+
+        // 名前の変更
+        void Rename_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            File file = (target as ListView)?.SelectedItem as File;
+            if (file != null)
+            {
+                // ここで編集をON
+                // 名前変更ダイアログ？コントロール？
+
+                var dialog = new RenameWindow(file);
+                dialog.Owner = this;
+                dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                dialog.ShowDialog();
+            }
+        }
+
+
+        // ファイルを開く
+        void Open_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            foreach (var item in (target as ListView)?.SelectedItems)
+            {
+                File file = item as File;
+                if (file != null) Process.Start(file.Path);
+            }
+        }
+
+
+        // ファイルの場所を開く
+        void OpenPlace_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            foreach (var item in (target as ListView)?.SelectedItems)
+            {
+                File file = item as File;
+                if (file != null) Process.Start("explorer.exe", "/select,\"" + file.Path + "\""); 
+            }
+        }
+
+
+        // ファイルのコピー
         void Copy_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            File file = (e.Parameter ?? this.listView01.SelectedItem) as File;
+            var files = new System.Collections.Specialized.StringCollection();
+
+            foreach (var item in (target as ListView)?.SelectedItems)
+            {
+                File file = item as File;
+                if (file != null) files.Add(file.Path);
+            }
+
+            if (files.Count > 0) Clipboard.SetFileDropList(files);
+        }
+
+
+        // ファイル名のコピー
+        void CopyName_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            File file = (target as ListView)?.SelectedItem as File;
             if (file != null)
             {
                 string text = System.IO.Path.GetFileNameWithoutExtension(file.Path);
                 System.Windows.Clipboard.SetDataObject(text);
             }
         }
+
+
 
 
         //// リストのソート用
