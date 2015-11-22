@@ -19,9 +19,16 @@ namespace RealtimeSearch
     /// </summary>
     public partial class SettingWindow : Window
     {
+        public static readonly RoutedCommand CloseCommand = new RoutedCommand("CloseCommand", typeof(SettingWindow));
+
         public SettingWindow()
         {
             InitializeComponent();
+
+            // close command
+            CloseCommand.InputGestures.Add(new KeyGesture(Key.Escape));
+            this.CommandBindings.Add(new CommandBinding(CloseCommand, (t, e) => Close()));
         }
+
     }
 }

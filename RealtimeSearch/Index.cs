@@ -110,14 +110,6 @@ namespace RealtimeSearch
             Files = Files.Distinct(new FileComparer()).ToList();
         }
 
-/*
-        private void Watcher_Changed(object sender, FileSystemEventArgs e)
-        {
-            IsDarty = true;
-            SearchEngine.Current.ReIndexRequest();
-        }
-*/
-
         private void Watcher_Created(object sender, FileSystemEventArgs e)
         {
             SearchEngine.Current.AddIndexRequest(Path, e.FullPath);
@@ -127,7 +119,6 @@ namespace RealtimeSearch
         {
             SearchEngine.Current.RemoveIndexRequest(Path, e.FullPath);
         }
-
 
         private void Watcher_Renamed(object sender, RenamedEventArgs e)
         {
@@ -147,15 +138,16 @@ namespace RealtimeSearch
     //
     public class Index
     {
-        string[] roots;
+        private List<string> Paths;
 
         public Dictionary<string, IndexSubset> IndexDictionary { get; private set; }
 
-        public string[] keys;
-        public List<File> matches;
+        public string[] Keys;
+        public List<File> Matches;
 
         public Index()
         {
+            Paths = new List<string>();
             IndexDictionary = new Dictionary<string, IndexSubset>();
         }
 
@@ -163,7 +155,16 @@ namespace RealtimeSearch
         //
         public void Collect(string[] paths)
         {
-            roots = paths;
+            // 他のパスに含まれるなら除外
+            Paths.Clear();
+            foreach (var path in paths)
+            {
+                if (!paths.Any(p => path != p && path.StartsWith(p.TrimEnd('\\') + "\\")))
+                {
+                    Paths.Add(path);
+                }
+            }
+
             Collect();
         }
 
@@ -172,7 +173,7 @@ namespace RealtimeSearch
         {
             var newDinctionary = new Dictionary<string, IndexSubset>();
 
-            foreach (var root in roots)
+            foreach (var root in Paths)
             {
                 IndexSubset sub;
 
@@ -211,14 +212,10 @@ namespace RealtimeSearch
 
             foreach (var path in paths)
             {
-                // これが重い
-                //if (IndexDictionary[root].Files.Any(f => f.Path == path)) continue;
-
                 IndexDictionary[root].Add(path);
             }
 
-            //IndexDictionary[root].Files.Distinct()
-
+            // 重複除外
             IndexDictionary[root].Distinct();
         }
 
@@ -258,19 +255,12 @@ namespace RealtimeSearch
             // 空白、改行文字でパーツ分け
              string s = new Regex("^" + splitter).Replace(source, "");
             s = new Regex(splitter + "$").Replace(s, "");
-            this.keys = new Regex(splitter).Split(s);
+            this.Keys = new Regex(splitter).Split(s);
 
-#if false
-            if (string.IsNullOrEmpty(keys[0]))
-            {
-                keys = null;
-                return;
-            }
-#endif
 
-            for (int i = 0; i < keys.Length; ++i )
+            for (int i = 0; i < Keys.Length; ++i )
             {
-                var t = File.ToNormalisedWord(keys[i]);
+                var t = File.ToNormalisedWord(Keys[i]);
 
                 // 正規表現記号をエスケープ
                 t = Regex.Escape(t);
@@ -278,7 +268,7 @@ namespace RealtimeSearch
                 // (数値)部分を0*(数値)という正規表現に変換
                 t = new Regex(@"0*(\d+)").Replace(t, match => "0*" + match.Groups[1]);
 
-                keys[i] = (t == "") ? "^$" : t;
+                Keys[i] = (t == "") ? "^$" : t;
             }
         }
 
@@ -298,15 +288,15 @@ namespace RealtimeSearch
         /// </summary>
         public void ListUp()
         {
-            if (keys == null || keys[0] == "^$")
+            if (Keys == null || Keys[0] == "^$")
             {
-                matches = new List<File>();
+                Matches = new List<File>();
                 return;
             }
 
 
             var entrys = AllFiles();
-            foreach (var key in keys)
+            foreach (var key in Keys)
             {
                 var regex = new Regex(key, RegexOptions.Compiled);
 
@@ -321,7 +311,7 @@ namespace RealtimeSearch
                 entrys = list;
             }
 
-            matches = entrys.ToList();
+            Matches = entrys.ToList();
         }
     }
 }

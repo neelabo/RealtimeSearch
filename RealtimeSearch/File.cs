@@ -30,55 +30,54 @@ namespace RealtimeSearch
         }
         #endregion
 
-        private string path;
+        // パス
+        private string _Path;
         public string Path
         {
-            get { return path; }
-            set { path = value; NormalizedWord = ToNormalisedWord(FileName); FileInfo = new FileInfo(path); }
+            get { return _Path; }
+            set
+            {
+                _Path = value;
+                NormalizedWord = ToNormalisedWord(FileName);
+                FileInfo = new FileInfo(_Path);
+            }
         }
-        //private string _DirectoryName;
+
+        // フォルダ表示名
         public string DirectoryName
         {
             get
             {
-                //if (_DirectoryName == null)
-                //{
-                    string dir = System.IO.Path.GetDirectoryName(path);
-                    string parentDir = System.IO.Path.GetDirectoryName(dir);
-                    return (parentDir == null) ? dir : System.IO.Path.GetFileName(dir) + " (" + parentDir + ")";
-                //}
-                //return _DirectoryName;
+                string dir = System.IO.Path.GetDirectoryName(_Path);
+                string parentDir = System.IO.Path.GetDirectoryName(dir);
+                return (parentDir == null) ? dir : System.IO.Path.GetFileName(dir) + " (" + parentDir + ")";
             }
         }
-        public string FileName { get { return System.IO.Path.GetFileName(path); } }
 
-        public string NormalizedWord;
+        // ファイル名
+        public string FileName { get { return System.IO.Path.GetFileName(_Path); } }
 
-        //public bool IsDirectory;
+        // 検索用正規化ファイル名
+        public string NormalizedWord { get; private set; }
 
         // ファイル情報
         public FileInfo FileInfo { get; private set; }
 
-#if false
-        public static ICommand OpenFile { set; get; }
-        public static ICommand OpenPlace { set; get; }
-        public static ICommand CopyFileName { set; get; }
-#endif
-
         public File()
         {
-#if false
-            // これヤバイ。RootedCommand化すべき
-            OpenFile = new CommandOpenFileItem();
-            OpenPlace = new CommandOpenPlace();
-            CopyFileName = new CommandCopyFileName();
-#endif
-
             //ToNormalisedWord("ＡＢＣ０１２巻");
             //ToNormalisedWord("ABCＡＢＣabc。｡　い ろはﾊﾞイロハｲﾛﾊ＃：");
         }
 
-        //
+        // すべてのプロパティを更新
+        public void NotifyAllPropertyCnanged()
+        {
+            OnPropertyChanged("Path");
+            OnPropertyChanged("FileName");
+            OnPropertyChanged("FileInfo");
+        }
+
+        
         public static string ToNormalisedWord(string src)
         {
             string s = src.Normalize(NormalizationForm.FormKC); // 正規化
@@ -92,53 +91,6 @@ namespace RealtimeSearch
         }
     }
 
-#if false
-    //
-    public class CommandOpenFileItem : ICommand
-    {
-        public event EventHandler CanExecuteChanged;
-        public bool CanExecute(object parameter)
-        {
-            return true;
-        }
 
-        public void Execute(object parameter)
-        {
-            Process.Start(((File)parameter).Path);
-        }
-    }
-
-    //
-    public class CommandOpenPlace : ICommand
-    {
-        public event EventHandler CanExecuteChanged;
-        public bool CanExecute(object parameter)
-        {
-            return true;
-        }
-
-        public void Execute(object parameter)
-        {
-            Process.Start("explorer.exe", "/select,\"" + ((File)parameter).Path + "\"");
-        }
-    }
-
-    //
-    public class CommandCopyFileName : ICommand
-    {
-        public event EventHandler CanExecuteChanged;
-        public bool CanExecute(object parameter)
-        {
-            return true;
-        }
-
-        public void Execute(object parameter)
-        {
-            string text = System.IO.Path.GetFileNameWithoutExtension(((File)parameter).Path);
-            //System.Windows.Clipboard.SetText(text, System.Windows.TextDataFormat.Text);
-            System.Windows.Clipboard.SetDataObject(text);
-        }
-    }
-#endif
 
 }

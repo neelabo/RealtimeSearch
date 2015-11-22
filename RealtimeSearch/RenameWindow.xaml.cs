@@ -157,7 +157,7 @@ namespace RealtimeSearch
                     System.IO.File.Move(src, dst);
                 }
                 File.Path = dst;
-                File.OnPropertyChanged("FileName");
+                File.NotifyAllPropertyCnanged();
             }
             catch (Exception ex)
             {

@@ -227,7 +227,7 @@ namespace RealtimeSearch
             }
             else
             {
-                Files = SearchEngine.Index.matches;
+                Files = SearchEngine.Index.Matches;
                 Information = string.Format("{0} 個の項目", Files.Count);
             }
 

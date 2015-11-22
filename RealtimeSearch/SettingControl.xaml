@@ -7,15 +7,22 @@
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="300" Loaded="SettingControl_Loaded">
 
-        <StackPanel x:Name="BaseControl" Margin="16" >
-            <TextBlock Text="検索パス" />
-            <ListBox x:Name="listBox1" Height="200" ItemsSource="{Binding CollectionViewSource.View}"  AllowDrop="True" PreviewDragOver="ListBox_PreviewDragOver" Drop="ListBox_Drop"/>
-            <DockPanel LastChildFill="False">
-                <Button x:Name="ButtonDel" DockPanel.Dock="Right" Content="-"  Width="24" Height="24" Click="ButtonDel_Click"/>
-                <Button x:Name="buttonAdd" DockPanel.Dock="Right"  Content="+"  Width="24" Height="24" Click="buttonAdd_Click" />
-            </DockPanel>
-            <CheckBox Content="常に手前に表示" IsChecked="{Binding Setting.IsTopmost}" />
-            <CheckBox Content="クリップボードを監視" IsChecked="{Binding Setting.IsMonitorClipboard}" />
-        </StackPanel>
+    <StackPanel x:Name="BaseControl" Margin="16" >
+        <TextBlock Text="検索パス" />
+        <ListBox x:Name="listBox1" Height="200" ItemsSource="{Binding CollectionViewSource.View}"  SelectedItem="{Binding SelectedPath}" AllowDrop="True" PreviewDragOver="ListBox_PreviewDragOver" Drop="ListBox_Drop">
+            <ListBox.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="追加" Command="{x:Static local:SettingControl.AddCommand}"/>
+                    <MenuItem Header="削除" Command="{x:Static local:SettingControl.DelCommand}"/>
+                </ContextMenu>
+            </ListBox.ContextMenu>
+        </ListBox>
+        <DockPanel LastChildFill="False">
+            <Button x:Name="ButtonDel" DockPanel.Dock="Right" Content="-"  Width="24" Height="24" Command="{x:Static local:SettingControl.DelCommand}"/>
+            <Button x:Name="buttonAdd" DockPanel.Dock="Right"  Content="+"  Width="24" Height="24" Command="{x:Static local:SettingControl.AddCommand}" />
+        </DockPanel>
+        <CheckBox Content="常に手前に表示" IsChecked="{Binding Setting.IsTopmost}" />
+        <CheckBox Content="クリップボードを監視" IsChecked="{Binding Setting.IsMonitorClipboard}" />
+    </StackPanel>
 
 </UserControl>

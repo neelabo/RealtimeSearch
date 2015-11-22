@@ -381,17 +381,17 @@ namespace RealtimeSearch
                 {
                     State = SearchEngineState.Search;
                 }
-                else if (Index.matches.Count <= 0)
+                else if (Index.Matches.Count <= 0)
                 {
                     State = string.IsNullOrEmpty(keyword) ? SearchEngineState.None : SearchEngineState.SearchResultEmpty;
                     CurrentKeyword = keyword;
-                    ResultChanged?.Invoke(this, Index.matches.Count);
+                    ResultChanged?.Invoke(this, Index.Matches.Count);
                 }
                 else
                 {
                     State = SearchEngineState.SearchResult;
                     CurrentKeyword = keyword;
-                    ResultChanged?.Invoke(this, Index.matches.Count);
+                    ResultChanged?.Invoke(this, Index.Matches.Count);
                 }
             }
 

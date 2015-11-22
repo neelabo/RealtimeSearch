@@ -38,7 +38,7 @@
                         <Separator/>
                         <MenuItem Header="ファイルをコピーする(_C)" Command="Copy" />
                         <Separator/>
-                        <MenuItem Header="名前の変更(_M)" Command="{x:Static local:MainWindow.RenameCommand}" CommandParameter="{Binding .}"/>
+                        <MenuItem Header="名前の変更(_M)" Command="{x:Static local:MainWindow.RenameCommand}"/>
                         <MenuItem Header="名前をコピーする" Command="{x:Static local:MainWindow.CopyNameCommand}" />
                         <Separator/>
                         <MenuItem Header="プロパティ"/>
@@ -167,18 +167,18 @@
 
                     <ListView.View>
                         <GridView ColumnHeaderTemplate="{StaticResource HeaderTemplateNormal}">
-                            <GridViewColumn Width="400" CellTemplate="{StaticResource ItemFileNameTemplate}">
+                            <GridViewColumn Width="280" CellTemplate="{StaticResource ItemFileNameTemplate}">
                                 <GridViewColumnHeader Content="名前" Tag="FileName"/>
                             </GridViewColumn>
 
-                            <!--<GridViewColumn Header="名前" Width="400" DisplayMemberBinding="{Binding FileName}" />-->
-                            <GridViewColumn Header="更新日時" Width="96" DisplayMemberBinding="{Binding FileInfo.LastWriteTime}" />
+                            <GridViewColumn Header="更新日時" Width="96" DisplayMemberBinding="{Binding FileInfo.LastWriteTime, StringFormat=yyyy/MM/dd HH:mm}" />
                             <GridViewColumn Header="種類" Width="96" DisplayMemberBinding="{Binding FileInfo.TypeName}"/>
                             <GridViewColumn Width="96" CellTemplate="{StaticResource ItemSizeTemplate}">
                                 <GridViewColumnHeader Content="サイズ" Tag="FileInfo.Size"/>
                             </GridViewColumn>
-                            <!--<GridViewColumn Header="サイズ" Width="96" DisplayMemberBinding="{Binding Size}" />-->
+
                             <GridViewColumn Header="フォルダー" Width="96" DisplayMemberBinding="{Binding DirectoryName}"/>
+
                         </GridView>
                     </ListView.View>
                 </ListView>
@@ -191,12 +191,6 @@
             </Grid>
 
         </DockPanel>
-
-        <Border x:Name="SettingControl" Visibility="Hidden" HorizontalAlignment="Right" Width="420" Margin="0,36,0,0" Background="#FFF8F8F8" BorderBrush="Gray" BorderThickness="1">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" >
-                <local:SettingControl Setting="{Binding Setting}"  />
-            </ScrollViewer>
-        </Border>
 
     </Grid>
 

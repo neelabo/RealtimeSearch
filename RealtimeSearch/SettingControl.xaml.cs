@@ -32,16 +32,15 @@ namespace RealtimeSearch
             }
         }
         #endregion
-    
+
         //----------------------------------------------------------------------------
         public static readonly DependencyProperty SettingProperty = DependencyProperty.Register(
                 "Setting",
                 typeof(Setting),
                 typeof(SettingControl),
-                new FrameworkPropertyMetadata(
-                        new PropertyChangedCallback(SettingControl.OnSettingChanged)
-                )
+                new FrameworkPropertyMetadata(new PropertyChangedCallback(SettingControl.OnSettingChanged))
         );
+
 
         public Setting Setting
         {
@@ -66,23 +65,49 @@ namespace RealtimeSearch
         }
         #endregion
 
-
-        public CollectionViewSource CollectionViewSource2 { get; set; }
-        public string[] CollectionViewSource3 { get; set; }
-
-
-    //----------------------------------------------------------------------------
-    public SettingControl()
+        #region Property: SelectedPath
+        private string _SelectedPath;
+        public string SelectedPath
         {
-            CollectionViewSource3 = new string[] { "AAA", "BBB", "CCC" };
+            get { return _SelectedPath; }
+            set { _SelectedPath = value; OnPropertyChanged(); }
+        }
+        #endregion
 
-            CollectionViewSource2 = new CollectionViewSource();
-            CollectionViewSource2.Source = new ObservableCollection<string>(CollectionViewSource3);
+        public static readonly RoutedCommand AddCommand = new RoutedCommand("AddCommand", typeof(SettingControl));
+        public static readonly RoutedCommand DelCommand = new RoutedCommand("DelCommand", typeof(SettingControl));
 
+        //----------------------------------------------------------------------------
+        public SettingControl()
+        {
             InitializeComponent();
 
             BaseControl.DataContext = this;
 
+            AddCommand.InputGestures.Add(new KeyGesture(Key.Insert, ModifierKeys.None, "Ins"));
+            listBox1.CommandBindings.Add(new CommandBinding(AddCommand, AddCommand_Executed));
+
+            DelCommand.InputGestures.Add(new KeyGesture(Key.Delete, ModifierKeys.None, "Del"));
+            listBox1.CommandBindings.Add(new CommandBinding(DelCommand, DelCommand_Executed));
+        }
+
+        private void AddCommand_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            AddPathWithDialog();
+        }
+
+        private void DelCommand_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            if (SelectedPath != null)
+            {
+                Setting.SearchPaths.Remove(SelectedPath);
+                SelectedPath = null;
+            }
+        }
+
+        private void DelCommand_CanExecute(object target, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = SelectedPath != null;
         }
 
 
@@ -94,36 +119,45 @@ namespace RealtimeSearch
 
             //collectionViewSource.Source = new string[] { "AAA", "BBB", "CCC" };
             CollectionViewSource = collectionViewSource;
+            SelectedPath = null;
         }
 
 
         //----------------------------------------------------------------------------
         private void AddSearchPath(string path)
         {
-            if (System.IO.File.Exists(path))
+            if (!System.IO.Directory.Exists(path)) return;
+
+            string existPath = Setting.SearchPaths.FirstOrDefault(p => p == path);
+
+            if (existPath != null)
             {
-                path = System.IO.Path.GetDirectoryName(path);
+                SelectedPath = existPath;
+                return;
             }
 
-            //vm.AddSearchPath(path);
             Setting.SearchPaths.Add(path);
-
-            // TODO: 追加した項目を選択状態にする
+            SelectedPath = path;
         }
 
 
         //----------------------------------------------------------------------------
 
-
+#if false
         //----------------------------------------------------------------------------
         private void buttonAdd_Click(object sender, RoutedEventArgs e)
         {
+            AddPathWithDialog();
+        }
+#endif
+
+        private void AddPathWithDialog()
+        { 
             // フォルダ選択
             var dlg = new Microsoft.WindowsAPICodePack.Dialogs.CommonOpenFileDialog();
-            dlg.Title = "作業フォルダの選択";
+            dlg.Title = "検索フォルダの追加";
             dlg.IsFolderPicker = true;
-            //dlg.InitialDirectory = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-
+            if (SelectedPath != null) dlg.InitialDirectory = SelectedPath;
             dlg.AddToMostRecentlyUsedList = false;
             dlg.AllowNonFileSystemItems = false;
             dlg.DefaultDirectory = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
@@ -140,6 +174,7 @@ namespace RealtimeSearch
             }
         }
 
+#if false
         private void ButtonDel_Click(object sender, RoutedEventArgs e)
         {
             // 項目の削除
@@ -149,6 +184,7 @@ namespace RealtimeSearch
                 Setting.SearchPaths.Remove((string)this.listBox1.SelectedItem);
             }
         }
+#endif
 
 
 
@@ -170,7 +206,10 @@ namespace RealtimeSearch
             var dropFiles = e.Data.GetData(System.Windows.DataFormats.FileDrop) as string[];
             if (dropFiles == null) return;
 
-            AddSearchPath(dropFiles[0]);
+            foreach (var file in dropFiles)
+            {
+                AddSearchPath(file);
+            }
         }
 
         private void SettingControl_Loaded(object sender, RoutedEventArgs e)
