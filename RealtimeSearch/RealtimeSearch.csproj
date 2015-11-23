@@ -75,7 +75,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.WindowsAPICodePack-Core.1.1.0.0\lib\Microsoft.WindowsAPICodePack.dll</HintPath>
+      <HintPath>..\packages\Microsoft.WindowsAPICodePack-Core.1.1.0.2\lib\Microsoft.WindowsAPICodePack.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.WindowsAPICodePack.Shell, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -117,9 +117,6 @@
     <Compile Include="MainWindowVM.cs" />
     <Compile Include="RelayCommand.cs" />
     <Compile Include="SearchEngine.cs" />
-    <Compile Include="SettingControl.xaml.cs">
-      <DependentUpon>SettingControl.xaml</DependentUpon>
-    </Compile>
     <Compile Include="SettingWindow.xaml.cs">
       <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
@@ -138,10 +135,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="RenameWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="SettingControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -204,9 +197,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\search.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="search.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

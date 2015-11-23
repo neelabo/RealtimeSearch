@@ -276,6 +276,7 @@ namespace RealtimeSearch
         // 検索リクエスト
         public void SearchRequest(string keyword)
         {
+            keyword = keyword ?? "";
             keyword = keyword.Trim();
 
             lock (thisLock)

@@ -6,7 +6,114 @@
         xmlns:local="clr-namespace:RealtimeSearch"
         mc:Ignorable="d"
         Title="設定" Height="340" Width="460" ResizeMode="NoResize" Icon="Resources/RealtimeSearch.ico">
-    <Grid>
-        <local:SettingControl Setting="{Binding Setting}"/>
-    </Grid>
+
+    <Window.Resources>
+
+        <SolidColorBrush x:Key="IconBrush" Color="#FF444444"/>
+
+        <DrawingImage x:Key="ic_add_circle_24px">
+            <DrawingImage.Drawing>
+                <DrawingGroup Opacity="1">
+                    <DrawingGroup.Children>
+                        <GeometryDrawing Brush="{StaticResource IconBrush}" Pen="{x:Null}">
+                            <GeometryDrawing.Geometry>
+                                <PathGeometry FillRule="Nonzero" Figures="M11,7L11,11 7,11 7,13 11,13 11,17 13,17 13,13 17,13 17,11 13,11 13,7 11,7z M12,2C17.5200004577637,2 22,6.48000001907349 22,12 22,17.5200004577637 17.5200004577637,22 12,22 6.48000001907349,22 2,17.5200004577637 2,12 2,6.48000001907349 6.48000001907349,2 12,2z" />
+                            </GeometryDrawing.Geometry>
+                        </GeometryDrawing>
+                    </DrawingGroup.Children>
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+
+        <DrawingImage x:Key="ic_add_circle_outline_24px">
+            <DrawingImage.Drawing>
+                <DrawingGroup Opacity="1">
+                    <DrawingGroup.Children>
+                        <GeometryDrawing Brush="{StaticResource IconBrush}" Pen="{x:Null}">
+                            <GeometryDrawing.Geometry>
+                                <PathGeometry FillRule="Nonzero" Figures="M11,7L13,7 13,11 17,11 17,13 13,13 13,17 11,17 11,13 7,13 7,11 11,11 11,7z M12,4C7.59000015258789,4 4,7.59000015258789 4,12 4,16.4099998474121 7.59000015258789,20 12,20 16.4099998474121,20 20,16.4099998474121 20,12 20,7.59000015258789 16.4099998474121,4 12,4z M12,2C17.5200004577637,2 22,6.48000001907349 22,12 22,17.5200004577637 17.5200004577637,22 12,22 6.48000001907349,22 2,17.5200004577637 2,12 2,6.48000001907349 6.48000001907349,2 12,2z" />
+                            </GeometryDrawing.Geometry>
+                        </GeometryDrawing>
+                    </DrawingGroup.Children>
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+
+        <DrawingImage x:Key="ic_remove_circle_24px">
+            <DrawingImage.Drawing>
+                <DrawingGroup Opacity="1">
+                    <DrawingGroup.Children>
+                        <GeometryDrawing Brush="{StaticResource IconBrush}" Pen="{x:Null}">
+                            <GeometryDrawing.Geometry>
+                                <PathGeometry FillRule="Nonzero" Figures="M7,11L7,13 17,13 17,11 7,11z M12,2C17.5200004577637,2 22,6.48000001907349 22,12 22,17.5200004577637 17.5200004577637,22 12,22 6.48000001907349,22 2,17.5200004577637 2,12 2,6.48000001907349 6.48000001907349,2 12,2z" />
+                            </GeometryDrawing.Geometry>
+                        </GeometryDrawing>
+                    </DrawingGroup.Children>
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+
+        <DrawingImage x:Key="ic_remove_circle_outline_24px">
+            <DrawingImage.Drawing>
+                <DrawingGroup Opacity="1">
+                    <DrawingGroup.Children>
+                        <GeometryDrawing Brush="{StaticResource IconBrush}" Pen="{x:Null}">
+                            <GeometryDrawing.Geometry>
+                                <PathGeometry FillRule="Nonzero" Figures="M7,11L17,11 17,13 7,13 7,11z M12,4C7.59000015258789,4 4,7.59000015258789 4,12 4,16.4099998474121 7.59000015258789,20 12,20 16.4099998474121,20 20,16.4099998474121 20,12 20,7.59000015258789 16.4099998474121,4 12,4z M12,2C17.5200004577637,2 22,6.48000001907349 22,12 22,17.5200004577637 17.5200004577637,22 12,22 6.48000001907349,22 2,17.5200004577637 2,12 2,6.48000001907349 6.48000001907349,2 12,2z" />
+                            </GeometryDrawing.Geometry>
+                        </GeometryDrawing>
+                    </DrawingGroup.Children>
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+
+
+        
+    </Window.Resources>
+
+    <DockPanel x:Name="BaseControl" Margin="8" >
+
+
+        <CheckBox  DockPanel.Dock="bottom" IsChecked="{Binding Setting.IsMonitorClipboard}" VerticalAlignment="Center" Content="クリップボードを監視"/>
+        <CheckBox  DockPanel.Dock="bottom" IsChecked="{Binding Setting.IsTopmost}" VerticalAlignment="Center" Content="常に手前に表示"/>
+
+
+        <DockPanel x:Name="SearchPathPanel">
+            <DockPanel DockPanel.Dock="top" LastChildFill="False">
+
+                <DockPanel.Resources>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="{x:Null}"/>
+                        <Setter Property="BorderBrush" Value="{x:Null}"/>
+                        <Setter Property="Foreground" Value="#FF227BAE"/>
+                        <Setter Property="Width" Value="20" />
+                        <Setter Property="Height" Value="20"/>
+                    </Style>
+                </DockPanel.Resources>
+
+                <TextBlock Text="検索フォルダー" VerticalAlignment="Center" Margin="0,0,8,0"/>
+
+                <Button x:Name="buttonAdd" DockPanel.Dock="Left"  Command="{x:Static local:SettingWindow.AddCommand}" >
+                    <Image Width="16" Height="16" Source="{StaticResource ic_add_circle_outline_24px}"/>
+                </Button>
+
+                <Button x:Name="ButtonDel" DockPanel.Dock="Left" Command="{x:Static local:SettingWindow.DelCommand}">
+                    <Image Width="16" Height="16" Source="{StaticResource ic_remove_circle_outline_24px}"/>
+                </Button>
+
+
+            </DockPanel>
+
+            <ListBox x:Name="SearchPathList" Margin="0,2,0,4" ItemsSource="{Binding CollectionViewSource.View}"  SelectedItem="{Binding SelectedPath}" AllowDrop="True" PreviewDragOver="ListBox_PreviewDragOver" Drop="ListBox_Drop">
+                <ListBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="追加" Command="{x:Static local:SettingWindow.AddCommand}"/>
+                        <MenuItem Header="削除" Command="{x:Static local:SettingWindow.DelCommand}"/>
+                    </ContextMenu>
+                </ListBox.ContextMenu>
+            </ListBox>
+        </DockPanel>
+
+    </DockPanel>
+
 </Window>

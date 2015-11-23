@@ -1,4 +1,5 @@
-﻿using System;
+﻿// from http://grabacr.net/archives/1585
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -11,12 +12,12 @@ namespace RealtimeSearch
 {
     public class NativeMethods
     {
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern bool SetWindowPlacement(
             IntPtr hWnd,
             [In] ref WINDOWPLACEMENT lpwndpl);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern bool GetWindowPlacement(
             IntPtr hWnd,
             out WINDOWPLACEMENT lpwndpl);

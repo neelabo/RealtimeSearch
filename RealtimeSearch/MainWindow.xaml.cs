@@ -174,27 +174,22 @@ namespace RealtimeSearch
 
 
 
-        //public static readonly ICommand OpenCommand = new RoutedCommand("OpenCommand", typeof(MainWindow));
-        public static readonly RoutedCommand OpenCommand = new RoutedCommand();
-        public static readonly ICommand OpenPlaceCommand = new RoutedCommand("OpenPlaceCommand", typeof(MainWindow));
-        public static readonly ICommand CopyNameCommand = new RoutedCommand("CopyNameCommand", typeof(MainWindow));
-        public static readonly RoutedCommand RenameCommand = new RoutedCommand();
+        public static readonly RoutedCommand OpenCommand = new RoutedCommand("OpenCommand", typeof(MainWindow));
+        public static readonly RoutedCommand OpenPlaceCommand = new RoutedCommand("OpenPlaceCommand", typeof(MainWindow));
+        public static readonly RoutedCommand CopyNameCommand = new RoutedCommand("CopyNameCommand", typeof(MainWindow));
+        public static readonly RoutedCommand RenameCommand = new RoutedCommand("RenameCommand", typeof(MainWindow));
 
         void RegistRoutedCommand()
         {
-            OpenCommand.InputGestures.Add(new KeyGesture(Key.Enter, ModifierKeys.None, "Enter"));
-            var openCommandBinding = new CommandBinding(OpenCommand, Open_Executed);
-            listView01.CommandBindings.Add(openCommandBinding);
+            OpenCommand.InputGestures.Add(new KeyGesture(Key.Enter));
+            listView01.CommandBindings.Add(new CommandBinding(OpenCommand, Open_Executed));
 
-            var openPlaceCommandBinding = new CommandBinding(OpenPlaceCommand, OpenPlace_Executed);
-            listView01.CommandBindings.Add(openPlaceCommandBinding);
+            listView01.CommandBindings.Add(new CommandBinding(OpenPlaceCommand, OpenPlace_Executed));
+            
+            listView01.CommandBindings.Add(new CommandBinding(CopyNameCommand, CopyName_Executed));
 
-            var copyNameCommandBinding = new CommandBinding(CopyNameCommand, CopyName_Executed);
-            listView01.CommandBindings.Add(copyNameCommandBinding);
-
-            RenameCommand.InputGestures.Add(new KeyGesture(Key.F2, ModifierKeys.None, "F2"));
-            var renameCommandBinding = new CommandBinding(RenameCommand, Rename_Executed);
-            listView01.CommandBindings.Add(renameCommandBinding);
+            RenameCommand.InputGestures.Add(new KeyGesture(Key.F2));
+            listView01.CommandBindings.Add(new CommandBinding(RenameCommand, Rename_Executed)); 
         }
 
         // 名前の変更
@@ -229,7 +224,14 @@ namespace RealtimeSearch
                 File file = item as File;
                 if (file != null && (System.IO.File.Exists(file.Path) || System.IO.Directory.Exists(file.Path)))
                 {
-                    Process.Start(file.Path);
+                    try
+                    {
+                        Process.Start(file.Path);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                    }
                 }
             }
         }
@@ -289,6 +291,8 @@ namespace RealtimeSearch
 
         void GridViewColumnHeader_ClickHandler(object sender, RoutedEventArgs e)
         {
+            if (listView01.ItemsSource == null) return;
+
             GridViewColumnHeader headerClicked = e.OriginalSource as GridViewColumnHeader;
             ListSortDirection direction;
 
@@ -362,10 +366,10 @@ namespace RealtimeSearch
 
         private void SettingButton_Click(object sender, RoutedEventArgs e)
         {
-            var window = new SettingWindow();
+            var window = new SettingWindow(VM.Setting);
             window.Owner = this;
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            window.DataContext = VM;
+            //window.DataContext = VM;
             window.ShowDialog();
 
 #if false

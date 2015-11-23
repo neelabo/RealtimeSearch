@@ -82,21 +82,6 @@ namespace RealtimeSearch
         }
 
 
-#if false
-        //----------------------------------------------------------------------------
-        // シリアライズによるクローン
-        public Setting Clone()
-        {
-            using (MemoryStream stream = new MemoryStream())
-            {
-                BinaryFormatter f = new BinaryFormatter();
-                f.Serialize(stream, this);
-                stream.Position = 0L;
-                return (Setting)f.Deserialize(stream);
-            }
-        }
-#endif
-
         //
         public void Save(string path)
         {
