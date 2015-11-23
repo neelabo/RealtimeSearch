@@ -120,6 +120,7 @@
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         </Style>
 
+        <!--
         <Style TargetType="Button">
             <Setter Property="Background" Value="{x:Null}"/>
             <Setter Property="BorderBrush" Value="{x:Null}"/>
@@ -127,6 +128,7 @@
             <Setter Property="Width" Value="26" />
             <Setter Property="Height" Value="26"/>
         </Style>
+        -->
 
     </Window.Resources>
 
@@ -138,22 +140,13 @@
 
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4" >
 
-                <Button DockPanel.Dock="Right" x:Name="SettingButton" Click="SettingButton_Click" Margin="4,0,0,0">
-                    <!--<TextBlock FontFamily="Segoe MDL2 Assets" FontSize="20">&#xE713;</TextBlock>-->
-                    <Image Width="20" Height="20" Source="{StaticResource ic_settings_24px}"/>
+                <Button Style="{StaticResource IconButton}" DockPanel.Dock="Right" Width="26" Height="26" x:Name="SettingButton" Click="SettingButton_Click" Margin="2,0,0,0">
+                    <Image Width="16" Height="16" Source="{StaticResource ic_settings_24px}"/>
                 </Button>
 
-                <!--
-                <Button DockPanel.Dock="Right" x:Name="buttonResearch" Command="{Binding CommandReIndex}" Margin="4,0,0,0">
-                    <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="20">&#xE72C;</TextBlock>
-                </Button>
-                -->
                 <Grid>
                     <TextBox x:Name="keyword" Padding="0,0,40,0" Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"  KeyDown="keyword_KeyDown" MaxLines="256" VerticalContentAlignment="Center" BorderThickness="1,1,1,1" BorderBrush="#FFDDDDDD"/>
-                    <Button HorizontalAlignment="Right" Command="{Binding CommandSearch}">
-                        <!--BorderThickness="0" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}">-->
-                        <!--<Image Source="Resources/search.png" />-->
-                        <!--<TextBlock FontFamily="Segoe MDL2 Assets" FontSize="20">&#xE11A;</TextBlock>-->
+                    <Button Style="{StaticResource IconButton}" Width="26" Height="26" HorizontalAlignment="Right" Command="{Binding CommandSearch}">
                         <Image Width="16" Height="16" Source="{StaticResource ic_search_24px}"/>
                     </Button>
 

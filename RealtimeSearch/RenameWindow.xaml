@@ -5,12 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RealtimeSearch"
         mc:Ignorable="d"
-        Title="名前の変更" Height="96" Width="515" Icon="Resources/RealtimeSearch.ico" ResizeMode="NoResize">
-    <StackPanel Margin="4" >
-        <!--<TextBlock Text="新しい名前"/>-->
-        <TextBox x:Name="TextBox"  Text="{Binding NewName, UpdateSourceTrigger=PropertyChanged}" MaxLines="1" MaxLength="256" Margin="0,4"/>
-        <DockPanel LastChildFill="False">
-            <Button DockPanel.Dock="Right" Content="OK" Width="64" Click="Button_Click" />
+        Title="名前の変更" Height="112" Width="515" Icon="Resources/RealtimeSearch.ico" ResizeMode="NoResize">
+
+    <DockPanel Margin="8" LastChildFill="False">
+
+        <DockPanel DockPanel.Dock="Bottom" LastChildFill="False">
+            <Button DockPanel.Dock="Right"  Click="Button_Click" Width="80" Height="24" Content="OK"/>
         </DockPanel>
-    </StackPanel>
+
+        <!--<TextBlock Text="新しい名前"/>-->
+        <TextBox DockPanel.Dock="Top" x:Name="TextBox"  Text="{Binding NewName, UpdateSourceTrigger=PropertyChanged}" MaxLines="1" MaxLength="256" />
+    </DockPanel>
 </Window>
