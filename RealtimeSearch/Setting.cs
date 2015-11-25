@@ -1,21 +1,21 @@
-﻿using System;
+﻿// Copyright (c) 2015 Mitsuhiro Ito (nee)
+//
+// This software is released under the MIT License.
+// http://opensource.org/licenses/mit-license.php
+
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-
-using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-
-//using YamlDotNet;
-using System.Collections.ObjectModel;
 using System.Xml;
-using System.ComponentModel;
 
 namespace RealtimeSearch
 {
-    //[Serializable]
     [DataContract]
     public class Setting : INotifyPropertyChanged
     {
@@ -58,14 +58,12 @@ namespace RealtimeSearch
         [DataMember]
         public WINDOWPLACEMENT? WindowPlacement { set; get; }
 
-        //[YamlDotNet.Serialization.YamlIgnore]
-        //public string Path { set; get; }
-
 
         //----------------------------------------------------------------------------
         private void Constructor()
         {
             SearchPaths = new ObservableCollection<string>();
+            IsMonitorClipboard = true;
         }
 
 
@@ -82,7 +80,6 @@ namespace RealtimeSearch
         }
 
 
-        //
         public void Save(string path)
         {
             XmlWriterSettings settings = new XmlWriterSettings();
@@ -95,7 +92,7 @@ namespace RealtimeSearch
             }
         }
 
-        //
+        
         public static Setting Load(string path)
         {
             using (XmlReader xr = XmlReader.Create(path))
@@ -105,7 +102,5 @@ namespace RealtimeSearch
                 return setting;
             }
         }
-
     }
-
 }

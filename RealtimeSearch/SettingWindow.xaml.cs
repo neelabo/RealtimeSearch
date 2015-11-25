@@ -1,17 +1,18 @@
-﻿using System;
+﻿// Copyright (c) 2015 Mitsuhiro Ito (nee)
+//
+// This software is released under the MIT License.
+// http://opensource.org/licenses/mit-license.php
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+
 
 namespace RealtimeSearch
 {
@@ -49,11 +50,14 @@ namespace RealtimeSearch
         }
         #endregion
 
+
         public static readonly RoutedCommand CloseCommand = new RoutedCommand("CloseCommand", typeof(SettingWindow));
+        public static readonly RoutedCommand HelpCommand = new RoutedCommand("HelpCommand", typeof(SettingWindow));
         public static readonly RoutedCommand AddCommand = new RoutedCommand("AddCommand", typeof(SettingWindow));
         public static readonly RoutedCommand DelCommand = new RoutedCommand("DelCommand", typeof(SettingWindow));
 
         public Setting Setting { get; private set; }
+
 
         public SettingWindow(Setting setting)
         {
@@ -68,6 +72,9 @@ namespace RealtimeSearch
             CloseCommand.InputGestures.Add(new KeyGesture(Key.Escape));
             this.CommandBindings.Add(new CommandBinding(CloseCommand, (t, e) => Close()));
 
+            // help command
+            this.CommandBindings.Add(new CommandBinding(HelpCommand, (t, e) => System.Diagnostics.Process.Start("https://bitbucket.org/neelabo/realtimesearch/wiki")));
+
             // add command
             AddCommand.InputGestures.Add(new KeyGesture(Key.Insert));
             SearchPathPanel.CommandBindings.Add(new CommandBinding(AddCommand, AddCommand_Executed));
@@ -79,10 +86,12 @@ namespace RealtimeSearch
             SearchPathList.Focus();
         }
 
+
         private void AddCommand_Executed(object target, ExecutedRoutedEventArgs e)
         {
             AddPathWithDialog();
         }
+
 
         private void DelCommand_Executed(object target, ExecutedRoutedEventArgs e)
         {
@@ -93,13 +102,13 @@ namespace RealtimeSearch
             }
         }
 
+
         private void DelCommand_CanExecute(object target, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = SelectedPath != null;
         }
 
 
-        //
         private void UpdateCollectionViewSource()
         {
             var collectionViewSource = new CollectionViewSource();
@@ -111,7 +120,6 @@ namespace RealtimeSearch
         }
 
 
-        //----------------------------------------------------------------------------
         private void AddSearchPath(string path)
         {
             if (!System.IO.Directory.Exists(path)) return;
@@ -135,7 +143,6 @@ namespace RealtimeSearch
             var dlg = new Microsoft.WindowsAPICodePack.Dialogs.CommonOpenFileDialog();
             dlg.Title = "検索フォルダーの追加";
             dlg.IsFolderPicker = true;
-            //if (SelectedPath != null) dlg.InitialDirectory = SelectedPath;
             dlg.AddToMostRecentlyUsedList = false;
             dlg.AllowNonFileSystemItems = false;
             dlg.DefaultDirectory = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
@@ -166,6 +173,7 @@ namespace RealtimeSearch
             e.Handled = true;
         }
 
+
         private void ListBox_Drop(object sender, DragEventArgs e)
         {
             var dropFiles = e.Data.GetData(System.Windows.DataFormats.FileDrop) as string[];
@@ -176,6 +184,5 @@ namespace RealtimeSearch
                 AddSearchPath(file);
             }
         }
-
     }
 }

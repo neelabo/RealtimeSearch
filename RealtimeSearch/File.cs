@@ -1,17 +1,14 @@
-﻿using System;
+﻿// Copyright (c) 2015 Mitsuhiro Ito (nee)
+//
+// This software is released under the MIT License.
+// http://opensource.org/licenses/mit-license.php
+
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-using System.Windows.Input;
-using System.Diagnostics;
-
-using System.ComponentModel;
-using System.Collections.ObjectModel;
-//using Microsoft.VisualBasic;
-
-using System.IO;
 
 
 namespace RealtimeSearch
@@ -63,11 +60,13 @@ namespace RealtimeSearch
         // ファイル情報
         public FileInfo FileInfo { get; private set; }
 
+
         public File()
         {
-            //ToNormalisedWord("ＡＢＣ０１２巻");
+            //ToNormalisedWord("ＡＢＣ０１２");
             //ToNormalisedWord("ABCＡＢＣabc。｡　い ろはﾊﾞイロハｲﾛﾊ＃：");
         }
+
 
         // すべてのプロパティを更新
         public void NotifyAllPropertyCnanged()
@@ -90,7 +89,4 @@ namespace RealtimeSearch
             return s;
         }
     }
-
-
-
 }

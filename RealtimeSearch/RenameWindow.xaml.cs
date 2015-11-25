@@ -1,4 +1,9 @@
-﻿using System;
+﻿// Copyright (c) 2015 Mitsuhiro Ito (nee)
+//
+// This software is released under the MIT License.
+// http://opensource.org/licenses/mit-license.php
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -76,7 +81,6 @@ namespace RealtimeSearch
             this.CommandBindings.Add(commandBinding);
 
             // events
-            //TextBox.LostFocus += (s, e) => Close();
             TextBox.Loaded += TextBox_Loaded;
             TextBox.PreviewKeyDown += TextBox_KeyDown;
         }
@@ -99,7 +103,6 @@ namespace RealtimeSearch
         {
             string name = System.IO.Path.GetFileNameWithoutExtension(NewName);
             TextBox.Select(0, name.Length);
-            //TextBox.SelectionStart = name.Length;
 
             TextBox.Focus();
         }
@@ -161,7 +164,7 @@ namespace RealtimeSearch
             }
             catch (Exception ex)
             {
-                MessageBox.Show("名前の変更に失敗しました。\n\n" + ex.Message, "", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("名前の変更に失敗しました。\n\n" + ex.Message, "通知", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
 
             return true;

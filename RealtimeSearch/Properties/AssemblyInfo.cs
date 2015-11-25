@@ -12,7 +12,7 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("NeeLaboratory")]
 [assembly: AssemblyProduct("RealtimeSearch")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyCopyright("Copyright © 2015 Mitsuhiro Ito (nee)")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

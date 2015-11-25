@@ -1,13 +1,15 @@
-﻿using System;
+﻿// Copyright (c) 2015 Mitsuhiro Ito (nee)
+//
+// This software is released under the MIT License.
+// http://opensource.org/licenses/mit-license.php
+
+using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-
-
-using System.Runtime.InteropServices;
-
-using System.Drawing;
 using System.Windows.Media.Imaging;
 
 namespace RealtimeSearch
@@ -29,7 +31,7 @@ namespace RealtimeSearch
         private const uint SHGFI_ICON = 0x100; // アイコン・リソースの取得
         private const uint SHGFI_LARGEICON = 0x0; // 大きいアイコン
         private const uint SHGFI_SMALLICON = 0x1; // 小さいアイコン
-        private const uint SHGFI_TYPENAME = 0x400;//ファイルの種類
+        private const uint SHGFI_TYPENAME = 0x400; //ファイルの種類
 
         private const uint SHGFI_USEFILEATTRIBUTES = 0x10; // ?
 
@@ -47,11 +49,12 @@ namespace RealtimeSearch
         };
         #endregion
 
-        string path;
+        private string _Path;
+
 
         public FileInfo(string path)
         {
-            this.path = path;
+            _Path = path;
         }
 
 
@@ -60,7 +63,7 @@ namespace RealtimeSearch
         {
             get
             {
-                if (_TypeName == null) _TypeName = GetTypeName(path);
+                if (_TypeName == null) _TypeName = GetTypeName(_Path);
                 return _TypeName;
             }
         }
@@ -71,7 +74,7 @@ namespace RealtimeSearch
         {
             get
             {
-                if (_IconSource == null) _IconSource = GetTypeIconSource(path, IconSize.Small);
+                if (_IconSource == null) _IconSource = GetTypeIconSource(_Path, IconSize.Small);
                 return _IconSource;
             }
         }
@@ -81,7 +84,7 @@ namespace RealtimeSearch
         {
             get
             {
-                if (_Size == null) _Size = GetSize(path);
+                if (_Size == null) _Size = GetSize(_Path);
                 return (long)_Size;
             }
         }
@@ -92,7 +95,7 @@ namespace RealtimeSearch
         {
             get
             {
-                if (_LastWriteTime == null) _LastWriteTime = GetLastWriteTime(path);
+                if (_LastWriteTime == null) _LastWriteTime = GetLastWriteTime(_Path);
                 return (DateTime)_LastWriteTime;
             }
         }

@@ -1,4 +1,9 @@
-﻿using System;
+﻿// Copyright (c) 2015 Mitsuhiro Ito (nee)
+//
+// This software is released under the MIT License.
+// http://opensource.org/licenses/mit-license.php
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -10,85 +15,6 @@ using System.Threading.Tasks;
 
 namespace RealtimeSearch
 {
-    public abstract class MyCommand
-    {
-        public SearchEngine SearchEngine { get; set; }
-        public int SerialNumber { get; set; }
-        public bool IsCancel { get; set; }
-        public abstract void Exec();
-    }
-
-
-    public class IndexCommand : MyCommand
-    {
-        public string[] Paths { get; set; }
-        public override void Exec()
-        {
-            SearchEngine.CommandIndex(Paths);
-        }
-        public override string ToString()
-        {
-            return $"{SerialNumber} - Index";
-        }
-    }
-
-    public class ReIndexCommand : MyCommand
-    {
-        public override void Exec()
-        {
-            SearchEngine.CommandReIndex();
-        }
-        public override string ToString()
-        {
-            return $"{SerialNumber} - ReIndex";
-        }
-    }
-
-    public class AddIndexCommand : MyCommand
-    {
-        public string Root { get; set; }
-        public List<string> Paths { get; set; } = new List<string>();
-        public override void Exec()
-        {
-            SearchEngine.CommandAddIndex(Root, Paths);
-        }
-        public override string ToString()
-        {
-            return $"{SerialNumber} - AdddIndex Count={Paths.Count}";
-        }
-    }
-
-    public class RemoveIndexCommand : MyCommand
-    {
-        public string Root { get; set; }
-        public string Path { get; set; }
-        public override void Exec()
-        {
-            SearchEngine.CommandRemoveIndex(Root, Path); 
-        }
-        public override string ToString()
-        {
-            return $"{SerialNumber} - RemoveIndex {Path}";
-        }
-    }
-
-
-
-
-
-    public class SearchCommand : MyCommand
-    {
-        public string Keyword { get; set; }
-        public override void Exec()
-        {
-            SearchEngine.CommandSearch(Keyword);
-        }
-        public override string ToString()
-        {
-            return $"Search.{SerialNumber}:{Keyword}";
-        }
-    }
-
     public enum SearchEngineState
     {
         None,
@@ -112,17 +38,19 @@ namespace RealtimeSearch
         }
         #endregion
 
-        //public SearchEngineState State
 
+        // 状態
         #region Property: State
         private SearchEngineState _State;
         public SearchEngineState State
         {
             get { return _State; }
-            set { /*Debug.WriteLine($"State = {value}");*/  _State = value; OnPropertyChanged(); OnPropertyChanged("StateMessage"); }
+            set {_State = value; OnPropertyChanged(); OnPropertyChanged("StateMessage"); }
         }
         #endregion
 
+
+        // 状態メッセージ(表示用)
         public string StateMessage
         {
             get
@@ -137,9 +65,10 @@ namespace RealtimeSearch
         }
 
 
+        // 現在のコマンド
         #region Property: Command
-        private MyCommand _Command;
-        public MyCommand Command
+        private SearchEngineCommand _Command;
+        public SearchEngineCommand Command
         {
             get { return _Command; }
             set { _Command = value; OnPropertyChanged(); }
@@ -147,6 +76,7 @@ namespace RealtimeSearch
         #endregion
 
 
+        // 現在のコマンド予約数
         #region Property: CommandCount
         private int _CommandCount;
         public int CommandCount
@@ -157,69 +87,71 @@ namespace RealtimeSearch
         #endregion
 
 
+        // コマンドリスト
+        private List<SearchEngineCommand> _CommandList;
 
-        public string CurrentKeyword { get; private set; }
+        // コマンドの製造番号用カウンタ
+        private int _CommandSerialNumber;
 
+        // エンジンとなるタスク
+        private Task _Task;
 
-        private SemaphoreSlim CountSemaphore;
+        // コマンド数セマフォ。エンジンタスク駆動に利用
+        private SemaphoreSlim _CommandSemaphore;
 
-        private Object thisLock = new Object();
+        // 排他処理用ロック
+        private Object _Lock = new Object();
 
-        private List<MyCommand> CommandList;
+        // 検索コア
+        private SearchCore _SearchCore;
 
-        private int SerialNumber;
+        // 検索結果に対応している現在のキーワード
+        public string SearchKeyword { get; private set; }
 
-        private Task WorkerTask;
+        // 検索結果
+        public List<File> SearchResult { get { return _SearchCore.SearchResult; } }
 
-
-        public Index Index;
-
-
-        //
-        //public event EventHandler ResultChanged;
+        // 検索結果の変更イベント
         public event EventHandler<int> ResultChanged;
 
-
-        //
-
+        // 外部からコマンドをリクエストできるようにグローバルインスタンスを公開
         public static SearchEngine Current { get; private set; }
 
-        //
+
+        
         public SearchEngine()
         {
             Current = this;
 
-            Index = new Index();
-
-            CountSemaphore = new SemaphoreSlim(0);
-
-            CommandList = new List<MyCommand>();
+            _SearchCore = new SearchCore();
+            _CommandSemaphore = new SemaphoreSlim(0);
+            _CommandList = new List<SearchEngineCommand>();
         }
 
 
         public void Start()
         {
-            WorkerTask = Task.Run(() => WorkAsync());
+            _Task = Task.Run(() => EngineAsync());
         }
 
 
-        private void AddCommand(MyCommand command)
+        private void AddCommand(SearchEngineCommand command)
         {
             command.SearchEngine = this;
-            command.SerialNumber = SerialNumber++;
-            CommandList.Add(command);
-            CommandCount = CommandList.Count;
+            command.SerialNumber = _CommandSerialNumber++;
+            _CommandList.Add(command);
+            CommandCount = _CommandList.Count;
 
-            CountSemaphore.Release();
+            _CommandSemaphore.Release();
         }
 
 
         // インデックス化リクエスト
         public void IndexRequest(string[] paths)
         {
-            lock (thisLock)
+            lock (_Lock)
             {
-                CommandList.ForEach(cmd => { if (cmd is IndexCommand || cmd is ReIndexCommand) cmd.IsCancel = true; });
+                _CommandList.ForEach(cmd => { if (cmd is IndexCommand || cmd is ReIndexCommand) cmd.IsCancel = true; });
 
                 AddCommand(new IndexCommand() { Paths = paths });
             }
@@ -229,23 +161,24 @@ namespace RealtimeSearch
         // 再インデックス化リクエスト
         public void ReIndexRequest()
         {
-            lock (thisLock)
+            lock (_Lock)
             {
-                if (CommandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
+                if (_CommandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
 
                 AddCommand(new ReIndexCommand());
             }
         }
 
 
+        // パス追加リクエスト
         public void AddIndexRequest(string root, string path)
         {
-            lock (thisLock)
+            lock (_Lock)
             {
-                if (CommandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
+                if (_CommandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
 
                 // コマンドをまとめる
-                AddIndexCommand command = (CommandList.Count >= 1) ? CommandList.LastOrDefault(c => c is AddIndexCommand && ((AddIndexCommand)c).Root == root) as AddIndexCommand : null;
+                AddIndexCommand command = (_CommandList.Count >= 1) ? _CommandList.LastOrDefault(c => c is AddIndexCommand && ((AddIndexCommand)c).Root == root) as AddIndexCommand : null;
                 if (command != null && command.Root == root)
                 {
                     command.Paths.Add(path);
@@ -260,17 +193,17 @@ namespace RealtimeSearch
             }
         }
 
+
+        // パス削除リクエスト
         public void RemoveIndexRequest(string root, string path)
         {
-            lock (thisLock)
+            lock (_Lock)
             {
-                if (CommandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
+                if (_CommandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
 
                 AddCommand(new RemoveIndexCommand() { Root = root, Path = path });
             }
         }
-
-
 
 
         // 検索リクエスト
@@ -279,51 +212,44 @@ namespace RealtimeSearch
             keyword = keyword ?? "";
             keyword = keyword.Trim();
 
-            lock (thisLock)
+            lock (_Lock)
             {
-                //Debug.WriteLine($"Request: {keyword} ...");
+                _CommandList.ForEach(cmd => { if (cmd is SearchCommand) cmd.IsCancel = true; });
 
-                CommandList.ForEach(cmd => { if (cmd is SearchCommand) cmd.IsCancel = true; });
-                //CommandList.RemoveAll(cmd => cmd is SearchCommand); // 消すのはダメ
-
-                // 他のコマンドが存在する場合のみ表示更新
-                if (Command != null || CommandList.Count > 1)
+                // 他のコマンドが存在する場合のみメッセージ更新
+                // 制限する理由は、ちらつき防止のため
+                if (Command != null || _CommandList.Count > 1)
                 {
                     ResultChanged?.Invoke(this, 0);
                     State = string.IsNullOrEmpty(keyword) ? SearchEngineState.None : SearchEngineState.Search;
                 }
 
-                //CommandList.Add(new SearchCommand() { SearchEngine = this, SerialNumber = this.SerialNumber++, Keyword = keyword });
-                //CountSemaphore.Release();
                 AddCommand(new SearchCommand() { Keyword = keyword });
-
-                //Debug.WriteLine($"Request: {keyword} Done.");
             }
         }
 
+
         // ワーカータスク
-        public async Task WorkAsync()
+        public async Task EngineAsync()
         {
             while (true)
             {
                 // コマンドがあることをSemaphoreで検知する
-                await CountSemaphore.WaitAsync();
+                await _CommandSemaphore.WaitAsync();
 
-                lock (thisLock)
+                lock (_Lock)
                 {
                     // コマンド取り出し
-                    Command = CommandList[0];
-                    CommandList.RemoveAt(0);
+                    Command = _CommandList[0];
+                    _CommandList.RemoveAt(0);
 
-                    CommandCount = CommandList.Count;
+                    CommandCount = _CommandList.Count;
                 }
 
-                //CommandMessage = Command.ToString(); // ##
-
-                // 処理
                 if (Command.IsCancel) continue;
+
 #if DEBUG
-                await Task.Delay(100);
+                await Task.Delay(100); // 開発用遅延
 #endif
                 try
                 {
@@ -336,67 +262,53 @@ namespace RealtimeSearch
                 }
 
                 Command = null;
-
-                //CommandMessage = null; // ##
             }
         }
 
+
         public void CommandIndex(string[] paths)
         {
-            //State = SearchEngineState.Index;
-            Index.Collect(paths);
-            //State = SearchEngineState.None;
+            _SearchCore.Collect(paths);
         }
 
         public void CommandReIndex()
         {
-            //State = SearchEngineState.Index;
-            Index.Collect();
-            //State = SearchEngineState.None;
+            _SearchCore.Collect();
         }
 
         public void CommandAddIndex(string root, List<string> paths)
         {
-            //Debug.WriteLine($"Index Add: {path}");
-            Index.AddPath(root, paths);
+            _SearchCore.AddPath(root, paths);
         }
 
         public void CommandRemoveIndex(string root, string path)
         {
-            //Debug.WriteLine($"Index Remove: {path}");
-            Index.RemovePath(root, path);
+            _SearchCore.RemovePath(root, path);
         }
-
 
         public void CommandSearch(string keyword)
         {
-            //Debug.WriteLine($"Search: {keyword} ...");
+            _SearchCore.Search(keyword);
 
-            //State = SearchEngineState.Search;
-            Index.Check(keyword);
-            //State = SearchEngineState.None;
-
-            lock(thisLock)
+            lock(_Lock)
             {
-                if (CommandList.Any(n => n is SearchCommand))
+                if (_CommandList.Any(n => n is SearchCommand))
                 {
                     State = SearchEngineState.Search;
                 }
-                else if (Index.Matches.Count <= 0)
+                else if (_SearchCore.SearchResult.Count <= 0)
                 {
                     State = string.IsNullOrEmpty(keyword) ? SearchEngineState.None : SearchEngineState.SearchResultEmpty;
-                    CurrentKeyword = keyword;
-                    ResultChanged?.Invoke(this, Index.Matches.Count);
+                    SearchKeyword = keyword;
+                    ResultChanged?.Invoke(this, _SearchCore.SearchResult.Count);
                 }
                 else
                 {
                     State = SearchEngineState.SearchResult;
-                    CurrentKeyword = keyword;
-                    ResultChanged?.Invoke(this, Index.Matches.Count);
+                    SearchKeyword = keyword;
+                    ResultChanged?.Invoke(this, _SearchCore.SearchResult.Count);
                 }
             }
-
-            //Debug.WriteLine($"Search: {keyword} Done.");
         }
     }
 }

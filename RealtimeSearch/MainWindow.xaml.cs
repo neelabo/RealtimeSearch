@@ -1,57 +1,19 @@
-﻿using System;
+﻿// Copyright (c) 2015 Mitsuhiro Ito (nee)
+//
+// This software is released under the MIT License.
+// http://opensource.org/licenses/mit-license.php
+
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Windows.Interop;
-using System.Runtime.InteropServices;
-
-/*
- * - [v] 右クリックでファイルを開く 
- * - [v] 右クリックでファイルの場所を開く
- * - [v] 右クリックでファイル名をコピー
- * - [v] 初期化時の検索予約
- * - [v] 検索用文字列の保存(大文字、小文字、全角、半角、ひら、カタの統一)
- * - [v] 検索の非同期化
- * -- [v] 設定の保存/読み込み
- * -- [v] デフォルト設定
- * -- [v] 検索パスの設定
- * -- [v] クリップボードの監視機能ON/OFF
- * -- [x] ウィンドウアクティブON/OFF
- * - [v] ENTERで検索開始
- * - [v] 検索キーワード改行無効
- * 
- * [余裕があれば]
- * - [v] ICommandの引数
- * - [x] 過去のキーワード履歴
- * - [v] 検索ボタンをエクスプローラー風にする
- * - [v] リスト項目の外部へのファイルドラッグ
- * - [v] ファイルアイコンの表示
- * - [v] ファイルの種類の表示
- * - [v] ファイルサイズの表示
- * - [v] 更新日の表示
- * - [v] 項目によるソート
- * - [] フォルダの状態を監視して変更があれば自動的にインデックスを作り直す
- * - [] 記号文字の有効/無効
- * - [] 多重起動チェック
- * - [] マルチ選択ドラッグ
- * - [] リアルタイムサーチ
- * 
- * ///
- * アイコン作成ツールほしい
- */
 
 namespace RealtimeSearch
 {
@@ -62,21 +24,26 @@ namespace RealtimeSearch
     {
         MainWindowVM VM;
 
-        //
+
         public MainWindow()
         {
             InitializeComponent();
 
-#if DEBUG
-            // タイトルに[Debug]を入れる
-            //this.Title += " [Debug]";
-#endif
             VM = new MainWindowVM();
             this.DataContext = VM;
 
             RegistRoutedCommand();
+
+            VM.PropertyChanged += MainWindowVM_PropertyChanged;
         }
 
+        private void MainWindowVM_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(VM.Files))
+            {
+                Dispatcher.BeginInvoke(new Action(GridViewColumnHeader_Reset), null);
+            }
+        }
 
         private void Window_SourceInitialized(object sender, EventArgs e)
         {
@@ -92,6 +59,12 @@ namespace RealtimeSearch
         {
             // クリップボード監視開始
             VM.StartClipboardMonitor(this);
+
+            // 検索パスが設定されていなければ設定画面を開く
+            if (VM.Setting.SearchPaths.Count <= 0)
+            {
+                ShowSettingWindow();
+            }
         }
 
 
@@ -118,7 +91,6 @@ namespace RealtimeSearch
         }
 
 
-
         private void keyword_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -128,15 +100,15 @@ namespace RealtimeSearch
         }
 
 
-        Point start;
-        ListViewItem downed;
-
+        // ドラッグ用
+        Point _DragStart;
+        ListViewItem _DragDowned;
 
         // ファイルのドラッグ判定開始
         private void PreviewMouseDown_Event(object sender, MouseButtonEventArgs e)        
         {
-            downed = sender as ListViewItem;
-            start = e.GetPosition(downed);
+            _DragDowned = sender as ListViewItem;
+            _DragStart = e.GetPosition(_DragDowned);
         }
 
         // ファイルのドラッグ開始
@@ -145,14 +117,13 @@ namespace RealtimeSearch
             var s = sender as ListViewItem;
             var pn = s.Content as File;
 
-
-            if (downed != null && downed == s && e.LeftButton == MouseButtonState.Pressed)
+            if (_DragDowned != null && _DragDowned == s && e.LeftButton == MouseButtonState.Pressed)
             {
                 var current = e.GetPosition(s);
-                if (Math.Abs(current.X - start.X) > SystemParameters.MinimumHorizontalDragDistance ||
-                    Math.Abs(current.Y - start.Y) > SystemParameters.MinimumVerticalDragDistance)
+                if (Math.Abs(current.X - _DragStart.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                    Math.Abs(current.Y - _DragStart.Y) > SystemParameters.MinimumVerticalDragDistance)
                 {
-                    downed = null;
+                    _DragDowned = null;
 
                     if (listView01.SelectedItems.Count > 0)
                     {
@@ -167,14 +138,13 @@ namespace RealtimeSearch
                         DragDrop.DoDragDrop(s, data, DragDropEffects.Copy);
                     }
                 }
-
             }
-
         }
 
 
 
         public static readonly RoutedCommand OpenCommand = new RoutedCommand("OpenCommand", typeof(MainWindow));
+        public static readonly RoutedCommand CopyCommand = new RoutedCommand("CopyCommand", typeof(MainWindow));
         public static readonly RoutedCommand OpenPlaceCommand = new RoutedCommand("OpenPlaceCommand", typeof(MainWindow));
         public static readonly RoutedCommand CopyNameCommand = new RoutedCommand("CopyNameCommand", typeof(MainWindow));
         public static readonly RoutedCommand RenameCommand = new RoutedCommand("RenameCommand", typeof(MainWindow));
@@ -184,6 +154,9 @@ namespace RealtimeSearch
             OpenCommand.InputGestures.Add(new KeyGesture(Key.Enter));
             listView01.CommandBindings.Add(new CommandBinding(OpenCommand, Open_Executed));
 
+            CopyCommand.InputGestures.Add(new KeyGesture(Key.C, ModifierKeys.Control));
+            listView01.CommandBindings.Add(new CommandBinding(CopyCommand, Copy_Executed));
+
             listView01.CommandBindings.Add(new CommandBinding(OpenPlaceCommand, OpenPlace_Executed));
             
             listView01.CommandBindings.Add(new CommandBinding(CopyNameCommand, CopyName_Executed));
@@ -191,6 +164,7 @@ namespace RealtimeSearch
             RenameCommand.InputGestures.Add(new KeyGesture(Key.F2));
             listView01.CommandBindings.Add(new CommandBinding(RenameCommand, Rename_Executed)); 
         }
+
 
         // 名前の変更
         void Rename_Executed(object target, ExecutedRoutedEventArgs e)
@@ -200,7 +174,7 @@ namespace RealtimeSearch
             {
                 if (!System.IO.File.Exists(file.Path) && !System.IO.Directory.Exists(file.Path))
                 {
-                    MessageBox.Show($"{file.Path} が見つかりません。", "", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show($"{file.Path} が見つかりません。", "通知", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -284,12 +258,21 @@ namespace RealtimeSearch
 
 
 
-        //// リストのソート用
+        // リストのソート用
+        GridViewColumnHeader _LastHeaderClicked = null;
+        ListSortDirection _LastDirection = ListSortDirection.Ascending;
 
-        GridViewColumnHeader _lastHeaderClicked = null;
-        ListSortDirection _lastDirection = ListSortDirection.Ascending;
+        private void GridViewColumnHeader_Reset()
+        {
+            if (_LastHeaderClicked != null)
+            {
+                _LastHeaderClicked.Column.HeaderTemplate = null;
+                _LastHeaderClicked = null;
+            }
+            _LastDirection = ListSortDirection.Ascending;
+        }
 
-        void GridViewColumnHeader_ClickHandler(object sender, RoutedEventArgs e)
+        private void GridViewColumnHeader_ClickHandler(object sender, RoutedEventArgs e)
         {
             if (listView01.ItemsSource == null) return;
 
@@ -300,13 +283,13 @@ namespace RealtimeSearch
             {
                 if (headerClicked.Role != GridViewColumnHeaderRole.Padding)
                 {
-                    if (headerClicked != _lastHeaderClicked)
+                    if (headerClicked != _LastHeaderClicked)
                     {
                         direction = ListSortDirection.Ascending;
                     }
                     else
                     {
-                        if (_lastDirection == ListSortDirection.Ascending)
+                        if (_LastDirection == ListSortDirection.Ascending)
                         {
                             direction = ListSortDirection.Descending;
                         }
@@ -316,18 +299,13 @@ namespace RealtimeSearch
                         }
                     }
 
-                    //string header = headerClicked.Column.Header as string;
-                    //string header = headerClicked.Column.Header.ToString();
-
                     Binding binding = headerClicked.Column.DisplayMemberBinding as Binding;
 
                     string header = binding != null
                         ? (headerClicked.Column.DisplayMemberBinding as Binding).Path.Path
                         : headerClicked.Tag as string;
-                    //string header = (headerClicked.Column.DisplayMemberBinding as Binding).Path.Path;
 
-                    //string header = headerClicked.Tag as string;
-                    Sort(header, direction);
+                    GridViewColumnHeader_Sort(header, direction);
 
                     if (direction == ListSortDirection.Ascending)
                     {
@@ -339,21 +317,19 @@ namespace RealtimeSearch
                     }
 
                     // Remove arrow from previously sorted header
-                    if (_lastHeaderClicked != null && _lastHeaderClicked != headerClicked)
+                    if (_LastHeaderClicked != null && _LastHeaderClicked != headerClicked)
                     {
-                        _lastHeaderClicked.Column.HeaderTemplate = null;
+                        _LastHeaderClicked.Column.HeaderTemplate = null;
                     }
 
-                    _lastHeaderClicked = headerClicked;
-                    _lastDirection = direction;
+                    _LastHeaderClicked = headerClicked;
+                    _LastDirection = direction;
                 }
             }
         }
 
-        private void Sort(string sortBy, ListSortDirection direction)
+        private void GridViewColumnHeader_Sort(string sortBy, ListSortDirection direction)
         {
-            //ICollectionView dataView = CollectionViewSource.GetDefaultView(fileList.ItemsSource);
-
             ListCollectionView dataView = CollectionViewSource.GetDefaultView(listView01.ItemsSource) as ListCollectionView;
 
             dataView.SortDescriptions.Clear();
@@ -366,22 +342,15 @@ namespace RealtimeSearch
 
         private void SettingButton_Click(object sender, RoutedEventArgs e)
         {
+            ShowSettingWindow();
+        }
+
+        private void ShowSettingWindow()
+        { 
             var window = new SettingWindow(VM.Setting);
             window.Owner = this;
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            //window.DataContext = VM;
             window.ShowDialog();
-
-#if false
-            if (this.SettingControl.Visibility == Visibility.Visible)
-            {
-                this.SettingControl.Visibility = Visibility.Hidden;
-            }
-            else
-            {
-                this.SettingControl.Visibility = Visibility.Visible;
-            }
-#endif
         }
 
     }

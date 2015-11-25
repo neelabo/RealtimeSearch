@@ -1,16 +1,20 @@
-﻿using System;
+﻿// Copyright (c) 2015 Mitsuhiro Ito (nee)
+//
+// This software is released under the MIT License.
+// http://opensource.org/licenses/mit-license.php
+
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Windows.Interop;
-using System.Runtime.InteropServices;
 
 namespace RealtimeSearch
 {
@@ -38,39 +42,26 @@ namespace RealtimeSearch
         {
             get
             {
-                if (string.IsNullOrEmpty(SearchEngine.CurrentKeyword))
+                if (string.IsNullOrEmpty(SearchEngine.SearchKeyword))
                 {
                     return DefaultWindowTitle;
                 }
                 else
                 {
-                    return SearchEngine.CurrentKeyword + " - " + DefaultWindowTitle;
+                    return SearchEngine.SearchKeyword + " - " + DefaultWindowTitle;
                 }
             }
         }
 
-        //public FileList Files { get; set; }
-        public List<File> Files { get; set; }
-
-        public ICommand CommandSearch { get; set; }
-        public ICommand CommandReIndex { get; set; }
-    
-
+        // 検索キーワード
         private string _Keyword;
         public string Keyword
         {
             get { return _Keyword; }
-            set
-            {
-                var regex = new System.Text.RegularExpressions.Regex(@"\s+");
-                string newKeyword = regex.Replace(value, " ");
-                _Keyword = newKeyword;
-                OnPropertyChanged();
-                Search(200);
-            }
+            set { _Keyword = value; OnPropertyChanged(); Search(200); }
         }
   
-        // メッセージだね
+        // ステータスバー
         private string _Information;
         public string Information
         {
@@ -78,21 +69,28 @@ namespace RealtimeSearch
             set { _Information = value; OnPropertyChanged(); }
         }
 
-        //private Index index;
-        public SearchEngine SearchEngine { get; set; }
+        // 検索エンジン
+        public SearchEngine SearchEngine { get; private set; }
 
-#region Property: Setting
+        // 検索結果
+        public List<File> Files { get; private set; }
+
+        // 検索コマンド
+        public ICommand CommandSearch { get; private set; }
+
+        // 設定
+        #region Property: Setting
         private Setting _Setting;
         public Setting Setting
         {
             get { return _Setting; }
             set { _Setting = value; OnPropertyChanged(); }
         }
-#endregion
+        #endregion
 
+        // クリップボード監視
+        private ClipboardListner _ClipboardListner;
 
-
-        private ClipboardListner ClipboardListner;
 
         [System.Diagnostics.Conditional("DEBUG")]
         private void __Sleep(int ms)
@@ -101,22 +99,17 @@ namespace RealtimeSearch
         }
 
 
-        //
         public MainWindowVM()
         {
-            //Files = new FileList();
-
             SearchEngine = new SearchEngine();
             SearchEngine.Start();
 
             CommandSearch = new RelayCommand(Search);
-            CommandReIndex = new RelayCommand(ReIndex);
 
             SearchEngine.ResultChanged += SearchEngine_ResultChanged;
         }
 
 
-        //
         public void Open()
         {
             // 設定の読み込み
@@ -126,7 +119,7 @@ namespace RealtimeSearch
             if (System.IO.File.Exists(defaultConfigPath))
             {
                 Setting = Setting.Load(defaultConfigPath);
-                UpdateSetting();
+                SearchEngine.IndexRequest(Setting.SearchPaths.ToArray()); // インデックス初期化
             }
             else
             {
@@ -141,8 +134,8 @@ namespace RealtimeSearch
         public void StartClipboardMonitor(Window window)
         { 
             // クリップボード監視
-            ClipboardListner = new ClipboardListner(window);
-            ClipboardListner.ClipboardUpdate += ClipboardListner_DrawClipboard;
+            _ClipboardListner = new ClipboardListner(window);
+            _ClipboardListner.ClipboardUpdate += ClipboardListner_DrawClipboard;
         }
 
 
@@ -155,33 +148,36 @@ namespace RealtimeSearch
         public async void ClipboardListner_DrawClipboard(object sender, System.EventArgs e)
         {
             // どうにも例外(CLIPBRD_E_CANT_OPEN)が発生してしまうのでリトライさせることにした
-            RETRY:
-            try
+            for (int i = 0; i < 10; ++i)
             {
-                if (Setting.IsMonitorClipboard && Clipboard.ContainsText())
+                try
                 {
-                    // キーワード設定
-                    Keyword = Clipboard.GetText();
+                    if (Setting.IsMonitorClipboard && Clipboard.ContainsText())
+                    {
+                        // クリップボードテキストの余計な空白を削除
+                        var regex = new System.Text.RegularExpressions.Regex(@"\s+");
+                        string text = regex.Replace(Clipboard.GetText(), " ").Trim();
 
-                    // 検索
-                    Search();
+                        // 即時検索
+                        Keyword = text;
+                        Search();
+                    }
+                    return;
+                }
+                catch (System.Runtime.InteropServices.COMException ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                    await Task.Delay(100);
                 }
             }
-            catch (System.Runtime.InteropServices.COMException ex)
-            {
-                Debug.WriteLine(ex.Message);
-
-                await Task.Delay(100);
-                goto RETRY;
-            }
+            throw new ApplicationException("クリップボードの参照に失敗しました。");
         }
 
 
-        //
         public void Close()
         {
             // クリップボード監視終了
-            ClipboardListner.Dispose();
+            _ClipboardListner.Dispose();
 
             // 設定の保存
             System.Reflection.Assembly myAssembly = System.Reflection.Assembly.GetEntryAssembly();
@@ -212,11 +208,7 @@ namespace RealtimeSearch
 
             Setting.WindowPlacement = placement;
         }
-
-
-
-
-
+        
 
         private void SearchEngine_ResultChanged(object sender, int count)
         {
@@ -227,88 +219,57 @@ namespace RealtimeSearch
             }
             else
             {
-                Files = SearchEngine.Index.Matches;
-                Information = string.Format("{0} 個の項目", Files.Count);
+                Files = SearchEngine.SearchResult;
+                Information = string.Format("{0:#,0} 個の項目", Files.Count);
             }
 
             OnPropertyChanged(nameof(Files));
             OnPropertyChanged(nameof(WindowTitle));
-
-#if false
-            // 検索結果リスト作成
-            this.Files.Clear();
-
-            if (count <= 0) return;
-
-            foreach (var match in SearchEngine.Index.matches)
-            {
-                this.Files.Add(match);
-                //__Sleep(10);
-            }
-
-#endif
         }
 
-        // ##
-        public void UpdateSetting()
+
+        // 遅延検索用タスク
+        private Task _DelayTask;
+        private int _DelayTimer;
+        private object _Lock = new object();
+
+
+        public void Search(int delay)
         {
-            if (Setting.SearchPaths != null)
+            lock (_Lock)
             {
-                SearchEngine.IndexRequest(Setting.SearchPaths.ToArray());
+                _DelayTimer = delay;
+                if (_DelayTask == null)
+                {
+                    _DelayTask = Task.Run(SearchAsync);
+                }
             }
         }
 
-        // インデックス再構築
-        public void ReIndex()
-        {
-            SearchEngine.ReIndexRequest();
-        }
-
-        // 検索
         public void Search()
         {
             Search(0);
         }
 
-        // 遅延検索
-        public void Search(int delay)
-        {
-            lock (lockObject)
-            {
-                delayTimer = delay;
-                if (delayTask == null)
-                {
-                    delayTask = Task.Run(SearchAsync);
-                }
-            }
-        }
 
-        object lockObject = new object();
-
-        Task delayTask;
-        int delayTimer;
-
-        //
         private async Task SearchAsync()
         {
-            while (delayTimer > 0)
+            while (_DelayTimer > 0)
             {
-                lock (lockObject)
+                lock (_Lock)
                 {
-                    delayTimer -= 20;
+                    _DelayTimer -= 20;
                 }
                 await Task.Delay(20);
             }
             
             SearchEngine.SearchRequest(Keyword);
 
-            lock (lockObject)
+            lock (_Lock)
             {
-                delayTask = null;
+                _DelayTask = null;
             }
         }
-
-
     }
 
 
@@ -330,12 +291,12 @@ namespace RealtimeSearch
 
 
     // コマンド状態を処理中表示に変換する
-    [ValueConversion(typeof(MyCommand), typeof(Visibility))]
+    [ValueConversion(typeof(SearchEngineCommand), typeof(Visibility))]
     class CommandToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            var cmd = (MyCommand)value;
+            var cmd = (SearchEngineCommand)value;
             return (cmd != null) ? Visibility.Visible : Visibility.Hidden;
         }
 

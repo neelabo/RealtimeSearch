@@ -1,4 +1,9 @@
-﻿using System;
+﻿// Copyright (c) 2015 Mitsuhiro Ito (nee)
+//
+// This software is released under the MIT License.
+// http://opensource.org/licenses/mit-license.php
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -21,56 +26,56 @@ namespace RealtimeSearch
         const int WM_CLOSE = 0x0010;
         const int WM_CLIPBOARDUPDATE = 0x031D;
 
-        Window _window;
-        IntPtr _handle;
+        Window _Window;
+        IntPtr _Handle;
 
-        //
         public event EventHandler ClipboardUpdate;
 
-        //
+
         private void NotifyClipboardUpdate()
         {
             if (ClipboardUpdate != null)
             {
-                if (_window.IsActive) return;
+                if (_Window.IsActive) return;
 
-                _window.Dispatcher.BeginInvoke(new Action(() =>
+                _Window.Dispatcher.BeginInvoke(new Action(() =>
                 {
                     ClipboardUpdate(this, EventArgs.Empty);
                 }));
             }
         }
 
+
         public ClipboardListner(Window window)
         {
             Open(window);
         }
 
-        //
+
         public void Open(Window window)
         {
-            if (_handle != IntPtr.Zero) throw new ApplicationException("ClipboardListner is already opened.");
+            if (_Handle != IntPtr.Zero) throw new ApplicationException("ClipboardListner is already opened.");
 
-            _window = window;
-            _handle = new WindowInteropHelper(window).Handle;
+            _Window = window;
+            _Handle = new WindowInteropHelper(window).Handle;
 
-            AddClipboardFormatListener(_handle);
+            AddClipboardFormatListener(_Handle);
 
-            HwndSource source = HwndSource.FromHwnd(_handle);
+            HwndSource source = HwndSource.FromHwnd(_Handle);
             source.AddHook(new HwndSourceHook(WndProc));
         }
 
-        //
+        
         public void Close()
         {
-            if (_handle != IntPtr.Zero)
+            if (_Handle != IntPtr.Zero)
             {
-                RemoveClipboardFormatListener(_handle);
-                _handle = IntPtr.Zero;
+                RemoveClipboardFormatListener(_Handle);
+                _Handle = IntPtr.Zero;
             }
         }
 
-        //
+        
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             if (msg == WM_CLIPBOARDUPDATE)
@@ -81,7 +86,7 @@ namespace RealtimeSearch
             return IntPtr.Zero;
         }
 
-        //
+        
         public void Dispose()
         {
             Close();
