@@ -158,7 +158,8 @@ namespace RealtimeSearch
             listView01.CommandBindings.Add(new CommandBinding(CopyCommand, Copy_Executed));
 
             listView01.CommandBindings.Add(new CommandBinding(OpenPlaceCommand, OpenPlace_Executed));
-            
+
+            CopyNameCommand.InputGestures.Add(new KeyGesture(Key.C, ModifierKeys.Control | ModifierKeys.Shift));
             listView01.CommandBindings.Add(new CommandBinding(CopyNameCommand, CopyName_Executed));
 
             RenameCommand.InputGestures.Add(new KeyGesture(Key.F2));
@@ -251,7 +252,8 @@ namespace RealtimeSearch
             if (file != null)
             {
                 string text = System.IO.Path.GetFileNameWithoutExtension(file.Path);
-                System.Windows.Clipboard.SetDataObject(text);
+                VM.SetClipboard(text);
+                //System.Windows.Clipboard.SetDataObject(text);
             }
         }
 

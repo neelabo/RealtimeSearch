@@ -32,11 +32,7 @@ namespace RealtimeSearch
         }
         #endregion
 
-#if DEBUG
-        private string DefaultWindowTitle = "RealtimeSearch [Debug]";
-#else
-        private string DefaultWindowTitle = "RealtimeSearch";
-#endif
+        private string _DefaultWindowTitle;
 
         public string WindowTitle
         {
@@ -44,11 +40,11 @@ namespace RealtimeSearch
             {
                 if (string.IsNullOrEmpty(SearchEngine.SearchKeyword))
                 {
-                    return DefaultWindowTitle;
+                    return _DefaultWindowTitle;
                 }
                 else
                 {
-                    return SearchEngine.SearchKeyword + " - " + DefaultWindowTitle;
+                    return SearchEngine.SearchKeyword + " - " + _DefaultWindowTitle;
                 }
             }
         }
@@ -88,6 +84,9 @@ namespace RealtimeSearch
         }
         #endregion
 
+        // 設定ファイル名
+        private string _SettingFileName;
+
         // クリップボード監視
         private ClipboardListner _ClipboardListner;
 
@@ -107,18 +106,27 @@ namespace RealtimeSearch
             CommandSearch = new RelayCommand(Search);
 
             SearchEngine.ResultChanged += SearchEngine_ResultChanged;
+
+            // title
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            var ver = FileVersionInfo.GetVersionInfo(assembly.Location);
+            _DefaultWindowTitle = $"{assembly.GetName().Name} {ver.FileMajorPart}.{ver.ProductMinorPart}";
+#if DEBUG
+            _DefaultWindowTitle += " [Debug]";
+#endif
+
+            // setting filename
+            _SettingFileName = System.IO.Path.GetDirectoryName(assembly.Location) + "\\UserSetting.xml";
         }
+
 
 
         public void Open()
         {
             // 設定の読み込み
-            System.Reflection.Assembly myAssembly = System.Reflection.Assembly.GetEntryAssembly();
-            string defaultConfigPath = System.IO.Path.GetDirectoryName(myAssembly.Location) + "\\UserSetting.xml";
-
-            if (System.IO.File.Exists(defaultConfigPath))
+            if (System.IO.File.Exists(_SettingFileName))
             {
-                Setting = Setting.Load(defaultConfigPath);
+                Setting = Setting.Load(_SettingFileName);
                 SearchEngine.IndexRequest(Setting.SearchPaths.ToArray()); // インデックス初期化
             }
             else
@@ -144,6 +152,13 @@ namespace RealtimeSearch
             SearchEngine.IndexRequest(Setting.SearchPaths.ToArray());
         }
 
+        private string _CopyText;
+
+        public void SetClipboard(string text)
+        {
+            System.Windows.Clipboard.SetDataObject(text);
+            _CopyText = text;
+        }
 
         public async void ClipboardListner_DrawClipboard(object sender, System.EventArgs e)
         {
@@ -154,9 +169,12 @@ namespace RealtimeSearch
                 {
                     if (Setting.IsMonitorClipboard && Clipboard.ContainsText())
                     {
+                        string text = Clipboard.GetText();
+                        if (_CopyText == text) return; // コピーしたファイル名と同じであるなら処理しない
+
                         // クリップボードテキストの余計な空白を削除
                         var regex = new System.Text.RegularExpressions.Regex(@"\s+");
-                        string text = regex.Replace(Clipboard.GetText(), " ").Trim();
+                        text = regex.Replace(text, " ").Trim();
 
                         // 即時検索
                         Keyword = text;
@@ -180,9 +198,7 @@ namespace RealtimeSearch
             _ClipboardListner.Dispose();
 
             // 設定の保存
-            System.Reflection.Assembly myAssembly = System.Reflection.Assembly.GetEntryAssembly();
-            string defaultConfigPath = System.IO.Path.GetDirectoryName(myAssembly.Location) + "\\UserSetting.xml";
-            Setting.Save(defaultConfigPath);
+            Setting.Save(_SettingFileName);
         }
 
 
@@ -236,6 +252,8 @@ namespace RealtimeSearch
 
         public void Search(int delay)
         {
+            _CopyText = null;
+
             lock (_Lock)
             {
                 _DelayTimer = delay;
