@@ -10,7 +10,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		LICENSE.txt = LICENSE.txt
 		LICENSE_APPENDIX.txt = LICENSE_APPENDIX.txt
 		README.md = README.md
-		README.txt = README.txt
 	EndProjectSection
 EndProject
 Global

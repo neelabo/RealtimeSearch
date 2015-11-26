@@ -1,4 +1,4 @@
-# RealtimeSearh 1.0 #
+# RealtimeSearh 1.0
 
 ------------
 ソフトの概要
