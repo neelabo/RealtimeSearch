@@ -90,6 +90,9 @@ namespace RealtimeSearch
         // クリップボード監視
         private ClipboardListner _ClipboardListner;
 
+        // クリップボード監視フラグ
+        public bool IsEnableClipboardListner { get; set; }
+
 
         [System.Diagnostics.Conditional("DEBUG")]
         private void __Sleep(int ms)
@@ -144,6 +147,8 @@ namespace RealtimeSearch
             // クリップボード監視
             _ClipboardListner = new ClipboardListner(window);
             _ClipboardListner.ClipboardUpdate += ClipboardListner_DrawClipboard;
+
+            IsEnableClipboardListner = true;
         }
 
 
@@ -160,8 +165,11 @@ namespace RealtimeSearch
             _CopyText = text;
         }
 
+
         public async void ClipboardListner_DrawClipboard(object sender, System.EventArgs e)
         {
+            if (!IsEnableClipboardListner) return;
+
             // どうにも例外(CLIPBRD_E_CANT_OPEN)が発生してしまうのでリトライさせることにした
             for (int i = 0; i < 10; ++i)
             {

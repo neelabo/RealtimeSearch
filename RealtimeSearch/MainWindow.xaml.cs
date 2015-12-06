@@ -179,10 +179,22 @@ namespace RealtimeSearch
                     return;
                 }
 
-                var dialog = new RenameWindow(file);
-                dialog.Owner = this;
-                dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                dialog.ShowDialog();
+                VM.IsEnableClipboardListner = false;
+                try
+                {
+                    var dialog = new RenameWindow(file);
+                    dialog.Owner = this;
+                    dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    dialog.ShowDialog();
+                }
+                catch(Exception ex)
+                {
+                    throw ex;
+                }
+                finally
+                {
+                    VM.IsEnableClipboardListner = true;
+                }
             }
         }
 

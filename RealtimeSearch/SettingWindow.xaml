@@ -12,7 +12,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RealtimeSearch"
         mc:Ignorable="d"
-        Title="設定" Height="340" Width="460" ResizeMode="NoResize" Icon="RealtimeSearch.ico">
+        Title="設定" Height="340" Width="460" ResizeMode="NoResize" Icon="App.ico">
 
     <DockPanel x:Name="BaseControl" Margin="8" >
 

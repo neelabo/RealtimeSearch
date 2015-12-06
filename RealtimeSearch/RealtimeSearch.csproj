@@ -53,7 +53,7 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>RealtimeSearch.ico</ApplicationIcon>
+    <ApplicationIcon>App.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>F81AE0A9126ACE176970BE72E3556A1CE50DDBCB</ManifestCertificateThumbprint>
@@ -180,7 +180,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="RealtimeSearch.ico" />
+    <Resource Include="App.ico" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">
