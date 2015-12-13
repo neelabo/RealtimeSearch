@@ -91,12 +91,14 @@
             </DockPanel>
 
             <!-- Debug Info -->
-            <!--
-            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Background="#FFF8F8F8">
-                <TextBlock Margin="2" TextWrapping="NoWrap" Text="{Binding SearchEngine.CommandCount, StringFormat={}{0}\, }" />
-                <TextBlock Margin="2" TextWrapping="NoWrap" Text="{Binding SearchEngine.Command}" />
+            <StackPanel x:Name="DebugInfo" DockPanel.Dock="Bottom" Visibility="Collapsed">
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Background="#FFF8F8F8">
+                    <TextBlock Margin="2" TextWrapping="NoWrap" Text="{Binding SearchEngine.CommandCount, StringFormat={}{0}\, }" />
+                    <TextBlock Margin="2" TextWrapping="NoWrap" Text="{Binding SearchEngine.Command}" />
+                </StackPanel>
+                <TextBox x:Name="LogTextBox" DockPanel.Dock="Bottom" Height="64" VerticalScrollBarVisibility="Visible" />
             </StackPanel>
-            -->
+            
 
             <TextBlock DockPanel.Dock="Bottom" Margin="2" x:Name="status" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Information}" TextDecorations="{x:Null}" />
 

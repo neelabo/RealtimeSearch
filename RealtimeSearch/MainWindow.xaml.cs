@@ -24,7 +24,6 @@ namespace RealtimeSearch
     {
         MainWindowVM VM;
 
-
         public MainWindow()
         {
             InitializeComponent();
@@ -367,5 +366,27 @@ namespace RealtimeSearch
             window.ShowDialog();
         }
 
+
+        // for Debug
+        private int _LogCount;
+
+        [Conditional("DEBUG")]
+        public void Log(string format, params object[] args)
+        {
+            if (this.DebugInfo.Visibility != Visibility.Visible) return;
+            this.LogTextBox.AppendText(string.Format($"\n{++_LogCount}>{format}", args));
+            this.LogTextBox.ScrollToEnd();
+        }
+    }
+
+
+    public partial class App : Application
+    {
+        [Conditional("DEBUG")]
+        public static void Log(string format, params object[] args)
+        {
+            var window = (MainWindow)Application.Current.MainWindow;
+            window.Log(format, args);
+        }
     }
 }

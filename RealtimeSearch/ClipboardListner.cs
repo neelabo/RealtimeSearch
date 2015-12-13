@@ -29,18 +29,16 @@ namespace RealtimeSearch
         Window _Window;
         IntPtr _Handle;
 
-        public event EventHandler ClipboardUpdate;
+        public event EventHandler<Window> ClipboardUpdate;
 
 
         private void NotifyClipboardUpdate()
         {
             if (ClipboardUpdate != null)
             {
-                if (_Window.IsActive) return;
-
                 _Window.Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    ClipboardUpdate(this, EventArgs.Empty);
+                    ClipboardUpdate(this, _Window);
                 }));
             }
         }

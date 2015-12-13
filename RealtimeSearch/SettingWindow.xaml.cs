@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 
@@ -69,6 +70,7 @@ namespace RealtimeSearch
             this.DataContext = this;
 
             // close command
+            CloseCommand.InputGestures.Clear();
             CloseCommand.InputGestures.Add(new KeyGesture(Key.Escape));
             this.CommandBindings.Add(new CommandBinding(CloseCommand, (t, e) => Close()));
 
@@ -76,14 +78,18 @@ namespace RealtimeSearch
             this.CommandBindings.Add(new CommandBinding(HelpCommand, (t, e) => System.Diagnostics.Process.Start("https://bitbucket.org/neelabo/realtimesearch/wiki")));
 
             // add command
+            AddCommand.InputGestures.Clear();
             AddCommand.InputGestures.Add(new KeyGesture(Key.Insert));
             SearchPathPanel.CommandBindings.Add(new CommandBinding(AddCommand, AddCommand_Executed));
 
             // del command
+            DelCommand.InputGestures.Clear();
             DelCommand.InputGestures.Add(new KeyGesture(Key.Delete));
             SearchPathPanel.CommandBindings.Add(new CommandBinding(DelCommand, DelCommand_Executed, DelCommand_CanExecute));
 
             SearchPathList.Focus();
+
+            this.contextMenu01.UpdateInputGestureText();
         }
 
 
@@ -184,5 +190,40 @@ namespace RealtimeSearch
                 AddSearchPath(file);
             }
         }
+    }
+
+
+
+    public static class Extensions
+    {
+        public static void UpdateInputGestureText(this ItemsControl control)
+        {
+            if (control == null) return;
+
+            KeyGestureConverter kgc = new KeyGestureConverter();
+            foreach (var item in control.Items.OfType<MenuItem>())
+            {
+                var command = item.Command as RoutedCommand;
+                if (command != null)
+                {
+                    string text = null;
+                    foreach (InputGesture gesture in command.InputGestures)
+                    {
+                        if (text == null)
+                        {
+                            text = kgc.ConvertToString(gesture);
+                        }
+                        else
+                        {
+                            text += ", " + kgc.ConvertToString(gesture);
+                        }
+                    }
+                    item.InputGestureText = text;
+                }
+
+                UpdateInputGestureText(item);
+            }
+        }
+
     }
 }

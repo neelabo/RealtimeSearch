@@ -165,10 +165,25 @@ namespace RealtimeSearch
             _CopyText = text;
         }
 
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern IntPtr GetForegroundWindow();
 
-        public async void ClipboardListner_DrawClipboard(object sender, System.EventArgs e)
+
+        public async void ClipboardListner_DrawClipboard(object sender, Window window)
         {
-            if (!IsEnableClipboardListner) return;
+            if (!IsEnableClipboardListner)
+            {
+                App.Log("cannot use clipboard: not enabled.");
+                return;
+            }
+
+            IntPtr activeWindow = GetForegroundWindow();
+            IntPtr thisWindow = new WindowInteropHelper(window).Handle;
+            if (activeWindow == thisWindow)
+            {
+                App.Log("cannot use clipboard: window is active. (WIN32)");
+                return;
+            }
 
             // どうにも例外(CLIPBRD_E_CANT_OPEN)が発生してしまうのでリトライさせることにした
             for (int i = 0; i < 10; ++i)

@@ -40,7 +40,7 @@
 
             <ListBox x:Name="SearchPathList" Margin="0,2,0,4" ItemsSource="{Binding CollectionViewSource.View}"  SelectedItem="{Binding SelectedPath}" AllowDrop="True" PreviewDragOver="ListBox_PreviewDragOver" Drop="ListBox_Drop">
                 <ListBox.ContextMenu>
-                    <ContextMenu>
+                    <ContextMenu x:Name="contextMenu01">
                         <MenuItem Header="追加" Command="{x:Static local:SettingWindow.AddCommand}"/>
                         <MenuItem Header="削除" Command="{x:Static local:SettingWindow.DelCommand}"/>
                     </ContextMenu>
