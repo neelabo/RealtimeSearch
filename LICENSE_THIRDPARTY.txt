@@ -10,6 +10,7 @@ License: http://code.msdn.microsoft.com/WindowsAPICodePack/Project/License.aspx
 
 -----
 ICON:
+ic_search_24px, etc...
 
 Material design icons
 URL: http://www.google.com/design/spec/style/icons.html#icons-system-icons
