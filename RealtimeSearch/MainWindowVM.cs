@@ -322,5 +322,4 @@ namespace RealtimeSearch
             throw new NotImplementedException();
         }
     }
-
 }

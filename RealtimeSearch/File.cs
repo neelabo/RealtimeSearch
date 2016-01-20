@@ -51,6 +51,17 @@ namespace RealtimeSearch
             }
         }
 
+        // 詳細表示
+        public string Detail
+        {
+            get
+            {
+                string sizeText = (FileInfo.Size > 0) ? $"サイズ: {(FileInfo.Size + 1024 - 1) / 1024:#,0} KB\n" : "";
+                return $"{FileName}\n種類: {FileInfo.TypeName}\n{sizeText}更新日時: {FileInfo.LastWriteTime.ToString("yyyy/MM/dd HH:mm")}\nフォルダー: {DirectoryName}";
+            }
+        }
+
+
         // ファイル名
         public string FileName { get { return System.IO.Path.GetFileName(_Path); } }
 

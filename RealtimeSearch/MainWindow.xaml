@@ -117,7 +117,7 @@
                         <DataTemplate x:Key="ItemFileNameTemplate">
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="{Binding FileInfo.IconSource}" Margin="0,0,4,0"/>
-                                <TextBlock Text="{Binding .}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" ToolTip="{Binding FileName}" />
+                                <TextBlock Text="{Binding .}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/> 
                             </StackPanel>
                         </DataTemplate>
 
@@ -127,6 +127,12 @@
                         </DataTemplate>
 
                     </ListView.Resources>
+
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListViewItem}">
+                            <Setter Property="ToolTip" Value="{Binding Path=Detail}" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
 
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
