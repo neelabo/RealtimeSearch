@@ -1,4 +1,4 @@
-# RealtimeSearh
+# RealtimeSearch
 
 ## ソフトの概要
 

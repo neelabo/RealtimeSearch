@@ -27,6 +27,8 @@
             <EventSetter Event="UIElement.PreviewMouseMove" Handler="PreviewMouseMove_Event"/>
             <EventSetter Event="UIElement.PreviewMouseDown" Handler="PreviewMouseDown_Event"/>
 
+            <Setter Property="ToolTip" Value="{Binding Path=Detail}" />
+
             <Setter Property="ContextMenu">
                 <Setter.Value>
                     <ContextMenu>
@@ -151,12 +153,6 @@
                         </DataTemplate>
 
                     </ListView.Resources>
-
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="{x:Type ListViewItem}">
-                            <Setter Property="ToolTip" Value="{Binding Path=Detail}" />
-                        </Style>
-                    </ListView.ItemContainerStyle>
 
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
