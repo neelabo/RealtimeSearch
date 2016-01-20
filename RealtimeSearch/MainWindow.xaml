@@ -117,7 +117,7 @@
                         <DataTemplate x:Key="ItemFileNameTemplate">
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="{Binding FileInfo.IconSource}" Margin="0,0,4,0"/>
-                                <TextBlock Text="{Binding FileName}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" ToolTip="{Binding FileName}" />
+                                <TextBlock Text="{Binding .}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" ToolTip="{Binding FileName}" />
                             </StackPanel>
                         </DataTemplate>
 
@@ -137,7 +137,7 @@
                     <ListView.View>
                         <GridView ColumnHeaderTemplate="{StaticResource HeaderTemplateNormal}">
                             <GridViewColumn Width="280" CellTemplate="{StaticResource ItemFileNameTemplate}">
-                                <GridViewColumnHeader Content="名前" Tag="FileName"/>
+                                <GridViewColumnHeader Content="名前" Tag="."/>
                             </GridViewColumn>
 
                             <GridViewColumn Header="更新日時" Width="96" DisplayMemberBinding="{Binding FileInfo.LastWriteTime, StringFormat=yyyy/MM/dd HH:mm}" />

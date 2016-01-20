@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace RealtimeSearch
 {
     // 数が尋常でないので、軽量にすべき
-    public class File : INotifyPropertyChanged
+    public class File : INotifyPropertyChanged, IComparable
     {
         #region PropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
@@ -78,7 +78,8 @@ namespace RealtimeSearch
             OnPropertyChanged("FileInfo");
         }
 
-        
+
+        // 正規化された文字列に変換する
         public static string ToNormalisedWord(string src)
         {
             string s = src.Normalize(NormalizationForm.FormKC); // 正規化
@@ -89,6 +90,23 @@ namespace RealtimeSearch
             s = s.Replace("ー", "-"); // 長音をハイフンにする 
 
             return s;
+        }
+
+
+        // 表示文字列
+        public override string ToString()
+        {
+            return FileName;
+        }
+
+
+        // CompareTo
+        public int CompareTo(object obj)
+        {
+            if (obj == null) return 1;
+
+            File other = (File)obj;
+            return Win32Api.StrCmpLogicalW(this.FileName, other.FileName);
         }
     }
 }

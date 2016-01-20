@@ -57,15 +57,23 @@ namespace RealtimeSearch
         {
             try
             {
+                var entryFile = new File() { Path = path };
+                Files.Add(entryFile);
+
                 if (Directory.Exists(path))
                 {
-                    Files.Add(new File() { Path = path, IsDirectory = true });
+                    entryFile.IsDirectory = true;
 
-                    foreach (string file in Directory.GetFiles(path))
+                    var files = Directory.GetFiles(path).ToList();
+                    files.Sort(Win32Api.StrCmpLogicalW);
+                    foreach (string file in files)
                     {
                         Files.Add(new File() { Path = file });
                     }
-                    foreach (string directory in Directory.GetDirectories(path))
+
+                    var directories = Directory.GetDirectories(path).ToList();
+                    directories.Sort(Win32Api.StrCmpLogicalW);
+                    foreach (string directory in directories)
                     {
                         Add(directory);
                     }
