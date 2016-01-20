@@ -54,7 +54,7 @@ namespace RealtimeSearch
         public string Keyword
         {
             get { return _Keyword; }
-            set { _Keyword = value; OnPropertyChanged(); Search(200); }
+            set { _Keyword = value; OnPropertyChanged(); Search(); }
         }
   
         // ステータスバー
@@ -267,49 +267,9 @@ namespace RealtimeSearch
         }
 
 
-        // 遅延検索用タスク
-        private Task _DelayTask;
-        private int _DelayTimer;
-        private object _Lock = new object();
-
-
-        public void Search(int delay)
-        {
-            _CopyText = null;
-
-            lock (_Lock)
-            {
-                _DelayTimer = delay;
-                if (_DelayTask == null)
-                {
-                    _DelayTask = Task.Run(SearchAsync);
-                }
-            }
-        }
-
         public void Search()
         {
-            Search(0);
-        }
-
-
-        private async Task SearchAsync()
-        {
-            while (_DelayTimer > 0)
-            {
-                lock (_Lock)
-                {
-                    _DelayTimer -= 20;
-                }
-                await Task.Delay(20);
-            }
-            
             SearchEngine.SearchRequest(Keyword, Setting.IsSearchFolder);
-
-            lock (_Lock)
-            {
-                _DelayTask = null;
-            }
         }
     }
 
