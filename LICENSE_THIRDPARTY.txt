@@ -1,14 +1,4 @@
 -----
-DLL:
-Microsoft.WindowsAPICodePack.dll
-Microsoft.WindowsAPICodePack.Shell.dll
-Microsoft.WindowsAPICodePack.ShellExtensions.dll
-
-Windows API Code Pack for Microsoft .NET
-URL: http://code.msdn.microsoft.com/WindowsAPICodePack
-License: http://code.msdn.microsoft.com/WindowsAPICodePack/Project/License.aspx
-
------
 ICON:
 ic_search_24px, etc...
 

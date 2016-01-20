@@ -145,23 +145,14 @@ namespace RealtimeSearch
 
         private void AddPathWithDialog()
         {
-            // フォルダ選択
-            var dlg = new Microsoft.WindowsAPICodePack.Dialogs.CommonOpenFileDialog();
-            dlg.Title = "検索フォルダーの追加";
-            dlg.IsFolderPicker = true;
-            dlg.AddToMostRecentlyUsedList = false;
-            dlg.AllowNonFileSystemItems = false;
-            dlg.DefaultDirectory = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-            dlg.EnsureFileExists = true;
-            dlg.EnsurePathExists = true;
-            dlg.EnsureReadOnly = false;
-            dlg.EnsureValidNames = true;
-            dlg.Multiselect = false;
-            dlg.ShowPlacesList = true;
+            var dialog = new System.Windows.Forms.FolderBrowserDialog();
+            dialog.Description = "検索フォルダーの追加";
+            dialog.SelectedPath = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
 
-            if (dlg.ShowDialog(Window.GetWindow(this)) == Microsoft.WindowsAPICodePack.Dialogs.CommonFileDialogResult.Ok)
+            var result = dialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
             {
-                AddSearchPath(dlg.FileName);
+                AddSearchPath(dialog.SelectedPath);
             }
         }
 
