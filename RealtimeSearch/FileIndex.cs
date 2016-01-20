@@ -57,10 +57,10 @@ namespace RealtimeSearch
         {
             try
             {
-                Files.Add(new File() { Path = path });
-
                 if (Directory.Exists(path))
                 {
+                    Files.Add(new File() { Path = path, IsDirectory = true });
+
                     foreach (string file in Directory.GetFiles(path))
                     {
                         Files.Add(new File() { Path = file });
@@ -128,4 +128,4 @@ namespace RealtimeSearch
             _FileSystemWatcher.Dispose();
         }
     }
- }
+}

@@ -304,7 +304,7 @@ namespace RealtimeSearch
                 await Task.Delay(20);
             }
             
-            SearchEngine.SearchRequest(Keyword);
+            SearchEngine.SearchRequest(Keyword, Setting.IsSearchFolder);
 
             lock (_Lock)
             {

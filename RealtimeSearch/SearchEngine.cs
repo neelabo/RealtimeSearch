@@ -45,7 +45,7 @@ namespace RealtimeSearch
         public SearchEngineState State
         {
             get { return _State; }
-            set {_State = value; OnPropertyChanged(); OnPropertyChanged("StateMessage"); }
+            set { _State = value; OnPropertyChanged(); OnPropertyChanged("StateMessage"); }
         }
         #endregion
 
@@ -118,7 +118,7 @@ namespace RealtimeSearch
         public static SearchEngine Current { get; private set; }
 
 
-        
+
         public SearchEngine()
         {
             Current = this;
@@ -207,7 +207,7 @@ namespace RealtimeSearch
 
 
         // 検索リクエスト
-        public void SearchRequest(string keyword)
+        public void SearchRequest(string keyword, bool isSearchFolder)
         {
             keyword = keyword ?? "";
             keyword = keyword.Trim();
@@ -224,7 +224,7 @@ namespace RealtimeSearch
                     State = string.IsNullOrEmpty(keyword) ? SearchEngineState.None : SearchEngineState.Search;
                 }
 
-                AddCommand(new SearchCommand() { Keyword = keyword });
+                AddCommand(new SearchCommand() { Keyword = keyword, IsSearchFolder = isSearchFolder });
             }
         }
 
@@ -286,11 +286,11 @@ namespace RealtimeSearch
             _SearchCore.RemovePath(root, path);
         }
 
-        public void CommandSearch(string keyword)
+        public void CommandSearch(string keyword, bool isSearchFolder)
         {
-            _SearchCore.Search(keyword);
+            _SearchCore.Search(keyword, isSearchFolder);
 
-            lock(_Lock)
+            lock (_Lock)
             {
                 if (_CommandList.Any(n => n is SearchCommand))
                 {

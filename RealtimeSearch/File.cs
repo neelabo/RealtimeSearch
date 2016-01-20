@@ -60,6 +60,8 @@ namespace RealtimeSearch
         // ファイル情報
         public FileInfo FileInfo { get; private set; }
 
+        // ディレクトリ？
+        public bool IsDirectory { get; set; }
 
         public File()
         {

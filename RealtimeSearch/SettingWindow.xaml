@@ -16,6 +16,7 @@
 
     <DockPanel x:Name="BaseControl" Margin="8" >
 
+        <CheckBox  DockPanel.Dock="bottom" IsChecked="{Binding Setting.IsSearchFolder}" VerticalAlignment="Center" Content="フォルダも検索対象とする"/>
         <CheckBox  DockPanel.Dock="bottom" IsChecked="{Binding Setting.IsMonitorClipboard}" VerticalAlignment="Center" Content="クリップボードを監視"/>
         <CheckBox  DockPanel.Dock="bottom" IsChecked="{Binding Setting.IsTopmost}" VerticalAlignment="Center" Content="常に手前に表示"/>
 

@@ -55,6 +55,20 @@ namespace RealtimeSearch
         }
         #endregion
 
+
+        #region Property: IsSearchFolder
+        [DataMember]
+        private bool _IsSearchFolder;
+        public bool IsSearchFolder
+        {
+            get { return _IsSearchFolder; }
+            set { _IsSearchFolder = value; OnPropertyChanged(); }
+        }
+        #endregion
+
+
+
+
         [DataMember]
         public WINDOWPLACEMENT? WindowPlacement { set; get; }
 
@@ -64,6 +78,7 @@ namespace RealtimeSearch
         {
             SearchPaths = new ObservableCollection<string>();
             IsMonitorClipboard = true;
+            IsSearchFolder = true;
         }
 
 

@@ -86,9 +86,10 @@ namespace RealtimeSearch
     public class SearchCommand : SearchEngineCommand
     {
         public string Keyword { get; set; }
+        public bool IsSearchFolder { get; set; }
         public override void Exec()
         {
-            SearchEngine.CommandSearch(Keyword);
+            SearchEngine.CommandSearch(Keyword, IsSearchFolder);
         }
         public override string ToString()
         {

@@ -175,17 +175,17 @@ namespace RealtimeSearch
         /// 検索
         /// </summary>
         /// <param name="keyword">検索キーワード</param>
-        public void Search(string keyword)
+        public void Search(string keyword, bool isSearchFolder)
         {
             SetKeys(keyword);
-            Search();
+            Search(isSearchFolder);
         }
 
 
         /// <summary>
         /// 検索
         /// </summary>
-        public void Search()
+        public void Search(bool isSearchFolder)
         {
             if (_Keys == null || _Keys[0] == "^$")
             {
@@ -202,6 +202,20 @@ namespace RealtimeSearch
                 foreach (var file in entrys)
                 {
                     if (regex.Match(file.NormalizedWord).Success)
+                    {
+                        list.Add(file);
+                    }
+                }
+                entrys = list;
+            }
+
+            // ディレクトリ除外
+            if (!isSearchFolder)
+            {
+                var list = new List<File>();
+                foreach (var file in entrys)
+                {
+                    if (!file.IsDirectory)
                     {
                         list.Add(file);
                     }
