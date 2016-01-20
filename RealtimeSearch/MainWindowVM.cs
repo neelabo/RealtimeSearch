@@ -32,6 +32,9 @@ namespace RealtimeSearch
         }
         #endregion
 
+        public event EventHandler<SearchEngineState> StateMessageChanged;
+
+
         private string _DefaultWindowTitle;
 
         public string WindowTitle
@@ -56,7 +59,7 @@ namespace RealtimeSearch
             get { return _Keyword; }
             set { _Keyword = value; OnPropertyChanged(); Search(); }
         }
-  
+
         // ステータスバー
         private string _Information;
         public string Information
@@ -109,6 +112,7 @@ namespace RealtimeSearch
             CommandSearch = new RelayCommand(Search);
 
             SearchEngine.ResultChanged += SearchEngine_ResultChanged;
+            SearchEngine.StateMessageChanged += (s, e) => StateMessageChanged(s, e);
 
             // title
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
@@ -143,7 +147,7 @@ namespace RealtimeSearch
 
 
         public void StartClipboardMonitor(Window window)
-        { 
+        {
             // クリップボード監視
             _ClipboardListner = new ClipboardListner(window);
             _ClipboardListner.ClipboardUpdate += ClipboardListner_DrawClipboard;
@@ -247,7 +251,7 @@ namespace RealtimeSearch
 
             Setting.WindowPlacement = placement;
         }
-        
+
 
         private void SearchEngine_ResultChanged(object sender, int count)
         {

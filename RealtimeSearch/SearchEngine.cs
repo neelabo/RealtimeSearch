@@ -39,13 +39,25 @@ namespace RealtimeSearch
         #endregion
 
 
+        //
+        public event EventHandler<SearchEngineState> StateMessageChanged;
+
         // 状態
         #region Property: State
         private SearchEngineState _State;
         public SearchEngineState State
         {
             get { return _State; }
-            set { _State = value; OnPropertyChanged(); OnPropertyChanged("StateMessage"); }
+            set
+            {
+                if (_State != value)
+                {
+                    _State = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged("StateMessage");
+                    App.Current.Dispatcher.Invoke(() => StateMessageChanged?.Invoke(this, _State));
+                }
+            }
         }
         #endregion
 
