@@ -89,13 +89,38 @@ namespace RealtimeSearch
         }
 
 
+        //
         void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             File file = ((ListViewItem)sender).Content as File;
             if (file == null) return;
 
-            System.Diagnostics.Process.Start(file.Path);
+            Execute(file);
         }
+
+        //
+        private void Execute(File file)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(VM.Setting.ExternalApplication))
+                {
+                    System.Diagnostics.Process.Start(file.Path);
+                }
+                else
+                {
+                    var commandName = VM.Setting.ExternalApplication;
+                    var arguments = VM.Setting.ExternalApplicationParam.Replace("$(file)", file.Path);
+                    System.Diagnostics.Process.Start(commandName, arguments);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+                MessageBox.Show(e.Message, "実行失敗", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
 
 
         private void keyword_KeyDown(object sender, KeyEventArgs e)
@@ -112,7 +137,7 @@ namespace RealtimeSearch
         ListViewItem _DragDowned;
 
         // ファイルのドラッグ判定開始
-        private void PreviewMouseDown_Event(object sender, MouseButtonEventArgs e)        
+        private void PreviewMouseDown_Event(object sender, MouseButtonEventArgs e)
         {
             _DragDowned = sender as ListViewItem;
             _DragStart = e.GetPosition(_DragDowned);
@@ -170,7 +195,7 @@ namespace RealtimeSearch
             listView01.CommandBindings.Add(new CommandBinding(CopyNameCommand, CopyName_Executed));
 
             RenameCommand.InputGestures.Add(new KeyGesture(Key.F2));
-            listView01.CommandBindings.Add(new CommandBinding(RenameCommand, Rename_Executed)); 
+            listView01.CommandBindings.Add(new CommandBinding(RenameCommand, Rename_Executed));
         }
 
 
@@ -194,7 +219,7 @@ namespace RealtimeSearch
                     dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                     dialog.ShowDialog();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     throw ex;
                 }
@@ -218,14 +243,7 @@ namespace RealtimeSearch
                 File file = item as File;
                 if (file != null && (System.IO.File.Exists(file.Path) || System.IO.Directory.Exists(file.Path)))
                 {
-                    try
-                    {
-                        Process.Start(file.Path);
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine(ex.Message);
-                    }
+                    Execute(file);
                 }
             }
         }
@@ -367,7 +385,7 @@ namespace RealtimeSearch
         }
 
         private void ShowSettingWindow()
-        { 
+        {
             var window = new SettingWindow(VM.Setting);
             window.Owner = this;
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;

@@ -100,6 +100,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ClipboardListner.cs" />
+    <Compile Include="DirectoryNameBox.xaml.cs">
+      <DependentUpon>DirectoryNameBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FileIndex.cs" />
     <Compile Include="FileInfo.cs" />
     <Compile Include="RenameWindow.xaml.cs">
@@ -115,6 +118,10 @@
     </Compile>
     <Compile Include="Win32Api.cs" />
     <Compile Include="WindowPlacement.cs" />
+    <Page Include="DirectoryNameBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

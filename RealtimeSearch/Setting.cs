@@ -74,12 +74,47 @@ namespace RealtimeSearch
         public string WebSearchFormat { set; get; }
 
 
+        #region Property: ExternalApplication
+        private string _ExternalApplication;
+        [DataMember]
+        public string ExternalApplication
+        {
+            get { return _ExternalApplication; }
+            set { _ExternalApplication = value.Trim(); OnPropertyChanged(); }
+        }
+        #endregion
+
+
+        #region Property: ExternalApplicationParam
+        private string _ExternalApplicationParam;
+        [DataMember]
+        public string ExternalApplicationParam
+        {
+            get { return _ExternalApplicationParam; }
+            set
+            {
+                var s = value.Trim();
+                if (!s.Contains("$(file)"))
+                {
+                    s = (s + " \"$(file)\"").Trim();
+                }
+                _ExternalApplicationParam = s;
+                OnPropertyChanged();
+            }
+        }
+        #endregion
+
+
+
+
         //----------------------------------------------------------------------------
         private void Constructor()
         {
             SearchPaths = new ObservableCollection<string>();
             IsMonitorClipboard = true;
             IsSearchFolder = true;
+            ExternalApplication = "";
+            ExternalApplicationParam = "";
             WebSearchFormat = "https://www.google.co.jp/search?q=$(query)";
         }
 

@@ -4,7 +4,7 @@
     This software is released under the MIT License.
     http://opensource.org/licenses/mit-license.php
 -->
-    
+
 <Window x:Class="RealtimeSearch.SettingWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -12,43 +12,100 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RealtimeSearch"
         mc:Ignorable="d"
-        Title="設定" Height="340" Width="460" ResizeMode="NoResize" Icon="App.ico">
+        Title="設定" Height="340" Width="460" Icon="App.ico">
 
-    <DockPanel x:Name="BaseControl" Margin="8" >
+    <Window.Resources>
+        <Style TargetType="FrameworkElement" x:Key="Phrase">
+            <Setter Property="Margin" Value="20,0,0,10"/>
+        </Style>
 
-        <CheckBox  DockPanel.Dock="bottom" IsChecked="{Binding Setting.IsSearchFolder}" VerticalAlignment="Center" Content="フォルダも検索対象とする"/>
-        <CheckBox  DockPanel.Dock="bottom" IsChecked="{Binding Setting.IsMonitorClipboard}" VerticalAlignment="Center" Content="クリップボードを監視"/>
-        <CheckBox  DockPanel.Dock="bottom" IsChecked="{Binding Setting.IsTopmost}" VerticalAlignment="Center" Content="常に手前に表示"/>
+        <Style TargetType="TextBlock" x:Key="Header">
+            <Setter Property="Margin" Value="0,5,0,5"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+    </Window.Resources>
+    
+    <TabControl>
+        <TabItem Header="検索フォルダ">
+            <DockPanel x:Name="BaseControl" Margin="8" >
 
-        <DockPanel x:Name="SearchPathPanel">
-            <DockPanel DockPanel.Dock="top" LastChildFill="False">
+                <CheckBox  DockPanel.Dock="bottom" IsChecked="{Binding Setting.IsSearchFolder}" VerticalAlignment="Center" Content="フォルダも検索対象とする"/>
+                <CheckBox  DockPanel.Dock="bottom" IsChecked="{Binding Setting.IsMonitorClipboard}" VerticalAlignment="Center" Content="クリップボードを監視"/>
+                <CheckBox  DockPanel.Dock="bottom" IsChecked="{Binding Setting.IsTopmost}" VerticalAlignment="Center" Content="常に手前に表示"/>
 
-                <TextBlock Text="検索フォルダー" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <DockPanel x:Name="SearchPathPanel">
+                    <DockPanel DockPanel.Dock="top" LastChildFill="False">
 
-                <Button Style="{StaticResource IconButton}" DockPanel.Dock="Left"  Command="{x:Static local:SettingWindow.AddCommand}" Width="20" Height="20" >
-                    <Image Width="16" Height="16" Source="{StaticResource ic_add_circle_outline_24px}"/>
-                </Button>
+                        <TextBlock Text="検索フォルダー" VerticalAlignment="Center" Margin="0,0,8,0"/>
 
-                <Button Style="{StaticResource IconButton}" DockPanel.Dock="Left" Command="{x:Static local:SettingWindow.DelCommand}" Width="20" Height="20">
-                    <Image Width="16" Height="16" Source="{StaticResource ic_remove_circle_outline_24px}"/>
-                </Button>
+                        <Button Style="{StaticResource IconButton}" DockPanel.Dock="Left"  Command="{x:Static local:SettingWindow.AddCommand}" Width="20" Height="20" >
+                            <Image Width="16" Height="16" Source="{StaticResource ic_add_circle_outline_24px}"/>
+                        </Button>
 
-                <Button Style="{StaticResource IconButton}" DockPanel.Dock="Right" Command="{x:Static local:SettingWindow.HelpCommand}" Width="20" Height="20">
-                    <Image Width="16" Height="16" Source="{StaticResource ic_help_24px}"/>
-                </Button>
+                        <Button Style="{StaticResource IconButton}" DockPanel.Dock="Left" Command="{x:Static local:SettingWindow.DelCommand}" Width="20" Height="20">
+                            <Image Width="16" Height="16" Source="{StaticResource ic_remove_circle_outline_24px}"/>
+                        </Button>
+
+                        <Button Style="{StaticResource IconButton}" DockPanel.Dock="Right" Command="{x:Static local:SettingWindow.HelpCommand}" Width="20" Height="20">
+                            <Image Width="16" Height="16" Source="{StaticResource ic_help_24px}"/>
+                        </Button>
+
+                    </DockPanel>
+
+                    <ListBox x:Name="SearchPathList" Margin="0,2,0,4" ItemsSource="{Binding CollectionViewSource.View}"  SelectedItem="{Binding SelectedPath}" AllowDrop="True" PreviewDragOver="ListBox_PreviewDragOver" Drop="ListBox_Drop">
+                        <ListBox.ContextMenu>
+                            <ContextMenu x:Name="contextMenu01">
+                                <MenuItem Header="追加" Command="{x:Static local:SettingWindow.AddCommand}"/>
+                                <MenuItem Header="削除" Command="{x:Static local:SettingWindow.DelCommand}"/>
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                    </ListBox>
+                </DockPanel>
 
             </DockPanel>
+        </TabItem>
 
-            <ListBox x:Name="SearchPathList" Margin="0,2,0,4" ItemsSource="{Binding CollectionViewSource.View}"  SelectedItem="{Binding SelectedPath}" AllowDrop="True" PreviewDragOver="ListBox_PreviewDragOver" Drop="ListBox_Drop">
-                <ListBox.ContextMenu>
-                    <ContextMenu x:Name="contextMenu01">
-                        <MenuItem Header="追加" Command="{x:Static local:SettingWindow.AddCommand}"/>
-                        <MenuItem Header="削除" Command="{x:Static local:SettingWindow.DelCommand}"/>
-                    </ContextMenu>
-                </ListBox.ContextMenu>
-            </ListBox>
-        </DockPanel>
+        <TabItem Header="設定">
+            <StackPanel Margin="4">
+                <TextBlock Text="外部アプリ設定" Style="{StaticResource Header}"/>
+                <StackPanel Style="{StaticResource Phrase}">
+                    <DockPanel Margin="2" LastChildFill="True">
+                        <TextBlock MinWidth="80" Text="プログラム：" VerticalAlignment="Center" Margin="2"/>
+                        <local:DirectoryNameBox x:Name="ExAppPath" Margin="2" SelectDirectory="False" Title="プログラムの選択" Filter="EXE|*.exe|すべてのファイル|*.*"
+                            Note="指定がない場合は拡張子に関連付けられたアプリを起動します"
+                            Text="{Binding Setting.ExternalApplication, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                    </DockPanel>
+                    <DockPanel Margin="2,2,2,5" LastChildFill="True">
+                        <DockPanel.Style>
+                            <Style TargetType="DockPanel">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=ExAppPath, Path=Text}" Value="">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DockPanel.Style>
+                        <TextBlock MinWidth="80" Text="パラメーター：" VerticalAlignment="Center" Margin="2"/>
+                        <TextBox Text="{Binding Setting.ExternalApplicationParam}" Margin="2" ToolTip="$(file) がファイルパスに置換されます。&#xa;定義されていない場合 &quot;$(file)&quot; が自動追加されます"/>
+                    </DockPanel>
 
-    </DockPanel>
+                </StackPanel>
+
+                <TextBlock Text="Webサーチエンジン" Style="{StaticResource Header}"/>
+                <StackPanel Style="{StaticResource Phrase}">
+                    <DockPanel Margin="2,2,2,5" LastChildFill="True">
+                        <TextBlock MinWidth="80" Text="URL :" VerticalAlignment="Center" Margin="2"/>
+                        <TextBox Text="{Binding Setting.WebSearchFormat}" Margin="2" ToolTip="$(query) が検索キーワードに置換されます"/>
+                    </DockPanel>
+
+                </StackPanel>
+
+
+            </StackPanel>
+
+
+        </TabItem>
+    </TabControl>
+
 
 </Window>

@@ -276,11 +276,13 @@ namespace RealtimeSearch
         }
 
 
+        //
         public void Search()
         {
             SearchEngine.SearchRequest(Keyword, Setting.IsSearchFolder);
         }
 
+        //
         public void WebSearch()
         {
             //URLで使えない特殊文字。ひとまず変換なしで渡してみる
