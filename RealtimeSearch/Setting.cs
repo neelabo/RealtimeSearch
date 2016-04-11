@@ -67,10 +67,11 @@ namespace RealtimeSearch
         #endregion
 
 
-
-
         [DataMember]
         public WINDOWPLACEMENT? WindowPlacement { set; get; }
+
+        [DataMember]
+        public string WebSearchFormat { set; get; }
 
 
         //----------------------------------------------------------------------------
@@ -79,6 +80,7 @@ namespace RealtimeSearch
             SearchPaths = new ObservableCollection<string>();
             IsMonitorClipboard = true;
             IsSearchFolder = true;
+            WebSearchFormat = "https://www.google.co.jp/search?q=$(query)";
         }
 
 

@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
@@ -77,6 +78,9 @@ namespace RealtimeSearch
         // 検索コマンド
         public ICommand CommandSearch { get; private set; }
 
+        // Web検索コマンド
+        public ICommand CommandWebSearch { get; private set; }
+
         // 設定
         #region Property: Setting
         private Setting _Setting;
@@ -110,6 +114,7 @@ namespace RealtimeSearch
             SearchEngine.Start();
 
             CommandSearch = new RelayCommand(Search);
+            CommandWebSearch = new RelayCommand(WebSearch);
 
             SearchEngine.ResultChanged += SearchEngine_ResultChanged;
             SearchEngine.StateMessageChanged += (s, e) => StateMessageChanged(s, e);
@@ -274,6 +279,22 @@ namespace RealtimeSearch
         public void Search()
         {
             SearchEngine.SearchRequest(Keyword, Setting.IsSearchFolder);
+        }
+
+        public void WebSearch()
+        {
+            //URLで使えない特殊文字。ひとまず変換なしで渡してみる
+            //\　　'　　|　　`　　^　　"　　<　　>　　)　　(　　}　　{　　]　　[
+
+            // キーワード整形。空白を"+"にする
+            string query = Keyword?.Trim();
+            if (string.IsNullOrEmpty(query)) return;
+            query = query.Replace("+", "%2B");
+            query = Regex.Replace(query, @"\s+", "+");
+
+            string url = this.Setting.WebSearchFormat.Replace("$(query)", query);
+            Debug.WriteLine(url);
+            System.Diagnostics.Process.Start(url);
         }
     }
 

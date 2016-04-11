@@ -86,9 +86,14 @@
                 </Button>
                 <Grid>
                     <TextBox x:Name="keyword" Padding="0,0,40,0" Text="{Binding Keyword, Delay=200, UpdateSourceTrigger=PropertyChanged}"  KeyDown="keyword_KeyDown" MaxLines="256" VerticalContentAlignment="Center" BorderThickness="1,1,1,1" BorderBrush="#FFDDDDDD"/>
-                    <Button Style="{StaticResource IconButton}" Width="26" Height="26" HorizontalAlignment="Right" Command="{Binding CommandSearch}">
-                        <Image Width="16" Height="16" Source="{StaticResource ic_search_24px}"/>
-                    </Button>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Style="{StaticResource IconButton}" Width="26" Height="26" Command="{Binding CommandSearch}" ToolTip="ファイル検索">
+                            <Image Width="16" Height="16" Source="{StaticResource ic_search_24px}"/>
+                        </Button>
+                        <Button Style="{StaticResource IconButton}" Width="26" Height="26" Command="{Binding CommandWebSearch}" ToolTip="Web検索">
+                            <Image Width="16" Height="16" Source="{StaticResource ic_public_24px}"/>
+                        </Button>
+                    </StackPanel>
                 </Grid>
             </DockPanel>
 
