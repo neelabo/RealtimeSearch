@@ -151,10 +151,9 @@
 
                         <DataTemplate x:Key="ItemFileNameTemplate">
                             <DockPanel>
-                                <!--
-                                <ToggleButton DockPanel.Dock="Right" Width="16" Height="16" Content="P">
-                                    <ToggleButton.Style>
-                                    <Style TargetType="ToggleButton">
+                                <CheckBox DockPanel.Dock="Right" Template="{StaticResource PushpinCheckBoxTemplate}" Width="16" Height="16" IsChecked ="{Binding IsPushPin}" >
+                                    <CheckBox.Style>
+                                        <Style TargetType="CheckBox">
                                             <Setter Property="Visibility" Value="Collapsed"/>
                                             <Style.Triggers>
                                                 <Trigger Property="IsChecked" Value="True">
@@ -165,9 +164,8 @@
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
-                                    </ToggleButton.Style>
-                                </ToggleButton>
-                                -->
+                                    </CheckBox.Style>
+                                </CheckBox>
 
                                 <Image DockPanel.Dock="Left" Source="{Binding FileInfo.IconSource}" Width="16" Margin="0,0,4,0"/>
                                 <TextBlock Text="{Binding .}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />

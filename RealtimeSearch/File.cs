@@ -77,6 +77,9 @@ namespace RealtimeSearch
         // 名前変更による検索結果からの除外を保留する
         public bool IsKeep { get; set; }
 
+        // 検索結果に残す
+        public bool IsPushPin { get; set; }
+
 
         //
         public File()

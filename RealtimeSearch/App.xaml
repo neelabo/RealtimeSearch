@@ -4,14 +4,14 @@
     This software is released under the MIT License.
     http://opensource.org/licenses/mit-license.php
 -->
-    
+
 <Application x:Class="RealtimeSearch.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="MainWindow.xaml"
              DispatcherUnhandledException="Application_DispatcherUnhandledException">
     <Application.Resources>
-        
+
         <!-- IconButton Style -->
 
         <Style x:Key="IconButton" TargetType="{x:Type Button}">
@@ -38,7 +38,7 @@
             </Setter>
         </Style>
 
-        
+
         <!-- Material design icons by Google-->
         <!-- http://www.google.com/design/spec/style/icons.html#icons-system-icons -->
 
@@ -72,7 +72,7 @@
             </DrawingImage.Drawing>
         </DrawingImage>
 
-       <DrawingImage x:Key="ic_add_circle_outline_24px">
+        <DrawingImage x:Key="ic_add_circle_outline_24px">
             <DrawingImage.Drawing>
                 <DrawingGroup Opacity="1">
                     <DrawingGroup.Children>
@@ -129,6 +129,43 @@
         </DrawingImage>
 
 
+        <!-- https://www.onlinewebfonts.com/icon/425378 -->
+        <DrawingImage x:Key="ic_pushpin">
+            <DrawingImage.Drawing>
+                <DrawingGroup Opacity="1">
+                    <DrawingGroup.Children>
+                        <DrawingGroup Opacity="1" Transform="1,0,0,-1,0,960">
+                            <DrawingGroup.Children>
+                                <GeometryDrawing Brush="{StaticResource IconBrush}" Pen="{x:Null}">
+                                    <GeometryDrawing.Geometry>
+                                        <PathGeometry FillRule="Nonzero" Figures="M0,0L280,203 588,510 800,300 800,600 1079,867 1115,832C1124.33337402344,822 1136,817 1150,817 1164,817 1175.66662597656,822 1185,832 1195,842 1200,853.666687011719 1200,867 1200,881 1195,893 1185,903L902,1185C892.666687011719,1195 881,1200 867,1200 853.666687011719,1200 842,1195 832,1185 822,1175.66662597656 817,1164 817,1150 817,1136 822,1124.33337402344 832,1115L867,1079 600,800 300,800 510,588 203,280 0,0z" />
+                                    </GeometryDrawing.Geometry>
+                                </GeometryDrawing>
+                            </DrawingGroup.Children>
+                        </DrawingGroup>
+                    </DrawingGroup.Children>
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+
+        <!-- PushPin CheckBox Template -->
+        <ControlTemplate x:Key="PushpinCheckBoxTemplate" TargetType="{x:Type CheckBox}">
+            <Grid>
+                <Rectangle x:Name="baseRectangle" RadiusY="0" RadiusX="0" StrokeThickness="1" Fill="{x:Null}"/>
+                <Image x:Name="mark" MinWidth="8" MinHeight="8" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" Source="{StaticResource ic_pushpin}" Opacity="0.1"/>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <!-- <Setter Property="Fill" TargetName="baseRectangle" Value="#FFBDDDFF"/> -->
+                    <Setter Property="Opacity" TargetName="mark" Value="0.2"/>
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True" >
+                    <Setter Property="Opacity" TargetName="mark" Value="1"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
+        
     </Application.Resources>
 
 </Application>

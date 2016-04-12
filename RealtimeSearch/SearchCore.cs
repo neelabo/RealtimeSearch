@@ -195,11 +195,13 @@ namespace RealtimeSearch
         /// <returns></returns>
         public IEnumerable<File> Search(string keyword, IEnumerable<File> entries, bool isSearchFolder)
         {
+            var pushpins = entries.Where(f => f.IsPushPin);
+
             SetKeys(keyword);
 
             if (_Keys == null || _Keys[0] == "^$")
             {
-                return new List<File>();
+                return pushpins;
             }
 
             foreach (var key in _Keys)
@@ -209,7 +211,7 @@ namespace RealtimeSearch
                 var list = new List<File>();
                 foreach (var file in entries)
                 {
-                    if (regex.Match(file.NormalizedWord).Success)
+                    if (!file.IsPushPin && regex.Match(file.NormalizedWord).Success)
                     {
                         list.Add(file);
                     }
@@ -231,7 +233,7 @@ namespace RealtimeSearch
                 entries = list;
             }
 
-            return entries;
+            return pushpins.Concat(entries);
         }
 
     }
