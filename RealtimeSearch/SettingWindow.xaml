@@ -26,12 +26,11 @@
     </Window.Resources>
     
     <TabControl>
-        <TabItem Header="検索フォルダ">
+        <TabItem Header="検索">
             <DockPanel x:Name="BaseControl" Margin="8" >
 
                 <CheckBox  DockPanel.Dock="bottom" IsChecked="{Binding Setting.IsSearchFolder}" VerticalAlignment="Center" Content="フォルダも検索対象とする"/>
                 <CheckBox  DockPanel.Dock="bottom" IsChecked="{Binding Setting.IsMonitorClipboard}" VerticalAlignment="Center" Content="クリップボードを監視"/>
-                <CheckBox  DockPanel.Dock="bottom" IsChecked="{Binding Setting.IsTopmost}" VerticalAlignment="Center" Content="常に手前に表示"/>
 
                 <DockPanel x:Name="SearchPathPanel">
                     <DockPanel DockPanel.Dock="top" LastChildFill="False">
@@ -91,15 +90,19 @@
 
                 </StackPanel>
 
-                <TextBlock Text="Webサーチエンジン" Style="{StaticResource Header}"/>
+                <TextBlock Text="Web検索" Style="{StaticResource Header}"/>
                 <StackPanel Style="{StaticResource Phrase}">
                     <DockPanel Margin="2,2,2,5" LastChildFill="True">
                         <TextBlock MinWidth="80" Text="URL :" VerticalAlignment="Center" Margin="2"/>
                         <TextBox Text="{Binding Setting.WebSearchFormat}" Margin="2" ToolTip="$(query) が検索キーワードに置換されます"/>
                     </DockPanel>
-
                 </StackPanel>
 
+
+                <TextBlock Text="その他" Style="{StaticResource Header}"/>
+                <StackPanel Style="{StaticResource Phrase}">
+                    <CheckBox  Margin="2"  IsChecked="{Binding Setting.IsTopmost}" VerticalAlignment="Center" Content="常に手前に表示"/>
+                </StackPanel>
 
             </StackPanel>
 

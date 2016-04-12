@@ -44,6 +44,20 @@
 
         <SolidColorBrush x:Key="IconBrush" Color="#FF444444"/>
 
+        <DrawingImage x:Key="ic_reflesh_24px">
+            <DrawingImage.Drawing>
+                <DrawingGroup Opacity="1">
+                    <DrawingGroup.Children>
+                        <GeometryDrawing Brush="{StaticResource IconBrush}" Pen="{x:Null}">
+                            <GeometryDrawing.Geometry>
+                                <PathGeometry FillRule="Nonzero" Figures="M12,4C14.210000038147,4,16.2000007629395,4.90000009536743,17.6499996185303,6.34999990463257L20,4 20,11 13,11 16.2199993133545,7.78000020980835C15.1400003433228,6.69000005722046 13.6599998474121,6 12,6 8.6899995803833,6 6,8.6899995803833 6,12 6,15.3100004196167 8.6899995803833,18 12,18 14.6099996566772,18 16.8299999237061,16.3299999237061 17.6499996185303,14L19.7299995422363,14C18.8400001525879,17.4500007629395 15.7299995422363,20 12,20 7.57999992370605,20 4.01000022888184,16.4200000762939 4.01000022888184,12 4.01000022888184,7.57999992370605 7.57999992370605,4 12,4z" />
+                            </GeometryDrawing.Geometry>
+                        </GeometryDrawing>
+                    </DrawingGroup.Children>
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+
         <DrawingImage x:Key="ic_search_24px">
             <DrawingImage.Drawing>
                 <DrawingGroup Opacity="1">

@@ -182,6 +182,9 @@ namespace RealtimeSearch
         public static readonly RoutedCommand RenameCommand = new RoutedCommand("RenameCommand", typeof(MainWindow));
         public static readonly RoutedCommand DeleteCommand = new RoutedCommand("DeleteCommand", typeof(MainWindow));
 
+        public static readonly RoutedCommand SearchCommand = new RoutedCommand("SearchCommand", typeof(MainWindow));
+        public static readonly RoutedCommand WebSearchCommand = new RoutedCommand("WebSearchCommand", typeof(MainWindow));
+
         void RegistRoutedCommand()
         {
             OpenCommand.InputGestures.Add(new KeyGesture(Key.Enter));
@@ -200,23 +203,49 @@ namespace RealtimeSearch
 
             DeleteCommand.InputGestures.Add(new KeyGesture(Key.Delete));
             listView01.CommandBindings.Add(new CommandBinding(DeleteCommand, Delete_Executed));
+
+            SearchCommand.InputGestures.Add(new KeyGesture(Key.F5));
+            SearchCommand.InputGestures.Add(new KeyGesture(Key.R, ModifierKeys.Control));
+            this.CommandBindings.Add(new CommandBinding(SearchCommand, Search_Executed));
+
+            WebSearchCommand.InputGestures.Add(new KeyGesture(Key.F, ModifierKeys.Control));
+            this.CommandBindings.Add(new CommandBinding(WebSearchCommand, WebSearch_Executed));
         }
 
+        // 
+        void Search_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            VM.Search();
+        }
+
+        //
+        void WebSearch_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            VM.WebSearch();
+        }
 
         // ファイル削除
         void Delete_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            File file = (target as ListView)?.SelectedItem as File;
-            if (file != null)
+            var items = (target as ListView)?.SelectedItems;
+            if (items != null && items.Count >= 1)
             {
-                var result = MessageBox.Show($"このファイルをごみ箱に移動しますか？\n\n{file.Path}", "削除確認", MessageBoxButton.OKCancel, MessageBoxImage.Question);
+                var message = (items.Count == 1)
+                    ? $"このファイルをごみ箱に移動しますか？\n\n{((File)items[0]).Path}"
+                    : $"これらの {items.Count} 個の項目をごみ箱に移しますか？";
+
+                var result = MessageBox.Show(message, "削除確認", MessageBoxButton.OKCancel, MessageBoxImage.Question);
+
 
                 if (result == MessageBoxResult.OK)
                 {
                     try
                     {
                         // ゴミ箱に捨てる
-                        Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(file.Path, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+                        foreach (var item in items)
+                        {
+                            Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(((File)item).Path, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+                        }
                     }
                     catch (Exception ex)
                     {

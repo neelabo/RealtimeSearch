@@ -82,16 +82,16 @@
         <DockPanel>
 
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4" >
-                <Button Style="{StaticResource IconButton}" DockPanel.Dock="Right" Width="26" Height="26" x:Name="SettingButton" Click="SettingButton_Click" Margin="2,0,0,0">
+                <Button Style="{StaticResource IconButton}" DockPanel.Dock="Right" Width="26" Height="26" x:Name="SettingButton" Click="SettingButton_Click" Margin="2,0,0,0" ToolTip="設定">
                     <Image Width="16" Height="16" Source="{StaticResource ic_settings_24px}"/>
                 </Button>
                 <Grid>
                     <TextBox x:Name="keyword" Padding="0,0,40,0" Text="{Binding Keyword, Delay=200, UpdateSourceTrigger=PropertyChanged}"  KeyDown="keyword_KeyDown" MaxLines="256" VerticalContentAlignment="Center" BorderThickness="1,1,1,1" BorderBrush="#FFDDDDDD"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Style="{StaticResource IconButton}" Width="26" Height="26" Command="{Binding CommandSearch}" ToolTip="ファイル検索">
-                            <Image Width="16" Height="16" Source="{StaticResource ic_search_24px}"/>
+                        <Button Style="{StaticResource IconButton}" Width="26" Height="26" Command="{Binding CommandSearch}" ToolTip="再検索(Ctrl+R)">
+                            <Image Width="16" Height="16" Source="{StaticResource ic_reflesh_24px}"/>
                         </Button>
-                        <Button Style="{StaticResource IconButton}" Width="26" Height="26" Command="{Binding CommandWebSearch}" ToolTip="Web検索">
+                        <Button Style="{StaticResource IconButton}" Width="26" Height="26" Command="{Binding CommandWebSearch}" ToolTip="Web検索(Ctrl+F)">
                             <Image Width="16" Height="16" Source="{StaticResource ic_public_24px}"/>
                         </Button>
                     </StackPanel>

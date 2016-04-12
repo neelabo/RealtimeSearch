@@ -49,7 +49,7 @@ namespace RealtimeSearch
                 }
                 else
                 {
-                    return SearchEngine.SearchKeyword + " - " + _DefaultWindowTitle;
+                    return SearchEngine.SearchKeyword; // + " - " + _DefaultWindowTitle;
                 }
             }
         }
