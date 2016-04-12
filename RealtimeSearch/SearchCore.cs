@@ -184,7 +184,7 @@ namespace RealtimeSearch
         {
             SearchResult = new ObservableCollection<File>(Search(keyword, AllFiles(), isSearchFolder));
         }
-       
+
 
         /// <summary>
         /// 検索
@@ -195,44 +195,33 @@ namespace RealtimeSearch
         /// <returns></returns>
         public IEnumerable<File> Search(string keyword, IEnumerable<File> entries, bool isSearchFolder)
         {
+            // pushpin保存
             var pushpins = entries.Where(f => f.IsPushPin);
 
+            // キーワード登録
             SetKeys(keyword);
-
             if (_Keys == null || _Keys[0] == "^$")
             {
                 return pushpins;
             }
 
+            // キーワードによる絞込
             foreach (var key in _Keys)
             {
                 var regex = new Regex(key, RegexOptions.Compiled);
-
-                var list = new List<File>();
-                foreach (var file in entries)
-                {
-                    if (!file.IsPushPin && regex.Match(file.NormalizedWord).Success)
-                    {
-                        list.Add(file);
-                    }
-                }
-                entries = list;
+                entries = entries.Where(f => regex.Match(f.NormalizedWord).Success);
             }
 
             // ディレクトリ除外
             if (!isSearchFolder)
             {
-                var list = new List<File>();
-                foreach (var file in entries)
-                {
-                    if (!file.IsDirectory)
-                    {
-                        list.Add(file);
-                    }
-                }
-                entries = list;
+                entries = entries.Where(f => !f.IsDirectory);
             }
 
+            // pushpin除外
+            entries = entries.Where(f => !f.IsPushPin);
+
+            // pushpinを先頭に連結して返す
             return pushpins.Concat(entries);
         }
 
