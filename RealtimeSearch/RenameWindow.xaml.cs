@@ -36,15 +36,6 @@ namespace RealtimeSearch
         }
         #endregion
 
-        #region Property: File
-        private File _File;
-        public File File
-        {
-            get { return _File; }
-            set { _File = value; OnPropertyChanged(); NewName = System.IO.Path.GetFileName(_File.Path); }
-        }
-        #endregion
-
         #region Property: NewName
         private string _NewName;
         public string NewName
@@ -54,15 +45,19 @@ namespace RealtimeSearch
         }
         #endregion
 
+        private File _File;
+
+
+        //
         public RenameWindow(File file)
         {
-            this.File = file;
+            _File = file;
+            this.NewName = System.IO.Path.GetFileName(file.Path);
 
             InitializeComponent();
             InitializeCommand();
 
             this.DataContext = this;
-
         }
 
         public static readonly RoutedCommand CloseCommand = new RoutedCommand();
@@ -114,7 +109,7 @@ namespace RealtimeSearch
 
         private bool Rename()
         {
-            string src = File.Path;
+            string src = _File.Path;
             string dst = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(src), NewName);
 
             if (src == dst) return true;
@@ -147,7 +142,7 @@ namespace RealtimeSearch
                     return false;
                 }
             }
-            
+
             // 名前変更実行
             try
             {
@@ -159,8 +154,9 @@ namespace RealtimeSearch
                 {
                     System.IO.File.Move(src, dst);
                 }
-                File.Path = dst;
-                File.NotifyAllPropertyCnanged();
+
+                // 項目保持を連絡
+                _File.IsKeep = true;
             }
             catch (Exception ex)
             {

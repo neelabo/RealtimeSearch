@@ -16,6 +16,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Collections.ObjectModel;
 
 namespace RealtimeSearch
 {
@@ -73,7 +74,7 @@ namespace RealtimeSearch
         public SearchEngine SearchEngine { get; private set; }
 
         // 検索結果
-        public List<File> Files { get; private set; }
+        public ObservableCollection<File> Files { get; private set; }
 
         // 検索コマンド
         public ICommand CommandSearch { get; private set; }
@@ -257,12 +258,12 @@ namespace RealtimeSearch
             Setting.WindowPlacement = placement;
         }
 
-
+        // 結果変更
         private void SearchEngine_ResultChanged(object sender, int count)
         {
             if (count <= 0)
             {
-                Files = new List<File>();
+                Files = new ObservableCollection<File>();
                 Information = "";
             }
             else

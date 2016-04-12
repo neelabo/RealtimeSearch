@@ -82,6 +82,23 @@ namespace RealtimeSearch
     }
 
 
+    // rename file at result request
+    public class RenameIndexCommand : SearchEngineCommand
+    {
+        public string Root { get; set; }
+        public string OldPath { get; set; }
+        public string Path { get; set; }
+        public override void Exec()
+        {
+            SearchEngine.CommandRenameIndex(Root, OldPath, Path);
+        }
+        public override string ToString()
+        {
+            return $"{SerialNumber} - RenameIndex {OldPath} => {Path}";
+        }
+    }
+
+
 	// search request
     public class SearchCommand : SearchEngineCommand
     {

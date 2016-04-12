@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -120,8 +121,11 @@ namespace RealtimeSearch
         // 検索結果に対応している現在のキーワード
         public string SearchKeyword { get; private set; }
 
+        // 検索結果に対応しているフォルダオプション
+        public bool IsSearchFolder { get; private set; }
+
         // 検索結果
-        public List<File> SearchResult { get { return _SearchCore.SearchResult; } }
+        public ObservableCollection<File> SearchResult { get { return _SearchCore.SearchResult; } }
 
         // 検索結果の変更イベント
         public event EventHandler<int> ResultChanged;
@@ -218,6 +222,17 @@ namespace RealtimeSearch
         }
 
 
+        // リネームリクエスト
+        public void RenameIndexRequest(string root, string oldPath, string path)
+        {
+            lock (_Lock)
+            {
+                if (_CommandList.Any(cmd => cmd is SearchCommand)) return;
+                AddCommand(new RenameIndexCommand() { Root = root, OldPath = oldPath, Path = path });
+            }
+        }
+
+
         // 検索リクエスト
         public void SearchRequest(string keyword, bool isSearchFolder)
         {
@@ -241,6 +256,8 @@ namespace RealtimeSearch
         }
 
 
+
+        //
         // ワーカータスク
         public async Task EngineAsync()
         {
@@ -290,17 +307,88 @@ namespace RealtimeSearch
 
         public void CommandAddIndex(string root, List<string> paths)
         {
-            _SearchCore.AddPath(root, paths);
+            List<File> newFiles = _SearchCore.AddPaths(root, paths);
+
+            var items = _SearchCore.Search(SearchKeyword, newFiles, IsSearchFolder);
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                foreach (var file in items)
+                {
+                    SearchResult.Add(file);
+                }
+            });
         }
 
         public void CommandRemoveIndex(string root, string path)
         {
-            _SearchCore.RemovePath(root, path);
+            List<File> removeFiles = _SearchCore.RemovePath(root, path);
+
+            var items = SearchResult.Where(f => removeFiles.Any(e => e.Path == f.Path)).ToList();
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                foreach (File item in items)
+                {
+                    SearchResult.Remove(item);
+                }
+            });
         }
+
+        public void CommandRenameIndex(string root, string oldFileName, string fileName)
+        {
+            List<File> removeFiles = _SearchCore.RemovePath(root, oldFileName);
+            List<File> newFiles = _SearchCore.AddPaths(root, new List<string>() { fileName });
+
+            // リネーム保持要求がある場合はマッチングにかかわらずなるべく項目をそのままにする
+            var removeFileOne = removeFiles.Find(f => f.Path == oldFileName);
+            var newFileOne = newFiles.Find(f => f.Path == fileName);
+            if (removeFileOne.IsKeep)
+            {
+                removeFileOne.IsKeep = false;
+                if (removeFileOne != null && newFileOne != null)
+                {
+                    bool isChanged = ChangeResultOne(removeFileOne, newFileOne);
+                    if (isChanged)
+                    {
+                        removeFiles.Remove(removeFileOne);
+                        newFiles.Remove(newFileOne);
+                    }
+                }
+            }
+
+            // 差し替え
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                foreach (File item in SearchResult.Where(f => removeFiles.Any(e => e.Path == f.Path)).ToList())
+                {
+                    SearchResult.Remove(item);
+                }
+                foreach (var file in _SearchCore.Search(SearchKeyword, newFiles, IsSearchFolder))
+                {
+                    SearchResult.Add(file);
+                }
+            });
+        }
+
+        // 項目入れ替え
+        private bool ChangeResultOne(File oldFile, File newFile)
+        {
+            var item = SearchResult?.FirstOrDefault(e => e.Path == oldFile.Path);
+            if (item != null)
+            {
+                int index = SearchResult.IndexOf(item);
+                App.Current.Dispatcher.Invoke(() => SearchResult[index] = newFile);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
 
         public void CommandSearch(string keyword, bool isSearchFolder)
         {
-            _SearchCore.Search(keyword, isSearchFolder);
+            _SearchCore.UpdateSearchResult(keyword, isSearchFolder);
 
             lock (_Lock)
             {
@@ -312,12 +400,14 @@ namespace RealtimeSearch
                 {
                     State = string.IsNullOrEmpty(keyword) ? SearchEngineState.None : SearchEngineState.SearchResultEmpty;
                     SearchKeyword = keyword;
+                    IsSearchFolder = isSearchFolder;
                     ResultChanged?.Invoke(this, _SearchCore.SearchResult.Count);
                 }
                 else
                 {
                     State = SearchEngineState.SearchResult;
                     SearchKeyword = keyword;
+                    IsSearchFolder = isSearchFolder;
                     ResultChanged?.Invoke(this, _SearchCore.SearchResult.Count);
                 }
             }

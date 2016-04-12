@@ -74,6 +74,11 @@ namespace RealtimeSearch
         // ディレクトリ？
         public bool IsDirectory { get; set; }
 
+        // 名前変更による検索結果からの除外を保留する
+        public bool IsKeep { get; set; }
+
+
+        //
         public File()
         {
             //ToNormalisedWord("ＡＢＣ０１２");

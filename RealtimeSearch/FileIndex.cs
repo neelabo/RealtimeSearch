@@ -21,6 +21,7 @@ namespace RealtimeSearch
 
         public bool IsDarty { get; private set; }
 
+        // ファイル変更監視
         private FileSystemWatcher _FileSystemWatcher;
 
         public FileIndex(string path)
@@ -33,7 +34,7 @@ namespace RealtimeSearch
             _FileSystemWatcher.Path = Path;
             _FileSystemWatcher.IncludeSubdirectories = true;
             _FileSystemWatcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName;
-            _FileSystemWatcher.Created += Watcher_Created;
+            _FileSystemWatcher.Created += Watcher_Created; 
             _FileSystemWatcher.Deleted += Watcher_Deleted;
             _FileSystemWatcher.Renamed += Watcher_Renamed;
         }
@@ -48,17 +49,28 @@ namespace RealtimeSearch
             _FileSystemWatcher.EnableRaisingEvents = true;
 
             Files.Clear();
-            Add(Path);
+            Add(Path,  false);
         }
 
 
         // 追加
-        public void Add(string path)
+        public List<File> Add(string path, bool isCheckDuplicate)
         {
+            var addedFiles = new List<File>();
+
             try
             {
+                if (isCheckDuplicate)
+                {
+                    if (Files.Any(f => f.Path == path))
+                    {
+                        return addedFiles;
+                    }
+                }
+
                 var entryFile = new File() { Path = path };
                 Files.Add(entryFile);
+                addedFiles.Add(entryFile);
 
                 if (Directory.Exists(path))
                 {
@@ -68,14 +80,16 @@ namespace RealtimeSearch
                     files.Sort(Win32Api.StrCmpLogicalW);
                     foreach (string file in files)
                     {
-                        Files.Add(new File() { Path = file });
+                        var item = new File() { Path = file };
+                        Files.Add(item);
+                        addedFiles.Add(item);
                     }
 
                     var directories = Directory.GetDirectories(path).ToList();
                     directories.Sort(Win32Api.StrCmpLogicalW);
                     foreach (string directory in directories)
                     {
-                        Add(directory);
+                        addedFiles.AddRange(Add(directory, isCheckDuplicate));
                     }
                 }
             }
@@ -83,17 +97,22 @@ namespace RealtimeSearch
             {
                 Debug.WriteLine(e.Message);
             }
+
+            return addedFiles;
         }
 
         // 削除
-        public void Remove(string path)
+        public List<File> Remove(string path)
         {
-            Debug.WriteLine(Files.Count);
+            //Debug.WriteLine(Files.Count);
 
             string dir = path + "\\";
-            Files.RemoveAll(f => f.Path == path || f.Path.StartsWith(dir));
 
-            Debug.WriteLine(Files.Count);
+            List<File> removeFiles = Files.Where(f => f.Path == path || f.Path.StartsWith(dir)).ToList();
+            Files.RemoveAll(f => removeFiles.Contains(f));
+
+            //Debug.WriteLine(Files.Count);
+            return removeFiles;
         }
 
 
@@ -127,8 +146,7 @@ namespace RealtimeSearch
 
         private void Watcher_Renamed(object sender, RenamedEventArgs e)
         {
-            SearchEngine.Current.RemoveIndexRequest(Path, e.OldFullPath);
-            SearchEngine.Current.AddIndexRequest(Path, e.FullPath);
+            SearchEngine.Current.RenameIndexRequest(Path, e.OldFullPath, e.FullPath);
         }
 
         public void Dispose()

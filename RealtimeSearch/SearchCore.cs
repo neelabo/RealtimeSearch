@@ -4,6 +4,7 @@
 // http://opensource.org/licenses/mit-license.php
 
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -21,9 +22,12 @@ namespace RealtimeSearch
 
         private string[] _Keys;
 
-        public List<File> SearchResult { get; private set; }
+        public ObservableCollection<File> SearchResult { get; private set; }
 
 
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
         public SearchCore()
         {
             _Roots = new List<string>();
@@ -94,20 +98,21 @@ namespace RealtimeSearch
         /// </summary>
         /// <param name="root">検索フォルダ</param>
         /// <param name="paths">追加パス</param>
-        public void AddPath(string root, List<string> paths)
+        public List<File> AddPaths(string root, List<string> paths)
         {
+            var newFiles = new List<File>();
+
             if (!_FileIndexDirectory.ContainsKey(root))
             {
-                return;
+                return newFiles;
             }
 
             foreach (var path in paths)
             {
-                _FileIndexDirectory[root].Add(path);
+                newFiles.AddRange(_FileIndexDirectory[root].Add(path, true));
             }
 
-            // 重複除外
-            _FileIndexDirectory[root].Distinct();
+            return newFiles;
         }
 
 
@@ -116,14 +121,14 @@ namespace RealtimeSearch
         /// </summary>
         /// <param name="root">検索フォルダ</param>
         /// <param name="path">削除パス</param>
-        public void RemovePath(string root, string path)
+        public List<File> RemovePath(string root, string path)
         {
             if (!_FileIndexDirectory.ContainsKey(root))
             {
-                return;
+                return new List<File>();
             }
 
-            _FileIndexDirectory[root].Remove(path);
+            return _FileIndexDirectory[root].Remove(path);
         }
 
 
@@ -170,60 +175,64 @@ namespace RealtimeSearch
             }
         }
 
+        /// <summary>
+        /// 検索 -- 検索結果を更新する
+        /// </summary>
+        /// <param name="keyword">検索キーワード</param>
+        /// <param name="isSearchFolder">フォルダを検索対象に含めるフラグ</param>
+        public void UpdateSearchResult(string keyword, bool isSearchFolder)
+        {
+            SearchResult = new ObservableCollection<File>(Search(keyword, AllFiles(), isSearchFolder));
+        }
+       
 
         /// <summary>
         /// 検索
         /// </summary>
         /// <param name="keyword">検索キーワード</param>
-        public void Search(string keyword, bool isSearchFolder)
+        /// <param name="entries">検索対象</param>
+        /// <param name="isSearchFolder">フォルダを検索対象に含めるフラグ</param>
+        /// <returns></returns>
+        public IEnumerable<File> Search(string keyword, IEnumerable<File> entries, bool isSearchFolder)
         {
             SetKeys(keyword);
-            Search(isSearchFolder);
-        }
 
-
-        /// <summary>
-        /// 検索
-        /// </summary>
-        public void Search(bool isSearchFolder)
-        {
             if (_Keys == null || _Keys[0] == "^$")
             {
-                SearchResult = new List<File>();
-                return;
+                return new List<File>();
             }
 
-            var entrys = AllFiles();
             foreach (var key in _Keys)
             {
                 var regex = new Regex(key, RegexOptions.Compiled);
 
                 var list = new List<File>();
-                foreach (var file in entrys)
+                foreach (var file in entries)
                 {
                     if (regex.Match(file.NormalizedWord).Success)
                     {
                         list.Add(file);
                     }
                 }
-                entrys = list;
+                entries = list;
             }
 
             // ディレクトリ除外
             if (!isSearchFolder)
             {
                 var list = new List<File>();
-                foreach (var file in entrys)
+                foreach (var file in entries)
                 {
                     if (!file.IsDirectory)
                     {
                         list.Add(file);
                     }
                 }
-                entrys = list;
+                entries = list;
             }
 
-            SearchResult = entrys.ToList();
+            return entries;
         }
+
     }
 }

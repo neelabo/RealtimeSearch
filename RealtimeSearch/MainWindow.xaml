@@ -135,21 +135,43 @@
 
             <Grid>
                 <ListView x:Name="listView01" Foreground="Black" ButtonBase.Click="GridViewColumnHeader_ClickHandler" ItemsSource="{Binding Files}" BorderThickness="0" 
+                          HorizontalAlignment="Stretch"
                           ScrollViewer.CanContentScroll="True"
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.VirtualizationMode="Recycling">
 
                     <ListView.Resources>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                        </Style>
 
                         <DataTemplate x:Key="myHeader">
                             <Label Content="{Binding Header, RelativeSource={RelativeSource AncestorType={x:Type GridViewColumn}}}"/>
                         </DataTemplate>
 
                         <DataTemplate x:Key="ItemFileNameTemplate">
-                            <StackPanel Orientation="Horizontal">
-                                <Image Source="{Binding FileInfo.IconSource}" Margin="0,0,4,0"/>
-                                <TextBlock Text="{Binding .}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
-                            </StackPanel>
+                            <DockPanel>
+                                <!--
+                                <ToggleButton DockPanel.Dock="Right" Width="16" Height="16" Content="P">
+                                    <ToggleButton.Style>
+                                    <Style TargetType="ToggleButton">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </Trigger>
+                                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=IsMouseOver}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ToggleButton.Style>
+                                </ToggleButton>
+                                -->
+
+                                <Image DockPanel.Dock="Left" Source="{Binding FileInfo.IconSource}" Width="16" Margin="0,0,4,0"/>
+                                <TextBlock Text="{Binding .}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                            </DockPanel>
                         </DataTemplate>
 
                         <local:FileSizeConverter x:Key="FileSizeConverter"/>
@@ -177,7 +199,7 @@
                                 <GridViewColumnHeader Content="サイズ" Tag="FileInfo.Size"/>
                             </GridViewColumn>
 
-                            <GridViewColumn Header="フォルダー" Width="96" DisplayMemberBinding="{Binding DirectoryName}"/>
+                            <GridViewColumn Header="フォルダー" Width="96" DisplayMemberBinding="{Binding DirectoryName}" />
 
                         </GridView>
                     </ListView.View>
