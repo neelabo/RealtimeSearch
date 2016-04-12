@@ -180,6 +180,7 @@ namespace RealtimeSearch
         public static readonly RoutedCommand OpenPlaceCommand = new RoutedCommand("OpenPlaceCommand", typeof(MainWindow));
         public static readonly RoutedCommand CopyNameCommand = new RoutedCommand("CopyNameCommand", typeof(MainWindow));
         public static readonly RoutedCommand RenameCommand = new RoutedCommand("RenameCommand", typeof(MainWindow));
+        public static readonly RoutedCommand DeleteCommand = new RoutedCommand("DeleteCommand", typeof(MainWindow));
 
         void RegistRoutedCommand()
         {
@@ -196,8 +197,34 @@ namespace RealtimeSearch
 
             RenameCommand.InputGestures.Add(new KeyGesture(Key.F2));
             listView01.CommandBindings.Add(new CommandBinding(RenameCommand, Rename_Executed));
+
+            DeleteCommand.InputGestures.Add(new KeyGesture(Key.Delete));
+            listView01.CommandBindings.Add(new CommandBinding(DeleteCommand, Delete_Executed));
         }
 
+
+        // ファイル削除
+        void Delete_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            File file = (target as ListView)?.SelectedItem as File;
+            if (file != null)
+            {
+                var result = MessageBox.Show($"このファイルをごみ箱に移動しますか？\n\n{file.Path}", "削除確認", MessageBoxButton.OKCancel, MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.OK)
+                {
+                    try
+                    {
+                        // ゴミ箱に捨てる
+                        Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(file.Path, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"ファイル削除に失敗しました\n\n原因: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+        }
 
         // 名前の変更
         void Rename_Executed(object target, ExecutedRoutedEventArgs e)
@@ -207,7 +234,7 @@ namespace RealtimeSearch
             {
                 if (!System.IO.File.Exists(file.Path) && !System.IO.Directory.Exists(file.Path))
                 {
-                    MessageBox.Show($"{file.Path} が見つかりません。", "通知", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show($"{file.Path} が見つかりません。", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 

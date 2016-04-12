@@ -37,6 +37,7 @@
                         <Separator/>
                         <MenuItem Header="ファイルをコピーする(_C)" Command="{x:Static local:MainWindow.CopyCommand}" />
                         <Separator/>
+                        <MenuItem Header="削除(_D)" Command="{x:Static local:MainWindow.DeleteCommand}" />
                         <MenuItem Header="名前の変更(_M)" Command="{x:Static local:MainWindow.RenameCommand}"/>
                         <MenuItem Header="名前をコピーする" Command="{x:Static local:MainWindow.CopyNameCommand}" />
                     </ContextMenu>
