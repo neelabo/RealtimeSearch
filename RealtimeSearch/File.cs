@@ -94,6 +94,7 @@ namespace RealtimeSearch
         {
             FileInfo = new FileInfo(_Path);
             OnPropertyChanged(nameof(FileInfo));
+            OnPropertyChanged(nameof(Detail));
         }
 
         // プロパティウィンドウを開く

@@ -27,8 +27,6 @@
             <EventSetter Event="UIElement.PreviewMouseMove" Handler="PreviewMouseMove_Event"/>
             <EventSetter Event="UIElement.PreviewMouseDown" Handler="PreviewMouseDown_Event"/>
 
-            <Setter Property="ToolTip" Value="{Binding Path=Detail}" />
-
             <Setter Property="ContextMenu">
                 <Setter.Value>
                     <ContextMenu>
@@ -132,7 +130,7 @@
                         </DataTemplate>
 
                         <DataTemplate x:Key="ItemFileNameTemplate">
-                            <DockPanel>
+                            <DockPanel ToolTip="{Binding Detail}">
                                 <CheckBox DockPanel.Dock="Right" Template="{StaticResource PushpinCheckBoxTemplate}" Width="16" Height="16" IsChecked ="{Binding IsPushPin}" >
                                     <CheckBox.Style>
                                         <Style TargetType="CheckBox">
@@ -150,7 +148,7 @@
                                 </CheckBox>
 
                                 <Image DockPanel.Dock="Left" Source="{Binding FileInfo.IconSource}" Width="16" Margin="0,0,4,0"/>
-                                <TextBlock Text="{Binding .}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding .}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
                             </DockPanel>
                         </DataTemplate>
 
