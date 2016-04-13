@@ -27,6 +27,14 @@ namespace RealtimeSearch
         static extern bool DestroyIcon(IntPtr hIcon);
 #endif
 
+
+        [DllImport("shell32.dll", CharSet = CharSet.Auto)]
+        static extern bool SHObjectProperties(IntPtr hwnd, uint shopObjectType, [MarshalAs(UnmanagedType.LPWStr)] string pszObjectName, [MarshalAs(UnmanagedType.LPWStr)] string pszPropertyPage);
+
+        private const uint SHOP_PRINTERNAME = 0x1;
+        private const uint SHOP_FILEPATH = 0x2;
+        private const uint SHOP_VOLUMEGUID = 0x4;
+
         // SHGetFileInfo関数で使用するフラグ
         private const uint SHGFI_ICON = 0x100; // アイコン・リソースの取得
         private const uint SHGFI_LARGEICON = 0x0; // 大きいアイコン
@@ -220,6 +228,21 @@ namespace RealtimeSearch
         {
             var fileInfo = new System.IO.FileInfo(path);
             return fileInfo.LastWriteTime;
+        }
+
+
+        /// <summary>
+        /// プロパティウィンドウを開く
+        /// </summary>
+        /// <param name="path"></param>
+        public static void OpenProperty(System.Windows.Window window, string path)
+        {
+            var handle = new System.Windows.Interop.WindowInteropHelper(window).Handle;
+
+            if (!SHObjectProperties(handle, SHOP_FILEPATH, path, string.Empty))
+            {
+                throw new ApplicationException("プロパティウィンドウを開けませんでした");
+            }
         }
     }
 }

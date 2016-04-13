@@ -98,8 +98,23 @@ namespace RealtimeSearch
         }
     }
 
+    // reflesh  request
+    public class RefleshIndexCommand : SearchEngineCommand
+    {
+        public string Root { get; set; }
+        public string Path { get; set; }
+        public override void Exec()
+        {
+            SearchEngine.CommandRefleshIndex(Root, Path);
+        }
+        public override string ToString()
+        {
+            return $"{SerialNumber} - RefleshIndex {Path}";
+        }
+    }
 
-	// search request
+
+    // search request
     public class SearchCommand : SearchEngineCommand
     {
         public string Keyword { get; set; }

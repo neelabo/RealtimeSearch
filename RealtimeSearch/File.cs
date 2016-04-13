@@ -89,15 +89,19 @@ namespace RealtimeSearch
         }
 
 
-        // すべてのプロパティを更新
-        public void NotifyAllPropertyCnanged()
+        // ファイル情報更新
+        public void Reflesh()
         {
-            OnPropertyChanged("Path");
-            OnPropertyChanged("FileName");
-            OnPropertyChanged("FileInfo");
+            FileInfo = new FileInfo(_Path);
+            OnPropertyChanged(nameof(FileInfo));
         }
 
-
+        // プロパティウィンドウを開く
+        public void OpenProperty(System.Windows.Window window)
+        {
+            FileInfo.OpenProperty(window, _Path);
+        }
+        
         // 正規化された文字列に変換する
         public static string ToNormalisedWord(string src)
         {

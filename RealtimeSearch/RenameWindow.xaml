@@ -11,7 +11,7 @@ http://opensource.org/licenses/mit-license.php
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RealtimeSearch"
         mc:Ignorable="d"
-        Title="名前の変更" Height="112" Width="515" Icon="App.ico" ResizeMode="NoResize">
+        Title="名前の変更" Height="112" Width="515" Icon="App.ico">
 
     <DockPanel Margin="8" LastChildFill="False">
 

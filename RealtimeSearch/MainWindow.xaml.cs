@@ -187,9 +187,9 @@ namespace RealtimeSearch
         public static readonly RoutedCommand CopyNameCommand = new RoutedCommand("CopyNameCommand", typeof(MainWindow));
         public static readonly RoutedCommand RenameCommand = new RoutedCommand("RenameCommand", typeof(MainWindow));
         public static readonly RoutedCommand DeleteCommand = new RoutedCommand("DeleteCommand", typeof(MainWindow));
-
         public static readonly RoutedCommand SearchCommand = new RoutedCommand("SearchCommand", typeof(MainWindow));
         public static readonly RoutedCommand WebSearchCommand = new RoutedCommand("WebSearchCommand", typeof(MainWindow));
+        public static readonly RoutedCommand PropertyCommand = new RoutedCommand("PropertyCommand", typeof(MainWindow));
 
         void RegistRoutedCommand()
         {
@@ -216,7 +216,27 @@ namespace RealtimeSearch
 
             WebSearchCommand.InputGestures.Add(new KeyGesture(Key.F, ModifierKeys.Control));
             this.CommandBindings.Add(new CommandBinding(WebSearchCommand, WebSearch_Executed));
+
+            listView01.CommandBindings.Add(new CommandBinding(PropertyCommand, Property_Executed));
         }
+
+        //
+        void Property_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            File file = (target as ListView)?.SelectedItem as File;
+            if (file != null)
+            {
+                try
+                {
+                    file.OpenProperty(this);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
 
         // 
         void Search_Executed(object target, ExecutedRoutedEventArgs e)

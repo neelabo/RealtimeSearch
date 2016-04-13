@@ -40,6 +40,8 @@
                         <MenuItem Header="削除(_D)" Command="{x:Static local:MainWindow.DeleteCommand}" />
                         <MenuItem Header="名前の変更(_M)" Command="{x:Static local:MainWindow.RenameCommand}"/>
                         <MenuItem Header="名前をコピーする" Command="{x:Static local:MainWindow.CopyNameCommand}" />
+                        <Separator/>
+                        <MenuItem Header="プロパティ(_R)" Command="{x:Static local:MainWindow.PropertyCommand}" />
                     </ContextMenu>
                 </Setter.Value>
             </Setter>
@@ -136,6 +138,7 @@
 
             <Grid>
                 <ListView x:Name="listView01" Foreground="Black" ButtonBase.Click="GridViewColumnHeader_ClickHandler" ItemsSource="{Binding Files}" BorderThickness="0" 
+                          FocusVisualStyle="{x:Null}"
                           HorizontalAlignment="Stretch"
                           ScrollViewer.CanContentScroll="True"
                           VirtualizingPanel.IsVirtualizing="True"

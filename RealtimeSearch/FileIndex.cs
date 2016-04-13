@@ -33,10 +33,11 @@ namespace RealtimeSearch
             _FileSystemWatcher = new FileSystemWatcher();
             _FileSystemWatcher.Path = Path;
             _FileSystemWatcher.IncludeSubdirectories = true;
-            _FileSystemWatcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            _FileSystemWatcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.Size;
             _FileSystemWatcher.Created += Watcher_Created; 
             _FileSystemWatcher.Deleted += Watcher_Deleted;
             _FileSystemWatcher.Renamed += Watcher_Renamed;
+            _FileSystemWatcher.Changed += Watcher_Changed;
         }
 
 
@@ -115,6 +116,16 @@ namespace RealtimeSearch
             return removeFiles;
         }
 
+        // 更新
+        public void RefleshIndex(string path)
+        {
+            var file = Files.Find(f => f.Path == path);
+            if (file == null) return;
+
+            file.Reflesh();
+        }
+
+
 
         class FileComparer : EqualityComparer<File>
         {
@@ -148,6 +159,12 @@ namespace RealtimeSearch
         {
             SearchEngine.Current.RenameIndexRequest(Path, e.OldFullPath, e.FullPath);
         }
+
+        private void Watcher_Changed(object sender, FileSystemEventArgs e)
+        {
+            SearchEngine.Current.RefleshIndexRequest(Path, e.FullPath);
+        }
+
 
         public void Dispose()
         {

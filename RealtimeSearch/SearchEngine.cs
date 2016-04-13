@@ -119,7 +119,7 @@ namespace RealtimeSearch
         private SearchCore _SearchCore;
 
         // 検索結果に対応している現在のキーワード
-        public string SearchKeyword { get; private set; }
+        public string SearchKeyword { get; private set; } = "";
 
         // 検索結果に対応しているフォルダオプション
         public bool IsSearchFolder { get; private set; }
@@ -128,7 +128,8 @@ namespace RealtimeSearch
         public ObservableCollection<File> SearchResult { get { return _SearchCore.SearchResult; } }
 
         // 検索結果の変更イベント
-        public event EventHandler<int> ResultChanged;
+        public event EventHandler ResultChanged;
+
 
         // 外部からコマンドをリクエストできるようにグローバルインスタンスを公開
         public static SearchEngine Current { get; private set; }
@@ -227,8 +228,19 @@ namespace RealtimeSearch
         {
             lock (_Lock)
             {
-                if (_CommandList.Any(cmd => cmd is SearchCommand)) return;
+                if (_CommandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
                 AddCommand(new RenameIndexCommand() { Root = root, OldPath = oldPath, Path = path });
+            }
+        }
+
+
+        // 情報更新リクエスト
+        public void RefleshIndexRequest(string root, string path)
+        {
+            lock (_Lock)
+            {
+                if (_CommandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
+                AddCommand(new RefleshIndexCommand() { Root = root, Path = path });
             }
         }
 
@@ -247,7 +259,7 @@ namespace RealtimeSearch
                 // 制限する理由は、ちらつき防止のため
                 if (Command != null || _CommandList.Count > 1)
                 {
-                    ResultChanged?.Invoke(this, 0);
+                    ResultChanged?.Invoke(this, null);
                     State = string.IsNullOrEmpty(keyword) ? SearchEngineState.None : SearchEngineState.Search;
                 }
 
@@ -317,6 +329,8 @@ namespace RealtimeSearch
                     SearchResult.Add(file);
                 }
             });
+
+            UpdateSearchResultState();
         }
 
         public void CommandRemoveIndex(string root, string path)
@@ -331,6 +345,8 @@ namespace RealtimeSearch
                     SearchResult.Remove(item);
                 }
             });
+
+            UpdateSearchResultState();
         }
 
         public void CommandRenameIndex(string root, string oldFileName, string fileName)
@@ -367,7 +383,10 @@ namespace RealtimeSearch
                     SearchResult.Add(file);
                 }
             });
+
+            UpdateSearchResultState();
         }
+
 
         // 項目入れ替え
         private bool ChangeResultOne(File oldFile, File newFile)
@@ -385,7 +404,15 @@ namespace RealtimeSearch
             }
         }
 
+        // ファイル情報更新
+        public void CommandRefleshIndex(string root, string path)
+        {
+            _SearchCore.RefleshIndex(root, path);
+        }
 
+
+
+        // 検索
         public void CommandSearch(string keyword, bool isSearchFolder)
         {
             _SearchCore.UpdateSearchResult(keyword, isSearchFolder);
@@ -396,21 +423,24 @@ namespace RealtimeSearch
                 {
                     State = SearchEngineState.Search;
                 }
-                else if (_SearchCore.SearchResult.Count <= 0)
-                {
-                    State = string.IsNullOrEmpty(keyword) ? SearchEngineState.None : SearchEngineState.SearchResultEmpty;
-                    SearchKeyword = keyword;
-                    IsSearchFolder = isSearchFolder;
-                    ResultChanged?.Invoke(this, _SearchCore.SearchResult.Count);
-                }
                 else
                 {
-                    State = SearchEngineState.SearchResult;
                     SearchKeyword = keyword;
                     IsSearchFolder = isSearchFolder;
-                    ResultChanged?.Invoke(this, _SearchCore.SearchResult.Count);
+                    UpdateSearchResultState();
                 }
             }
+        }
+
+        // 検索結果状態更新
+        private void UpdateSearchResultState()
+        {
+            if (SearchResult.Count <= 0)
+                State = string.IsNullOrEmpty(SearchKeyword) ? SearchEngineState.None : SearchEngineState.SearchResultEmpty;
+            else
+                State = SearchEngineState.SearchResult;
+
+            ResultChanged?.Invoke(this, null);
         }
     }
 }

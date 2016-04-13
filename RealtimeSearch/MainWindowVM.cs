@@ -18,7 +18,6 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Collections.ObjectModel;
 
-// TODO: 検索結果が0の時にファイルが追加されても検索結果に含まれないバグ
 // TODO: ダウンロードでの追加ファイルのサイズが0になるバグ
 
 namespace RealtimeSearch
@@ -58,7 +57,7 @@ namespace RealtimeSearch
         }
 
         // 検索キーワード
-        private string _Keyword;
+        private string _Keyword = "";
         public string Keyword
         {
             get { return _Keyword; }
@@ -111,7 +110,7 @@ namespace RealtimeSearch
             SearchEngine = new SearchEngine();
             SearchEngine.Start();
 
-            SearchEngine.ResultChanged += SearchEngine_ResultChanged;
+            SearchEngine.ResultChanged += (s, e) => SearchEngine_ResultChanged(s);
             SearchEngine.StateMessageChanged += (s, e) => StateMessageChanged(s, e);
 
             // title
@@ -253,21 +252,23 @@ namespace RealtimeSearch
         }
 
         // 結果変更
-        private void SearchEngine_ResultChanged(object sender, int count)
+        private void SearchEngine_ResultChanged(object sender)
         {
-            if (count <= 0)
+            if (Files != SearchEngine.SearchResult)
             {
-                Files = new ObservableCollection<File>();
+                Files = SearchEngine.SearchResult;
+                OnPropertyChanged(nameof(Files));
+                OnPropertyChanged(nameof(WindowTitle));
+            }
+
+            if (SearchEngine.SearchResult.Count <= 0)
+            {
                 Information = "";
             }
             else
             {
-                Files = SearchEngine.SearchResult;
                 Information = string.Format("{0:#,0} 個の項目", Files.Count);
             }
-
-            OnPropertyChanged(nameof(Files));
-            OnPropertyChanged(nameof(WindowTitle));
         }
 
 

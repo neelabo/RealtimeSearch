@@ -32,6 +32,7 @@ namespace RealtimeSearch
         {
             _Roots = new List<string>();
             _FileIndexDirectory = new Dictionary<string, FileIndex>();
+            SearchResult = new ObservableCollection<File>();
         }
 
 
@@ -129,6 +130,21 @@ namespace RealtimeSearch
             }
 
             return _FileIndexDirectory[root].Remove(path);
+        }
+
+        /// <summary>
+        /// インデックスの情報更新
+        /// </summary>
+        /// <param name="root"></param>
+        /// <param name="path"></param>
+        public void RefleshIndex(string root, string path)
+        {
+            if (!_FileIndexDirectory.ContainsKey(root))
+            {
+                return;
+            }
+
+            _FileIndexDirectory[root].RefleshIndex(path);
         }
 
 
