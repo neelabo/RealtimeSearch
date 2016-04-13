@@ -49,7 +49,6 @@ namespace RealtimeSearch
 
         private void MainWindowVM_StateMessageChanged(object sender, SearchEngineState e)
         {
-            DispBusy(e == SearchEngineState.Search);
         }
 
         private void Window_SourceInitialized(object sender, EventArgs e)
@@ -473,39 +472,6 @@ namespace RealtimeSearch
             window.Owner = this;
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             window.ShowDialog();
-        }
-
-
-        /// <summary>
-        /// Busy表示/非表示
-        /// </summary>
-        /// <param name="isDisp"></param>
-        private void DispBusy(bool isDisp)
-        {
-            if (isDisp)
-            {
-                this.BusyMark.Opacity = 0.0;
-
-                var ani = new DoubleAnimation(0, 0.8, TimeSpan.FromSeconds(0.5));
-                ani.BeginTime = TimeSpan.FromSeconds(1.0);
-                this.BusyMark.BeginAnimation(UIElement.OpacityProperty, ani);
-
-                var aniRotate = new DoubleAnimation();
-                aniRotate.By = 360;
-                aniRotate.Duration = TimeSpan.FromSeconds(2.0);
-                aniRotate.RepeatBehavior = RepeatBehavior.Forever;
-                this.BusyMarkAngle.BeginAnimation(RotateTransform.AngleProperty, aniRotate);
-            }
-            else
-            {
-                var ani = new DoubleAnimation(0, TimeSpan.FromSeconds(0.5));
-                this.BusyMark.BeginAnimation(UIElement.OpacityProperty, ani, HandoffBehavior.Compose);
-
-                var aniRotate = new DoubleAnimation();
-                aniRotate.By = 90;
-                aniRotate.Duration = TimeSpan.FromSeconds(0.5);
-                this.BusyMarkAngle.BeginAnimation(RotateTransform.AngleProperty, aniRotate);
-            }
         }
 
 

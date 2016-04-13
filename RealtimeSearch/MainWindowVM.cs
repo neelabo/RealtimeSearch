@@ -18,8 +18,6 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Collections.ObjectModel;
 
-// TODO: ダウンロードでの追加ファイルのサイズが0になるバグ
-
 namespace RealtimeSearch
 {
     public class MainWindowVM : INotifyPropertyChanged
@@ -40,21 +38,7 @@ namespace RealtimeSearch
 
 
         private string _DefaultWindowTitle;
-
-        public string WindowTitle
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(SearchEngine.SearchKeyword))
-                {
-                    return _DefaultWindowTitle;
-                }
-                else
-                {
-                    return SearchEngine.SearchKeyword; // + " - " + _DefaultWindowTitle;
-                }
-            }
-        }
+        public string WindowTitle => _DefaultWindowTitle;
 
         // 検索キーワード
         private string _Keyword = "";

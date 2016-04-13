@@ -69,7 +69,7 @@ namespace RealtimeSearch
             get
             {
                 if (_State == SearchEngineState.Search)
-                    return "処理中です...";
+                    return "処理中です";
                 else if (_State == SearchEngineState.SearchResultEmpty)
                     return "条件に一致する項目はありません。";
                 else
@@ -119,7 +119,15 @@ namespace RealtimeSearch
         private SearchCore _SearchCore;
 
         // 検索結果に対応している現在のキーワード
-        public string SearchKeyword { get; private set; } = "";
+        #region Property: SearchKeyword
+        private string _SearchKeyword = "";
+        public string SearchKeyword
+        {
+            get { return _SearchKeyword; }
+            private set { _SearchKeyword = value; OnPropertyChanged(); }
+        }
+        #endregion
+
 
         // 検索結果に対応しているフォルダオプション
         public bool IsSearchFolder { get; private set; }
@@ -419,7 +427,7 @@ namespace RealtimeSearch
 
             lock (_Lock)
             {
-                if (_CommandList.Any(n => n is SearchCommand))
+                if (_CommandList.Any(n => n is SearchCommand)) // 連続検索のちらつき回避
                 {
                     State = SearchEngineState.Search;
                 }

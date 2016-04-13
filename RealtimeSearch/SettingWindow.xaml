@@ -29,7 +29,7 @@
         <TabItem Header="検索">
             <DockPanel x:Name="BaseControl" Margin="8" >
 
-                <CheckBox  DockPanel.Dock="bottom" IsChecked="{Binding Setting.IsSearchFolder}" VerticalAlignment="Center" Content="フォルダも検索対象とする"/>
+                <CheckBox  DockPanel.Dock="bottom" IsChecked="{Binding Setting.IsSearchFolder}" VerticalAlignment="Center" Content="フォルダも検索結果に含める"/>
                 <CheckBox  DockPanel.Dock="bottom" IsChecked="{Binding Setting.IsMonitorClipboard}" VerticalAlignment="Center" Content="クリップボードを監視"/>
 
                 <DockPanel x:Name="SearchPathPanel">

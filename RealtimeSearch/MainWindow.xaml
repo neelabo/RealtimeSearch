@@ -112,28 +112,6 @@
 
             <Grid DockPanel.Dock="Bottom" Margin="2">
                 <TextBlock DockPanel.Dock="Bottom" x:Name="status" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Information}" TextDecorations="{x:Null}" />
-
-                <Grid x:Name="BusyMark" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="30" Height="20" RenderTransformOrigin="0.5,0.5" Opacity="0">
-                    <Grid.RenderTransform>
-                        <TransformGroup>
-                            <ScaleTransform/>
-                            <SkewTransform/>
-                            <RotateTransform x:Name="BusyMarkAngle" Angle="45"/>
-                            <TranslateTransform/>
-                        </TransformGroup>
-                    </Grid.RenderTransform>
-                    <!--
-                    <Ellipse Width="20" Height="20" StrokeThickness="5" >
-                        <Ellipse.Stroke>
-                            <RadialGradientBrush GradientOrigin="0.8,0.8" Center="0.8,0.8">
-                                <GradientStop Color="#FF82C6FF" Offset="0"/>
-                                <GradientStop Color="#FF006DC7" Offset="0.84"/>
-                            </RadialGradientBrush>
-                        </Ellipse.Stroke>
-                    </Ellipse>
-                    -->
-                    <Rectangle Width="5" Height="20" Fill="#FF006DC7" RenderTransformOrigin="0.5,0.5"/>
-                </Grid>
             </Grid>
 
             <Grid>
@@ -207,10 +185,56 @@
                     </ListView.View>
                 </ListView>
 
+                <StackPanel Margin="0,40,0,0" Visibility="{Binding Path=SearchEngine.StateMessage, Converter={StaticResource StringToVisibility}}">
+                    <TextBlock TextTrimming="CharacterEllipsis" Text="{Binding SearchEngine.SearchKeyword}" HorizontalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="Gray"/>
+                                <Setter Property="Visibility" Value="Hidden"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SearchEngine.State}" Value="SearchResultEmpty">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                        <Grid Visibility="{Binding ElementName=BusyText, Path=Visibility}" Width="34"/>
+                        <TextBlock x:Name="textBlock_Busy" Text="{Binding Path=SearchEngine.StateMessage}" Foreground="Gray"/>
+                        <TextBlock x:Name="BusyText" Margin="2,0" Width="30">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="Gray"/>
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SearchEngine.State}" Value="Search">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                            <TextBlock.Triggers>
+                                <EventTrigger RoutedEvent="TextBlock.Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <StringAnimationUsingKeyFrames Storyboard.TargetName="BusyText"
+                                                                       Storyboard.TargetProperty="Text"
+                                                                       Duration="0:0:2.5"
+                                                                       RepeatBehavior="Forever">
+                                                <DiscreteStringKeyFrame Value="." KeyTime="0:0:0.0" />
+                                                <DiscreteStringKeyFrame Value=".." KeyTime="0:0:0.5" />
+                                                <DiscreteStringKeyFrame Value="..." KeyTime="0:0:1.0" />
+                                                <DiscreteStringKeyFrame Value="...." KeyTime="0:0:1.5" />
+                                            </StringAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </TextBlock.Triggers>
+                        </TextBlock>
 
-                <TextBlock x:Name="textBlock_Busy" Margin="0,40,0,0" TextWrapping="Wrap" TextAlignment="Center" Foreground="Gray"
-                           Text="{Binding Path=SearchEngine.StateMessage}" 
-                           Visibility="{Binding Path=SearchEngine.StateMessage, Converter={StaticResource StringToVisibility}}"/>
+                    </StackPanel>
+                </StackPanel>
             </Grid>
 
         </DockPanel>
