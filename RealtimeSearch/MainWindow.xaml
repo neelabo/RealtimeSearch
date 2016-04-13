@@ -88,10 +88,10 @@
                 <Grid>
                     <TextBox x:Name="keyword" Padding="0,0,40,0" Text="{Binding Keyword, Delay=200, UpdateSourceTrigger=PropertyChanged}"  KeyDown="keyword_KeyDown" MaxLines="256" VerticalContentAlignment="Center" BorderThickness="1,1,1,1" BorderBrush="#FFDDDDDD"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Style="{StaticResource IconButton}" Width="26" Height="26" Command="{Binding CommandSearch}" ToolTip="再検索(Ctrl+R)">
+                        <Button Style="{StaticResource IconButton}" Width="26" Height="26" Command="{x:Static local:MainWindow.SearchCommand}" ToolTip="再検索(Ctrl+R)">
                             <Image Width="16" Height="16" Source="{StaticResource ic_reflesh_24px}"/>
                         </Button>
-                        <Button Style="{StaticResource IconButton}" Width="26" Height="26" Command="{Binding CommandWebSearch}" ToolTip="Web検索(Ctrl+F)">
+                        <Button Style="{StaticResource IconButton}" Width="26" Height="26" Command="{x:Static local:MainWindow.WebSearchCommand}" ToolTip="Web検索(Ctrl+F)">
                             <Image Width="16" Height="16" Source="{StaticResource ic_public_24px}"/>
                         </Button>
                     </StackPanel>
@@ -194,7 +194,7 @@
 
                             <GridViewColumn Header="更新日時" Width="96" DisplayMemberBinding="{Binding FileInfo.LastWriteTime, StringFormat=yyyy/MM/dd HH:mm}" />
                             <GridViewColumn Header="種類" Width="96" DisplayMemberBinding="{Binding FileInfo.TypeName}"/>
-                            <GridViewColumn Width="96" CellTemplate="{StaticResource ItemSizeTemplate}">
+                            <GridViewColumn Width="96" CellTemplate="{StaticResource ItemSizeTemplate}" >
                                 <GridViewColumnHeader Content="サイズ" Tag="FileInfo.Size"/>
                             </GridViewColumn>
 

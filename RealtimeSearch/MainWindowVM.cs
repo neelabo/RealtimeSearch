@@ -18,6 +18,9 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Collections.ObjectModel;
 
+// TODO: 検索結果が0の時にファイルが追加されても検索結果に含まれないバグ
+// TODO: ダウンロードでの追加ファイルのサイズが0になるバグ
+
 namespace RealtimeSearch
 {
     public class MainWindowVM : INotifyPropertyChanged
@@ -76,12 +79,6 @@ namespace RealtimeSearch
         // 検索結果
         public ObservableCollection<File> Files { get; private set; }
 
-        // 検索コマンド
-        public ICommand CommandSearch { get; private set; }
-
-        // Web検索コマンド
-        public ICommand CommandWebSearch { get; private set; }
-
         // 設定
         #region Property: Setting
         private Setting _Setting;
@@ -113,9 +110,6 @@ namespace RealtimeSearch
         {
             SearchEngine = new SearchEngine();
             SearchEngine.Start();
-
-            CommandSearch = new RelayCommand(Search);
-            CommandWebSearch = new RelayCommand(WebSearch);
 
             SearchEngine.ResultChanged += SearchEngine_ResultChanged;
             SearchEngine.StateMessageChanged += (s, e) => StateMessageChanged(s, e);

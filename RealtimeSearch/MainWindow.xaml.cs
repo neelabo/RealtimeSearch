@@ -59,6 +59,9 @@ namespace RealtimeSearch
 
             // ウィンドウ座標復元
             VM.RestoreWindowPlacement(this);
+
+            // ListViewレイアウト復元
+            RestoreListViewMemento(VM.Setting.ListViewColumnMemento);
         }
 
 
@@ -77,6 +80,9 @@ namespace RealtimeSearch
 
         private void Window_Closing(object sender, EventArgs e)
         {
+            // ListViewレイアウト保存
+            VM.Setting.ListViewColumnMemento = CreateListViewMemento();
+
             // ウィンドウ座標保存
             VM.StoreWindowPlacement(this);
         }
@@ -351,7 +357,7 @@ namespace RealtimeSearch
         }
 
 
-
+        #region リストのソート
 
         // リストのソート用
         GridViewColumnHeader _LastHeaderClicked = null;
@@ -433,6 +439,7 @@ namespace RealtimeSearch
             dataView.Refresh();
         }
 
+        #endregion
 
 
         private void SettingButton_Click(object sender, RoutedEventArgs e)
@@ -482,6 +489,58 @@ namespace RealtimeSearch
         }
 
 
+        #region ListViewColumnMemento
+
+        // カラムヘッダ文字列取得
+        private string GetColumnHeaderText(GridViewColumn column)
+        {
+            return (column.Header as string) ?? (column.Header as GridViewColumnHeader)?.Content as string;
+        }
+
+        // リストビューカラム状態保存
+        private List<ListViewColumnMemento> CreateListViewMemento()
+        {
+            var columns = (this.listView01.View as GridView)?.Columns;
+            if (columns == null) return null;
+
+            var memento = new List<ListViewColumnMemento>();
+            foreach (var column in columns)
+            {
+                string key = GetColumnHeaderText(column);
+                if (key != null)
+                {
+                    memento.Add(new ListViewColumnMemento() { Header = key, Width = column.Width });
+                }
+            }
+            return memento;
+        }
+
+        // リストビューカラム状態復帰
+        private void RestoreListViewMemento(List<ListViewColumnMemento> memento)
+        {
+            if (memento == null) return;
+
+            var columns = (this.listView01.View as GridView)?.Columns;
+            if (columns == null) return;
+
+            for (int index = 0; index < memento.Count; ++index)
+            {
+                var item = memento[index];
+
+                var column = columns.FirstOrDefault(e => GetColumnHeaderText(e) == item.Header);
+                if (column != null)
+                {
+                    int oldIndex = columns.IndexOf(column);
+                    if (oldIndex >= 0 && oldIndex != index)
+                    {
+                        columns.Move(oldIndex, index);
+                    }
+                    column.Width = item.Width;
+                }
+            }
+        }
+
+        #endregion
 
 
         // for Debug

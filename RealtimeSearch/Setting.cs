@@ -17,6 +17,15 @@ using System.Xml;
 namespace RealtimeSearch
 {
     [DataContract]
+    public class ListViewColumnMemento
+    {
+        [DataMember]
+        public string Header { get; set; }
+        [DataMember]
+        public double Width { get; set; }
+    }
+
+    [DataContract]
     public class Setting : INotifyPropertyChanged
     {
         #region NotifyPropertyChanged
@@ -30,7 +39,7 @@ namespace RealtimeSearch
             }
         }
         #endregion
-    
+
         [DataMember]
         public ObservableCollection<string> SearchPaths { set; get; }
 
@@ -105,6 +114,9 @@ namespace RealtimeSearch
         #endregion
 
 
+        [DataMember]
+        public List<ListViewColumnMemento> ListViewColumnMemento { get; set; }
+
 
 
         //----------------------------------------------------------------------------
@@ -144,7 +156,7 @@ namespace RealtimeSearch
             }
         }
 
-        
+
         public static Setting Load(string path)
         {
             using (XmlReader xr = XmlReader.Create(path))
