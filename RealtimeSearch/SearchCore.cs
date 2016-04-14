@@ -18,11 +18,11 @@ namespace RealtimeSearch
     {
         private List<string> _Roots;
 
-        private Dictionary<string, FileIndex> _FileIndexDirectory;
+        private Dictionary<string, NodeTree> _FileIndexDirectory;
 
         private string[] _Keys;
 
-        public ObservableCollection<File> SearchResult { get; private set; }
+        public ObservableCollection<NodeContent> SearchResult { get; private set; }
 
 
         /// <summary>
@@ -31,8 +31,8 @@ namespace RealtimeSearch
         public SearchCore()
         {
             _Roots = new List<string>();
-            _FileIndexDirectory = new Dictionary<string, FileIndex>();
-            SearchResult = new ObservableCollection<File>();
+            _FileIndexDirectory = new Dictionary<string, NodeTree>();
+            SearchResult = new ObservableCollection<NodeContent>();
         }
 
 
@@ -42,8 +42,9 @@ namespace RealtimeSearch
         /// <param name="roots">検索フォルダ群</param>
         public void Collect(string[] roots)
         {
-            // 他のパスに含まれるなら除外
             _Roots.Clear();
+
+            // 他のパスに含まれるなら除外
             foreach (var path in roots)
             {
                 if (!roots.Any(p => path != p && path.StartsWith(p.TrimEnd('\\') + "\\")))
@@ -62,15 +63,15 @@ namespace RealtimeSearch
         /// </summary>
         public void Collect()
         {
-            var newDinctionary = new Dictionary<string, FileIndex>();
+            var newDinctionary = new Dictionary<string, NodeTree>();
 
             foreach (var root in _Roots)
             {
-                FileIndex sub;
+                NodeTree sub;
 
                 if (!_FileIndexDirectory.ContainsKey(root))
                 {
-                    sub = new FileIndex(root);
+                    sub = new NodeTree(root);
                 }
                 else
                 {
@@ -91,6 +92,7 @@ namespace RealtimeSearch
             }
 
             _FileIndexDirectory = newDinctionary;
+            System.GC.Collect();
         }
 
 
@@ -99,21 +101,14 @@ namespace RealtimeSearch
         /// </summary>
         /// <param name="root">検索フォルダ</param>
         /// <param name="paths">追加パス</param>
-        public List<File> AddPaths(string root, List<string> paths)
+        public Node AddPath(string root, string path)
         {
-            var newFiles = new List<File>();
-
             if (!_FileIndexDirectory.ContainsKey(root))
             {
-                return newFiles;
+                return null;
             }
 
-            foreach (var path in paths)
-            {
-                newFiles.AddRange(_FileIndexDirectory[root].Add(path, true));
-            }
-
-            return newFiles;
+            return _FileIndexDirectory[root].AddNode(path);
         }
 
 
@@ -122,15 +117,33 @@ namespace RealtimeSearch
         /// </summary>
         /// <param name="root">検索フォルダ</param>
         /// <param name="path">削除パス</param>
-        public List<File> RemovePath(string root, string path)
+        public Node RemovePath(string root, string path)
         {
             if (!_FileIndexDirectory.ContainsKey(root))
             {
-                return new List<File>();
+                return null;
             }
 
-            return _FileIndexDirectory[root].Remove(path);
+            return _FileIndexDirectory[root].RemoveNode(path);
         }
+
+        /// <summary>
+        /// リネーム
+        /// </summary>
+        /// <param name="root"></param>
+        /// <param name="oldFileName"></param>
+        /// <param name="newFilename"></param>
+        public Node RenamePath(string root, string oldFileName, string newFileName)
+        {
+            if (!_FileIndexDirectory.ContainsKey(root))
+            {
+                return null;
+            }
+
+            return _FileIndexDirectory[root].Rename(oldFileName, newFileName);
+        }
+
+
 
         /// <summary>
         /// インデックスの情報更新
@@ -144,7 +157,7 @@ namespace RealtimeSearch
                 return;
             }
 
-            _FileIndexDirectory[root].RefleshIndex(path);
+            _FileIndexDirectory[root].RefleshNode(path);
         }
 
 
@@ -165,7 +178,7 @@ namespace RealtimeSearch
 
             for (int i = 0; i < _Keys.Length; ++i)
             {
-                var t = File.ToNormalisedWord(_Keys[i]);
+                var t = Node.ToNormalisedWord(_Keys[i]);
 
                 // 正規表現記号をエスケープ
                 t = Regex.Escape(t);
@@ -179,15 +192,27 @@ namespace RealtimeSearch
 
 
         /// <summary>
-        /// すべてのFileIndexを走査
+        /// すべてのNodeを走査
         /// </summary>
         /// <returns></returns>
-        private IEnumerable<File> AllFiles()
+        private IEnumerable<Node> AllNodes()
         {
             foreach (var part in _FileIndexDirectory)
             {
-                foreach (var file in part.Value.Files)
-                    yield return file;
+                foreach (var node in part.Value.Root.AllChildren())
+                    yield return node;
+            }
+        }
+
+        //
+        private object _Lock = new object();
+
+        //
+        public void ClearSearchResult()
+        {
+            lock (_Lock)
+            {
+                SearchResult.Clear();
             }
         }
 
@@ -198,9 +223,11 @@ namespace RealtimeSearch
         /// <param name="isSearchFolder">フォルダを検索対象に含めるフラグ</param>
         public void UpdateSearchResult(string keyword, bool isSearchFolder)
         {
-            SearchResult = new ObservableCollection<File>(Search(keyword, AllFiles(), isSearchFolder));
+            lock (_Lock)
+            {
+                SearchResult = new ObservableCollection<NodeContent>(Search(keyword, AllNodes(), isSearchFolder).Select(e => e.Content));
+            }
         }
-
 
         /// <summary>
         /// 検索
@@ -209,10 +236,10 @@ namespace RealtimeSearch
         /// <param name="entries">検索対象</param>
         /// <param name="isSearchFolder">フォルダを検索対象に含めるフラグ</param>
         /// <returns></returns>
-        public IEnumerable<File> Search(string keyword, IEnumerable<File> entries, bool isSearchFolder)
+        public IEnumerable<Node> Search(string keyword, IEnumerable<Node> entries, bool isSearchFolder)
         {
             // pushpin保存
-            var pushpins = entries.Where(f => f.IsPushPin);
+            var pushpins = entries.Where(f => f.Content.IsPushPin);
 
             // キーワード登録
             SetKeys(keyword);
@@ -235,7 +262,7 @@ namespace RealtimeSearch
             }
 
             // pushpin除外
-            entries = entries.Where(f => !f.IsPushPin);
+            entries = entries.Where(f => !f.Content.IsPushPin);
 
             // pushpinを先頭に連結して返す
             return pushpins.Concat(entries);

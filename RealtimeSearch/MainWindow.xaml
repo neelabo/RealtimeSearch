@@ -148,7 +148,7 @@
                                 </CheckBox>
 
                                 <Image DockPanel.Dock="Left" Source="{Binding FileInfo.IconSource}" Width="16" Margin="0,0,4,0"/>
-                                <TextBlock Text="{Binding .}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
                             </DockPanel>
                         </DataTemplate>
 
@@ -183,12 +183,12 @@
                     </ListView.View>
                 </ListView>
 
-                <StackPanel Margin="0,40,0,0" Visibility="{Binding Path=SearchEngine.StateMessage, Converter={StaticResource StringToVisibility}}">
-                    <TextBlock TextTrimming="CharacterEllipsis" Text="{Binding SearchEngine.SearchKeyword}" HorizontalAlignment="Center">
+                <StackPanel Margin="0,40,0,0" Visibility="{Binding Path=SearchEngine.StateMessage, Converter={StaticResource StringToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Top" Background="White">
+                    <TextBlock Margin="10" TextTrimming="CharacterEllipsis" Text="{Binding SearchEngine.SearchKeyword}" HorizontalAlignment="Center">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
                                 <Setter Property="Foreground" Value="Gray"/>
-                                <Setter Property="Visibility" Value="Hidden"/>
+                                <Setter Property="Visibility" Value="Collapsed"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding SearchEngine.State}" Value="SearchResultEmpty">
                                         <Setter Property="Visibility" Value="Visible"/>
@@ -197,7 +197,7 @@
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
                         <Grid Visibility="{Binding ElementName=BusyText, Path=Visibility}" Width="34"/>
                         <TextBlock x:Name="textBlock_Busy" Text="{Binding Path=SearchEngine.StateMessage}" Foreground="Gray"/>
                         <TextBlock x:Name="BusyText" Margin="2,0" Width="30">

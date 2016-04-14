@@ -133,7 +133,7 @@ namespace RealtimeSearch
         public bool IsSearchFolder { get; private set; }
 
         // 検索結果
-        public ObservableCollection<File> SearchResult { get { return _SearchCore.SearchResult; } }
+        public ObservableCollection<NodeContent> SearchResult { get { return _SearchCore.SearchResult; } }
 
         // 検索結果の変更イベント
         public event EventHandler ResultChanged;
@@ -202,7 +202,7 @@ namespace RealtimeSearch
             {
                 if (_CommandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
 
-                // コマンドをまとめる
+                // コマンドをまとめる？
                 AddIndexCommand command = (_CommandList.Count >= 1) ? _CommandList.LastOrDefault(c => c is AddIndexCommand && ((AddIndexCommand)c).Root == root) as AddIndexCommand : null;
                 if (command != null && command.Root == root)
                 {
@@ -298,11 +298,15 @@ namespace RealtimeSearch
                 if (Command.IsCancel) continue;
 
 #if DEBUG
-                await Task.Delay(100); // 開発用遅延
+                //await Task.Delay(100); // 開発用遅延
 #endif
                 try
                 {
+                    //var sw = new Stopwatch();
+                    //sw.Start();
                     Command.Exec();
+                    //sw.Stop();
+                    //Debug.WriteLine($"({sw.ElapsedMilliseconds}ms) {Command}");
                 }
                 catch (Exception e)
                 {
@@ -327,28 +331,33 @@ namespace RealtimeSearch
 
         public void CommandAddIndex(string root, List<string> paths)
         {
-            List<File> newFiles = _SearchCore.AddPaths(root, paths);
-
-            var items = _SearchCore.Search(SearchKeyword, newFiles, IsSearchFolder);
-            App.Current.Dispatcher.Invoke(() =>
+            foreach (var path in paths)
             {
-                foreach (var file in items)
+                Node node = _SearchCore.AddPath(root, path);
+                if (node != null)
                 {
-                    SearchResult.Add(file);
-                }
-            });
+                    var items = _SearchCore.Search(SearchKeyword, node.AllNodes(), IsSearchFolder);
+                    App.Current.Dispatcher.Invoke(() =>
+                    {
+                        foreach (var file in items)
+                        {
+                            SearchResult.Add(file.Content);
+                        }
+                    });
 
-            UpdateSearchResultState();
+                    UpdateSearchResultState();
+                }
+            }
         }
 
         public void CommandRemoveIndex(string root, string path)
         {
-            List<File> removeFiles = _SearchCore.RemovePath(root, path);
+            Node node = _SearchCore.RemovePath(root, path);
 
-            var items = SearchResult.Where(f => removeFiles.Any(e => e.Path == f.Path)).ToList();
+            var items = SearchResult.Where(f => f.IsRemoved).ToList();
             App.Current.Dispatcher.Invoke(() =>
             {
-                foreach (File item in items)
+                foreach (var item in items)
                 {
                     SearchResult.Remove(item);
                 }
@@ -359,58 +368,26 @@ namespace RealtimeSearch
 
         public void CommandRenameIndex(string root, string oldFileName, string fileName)
         {
-            List<File> removeFiles = _SearchCore.RemovePath(root, oldFileName);
-            List<File> newFiles = _SearchCore.AddPaths(root, new List<string>() { fileName });
-
-            // リネーム保持要求がある場合はマッチングにかかわらずなるべく項目をそのままにする
-            var removeFileOne = removeFiles.Find(f => f.Path == oldFileName);
-            var newFileOne = newFiles.Find(f => f.Path == fileName);
-            if (removeFileOne.IsKeep)
+            var node = _SearchCore.RenamePath(root, oldFileName, fileName);
+            if (node != null && !SearchResult.Contains(node.Content))
             {
-                removeFileOne.IsKeep = false;
-                if (removeFileOne != null && newFileOne != null)
+                var items = _SearchCore.Search(SearchKeyword, new List<Node>() { node }, IsSearchFolder);
+
+                if (items.Count() > 0)
                 {
-                    bool isChanged = ChangeResultOne(removeFileOne, newFileOne);
-                    if (isChanged)
+                    App.Current.Dispatcher.Invoke(() =>
                     {
-                        removeFiles.Remove(removeFileOne);
-                        newFiles.Remove(newFileOne);
-                    }
+                        foreach (var file in items)
+                        {
+                            SearchResult.Add(file.Content);
+                        }
+                    });
+
+                    UpdateSearchResultState();
                 }
             }
-
-            // 差し替え
-            App.Current.Dispatcher.Invoke(() =>
-            {
-                foreach (File item in SearchResult.Where(f => removeFiles.Any(e => e.Path == f.Path)).ToList())
-                {
-                    SearchResult.Remove(item);
-                }
-                foreach (var file in _SearchCore.Search(SearchKeyword, newFiles, IsSearchFolder))
-                {
-                    SearchResult.Add(file);
-                }
-            });
-
-            UpdateSearchResultState();
         }
 
-
-        // 項目入れ替え
-        private bool ChangeResultOne(File oldFile, File newFile)
-        {
-            var item = SearchResult?.FirstOrDefault(e => e.Path == oldFile.Path);
-            if (item != null)
-            {
-                int index = SearchResult.IndexOf(item);
-                App.Current.Dispatcher.Invoke(() => SearchResult[index] = newFile);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
 
         // ファイル情報更新
         public void CommandRefleshIndex(string root, string path)
@@ -427,26 +404,27 @@ namespace RealtimeSearch
 
             lock (_Lock)
             {
-                if (_CommandList.Any(n => n is SearchCommand)) // 連続検索のちらつき回避
-                {
-                    State = SearchEngineState.Search;
-                }
-                else
-                {
-                    SearchKeyword = keyword;
-                    IsSearchFolder = isSearchFolder;
-                    UpdateSearchResultState();
-                }
+                SearchKeyword = keyword;
+                IsSearchFolder = isSearchFolder;
+                UpdateSearchResultState();
             }
         }
 
         // 検索結果状態更新
         private void UpdateSearchResultState()
         {
-            if (SearchResult.Count <= 0)
+            if (_CommandList.Any(n => n is SearchCommand))
+            {
+                //State = SearchEngineState.Search;
+            }
+            else if (SearchResult.Count <= 0)
+            {
                 State = string.IsNullOrEmpty(SearchKeyword) ? SearchEngineState.None : SearchEngineState.SearchResultEmpty;
+            }
             else
+            {
                 State = SearchEngineState.SearchResult;
+            }
 
             ResultChanged?.Invoke(this, null);
         }

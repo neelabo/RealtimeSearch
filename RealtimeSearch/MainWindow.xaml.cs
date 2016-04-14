@@ -97,14 +97,14 @@ namespace RealtimeSearch
         //
         void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            File file = ((ListViewItem)sender).Content as File;
+            NodeContent file = ((ListViewItem)sender).Content as NodeContent;
             if (file == null) return;
 
             Execute(file);
         }
 
         //
-        private void Execute(File file)
+        private void Execute(NodeContent file)
         {
             try
             {
@@ -152,7 +152,7 @@ namespace RealtimeSearch
         private void PreviewMouseMove_Event(object sender, System.Windows.Input.MouseEventArgs e)
         {
             var s = sender as ListViewItem;
-            var pn = s.Content as File;
+            var pn = s.Content as NodeContent;
 
             if (_DragDowned != null && _DragDowned == s && e.LeftButton == MouseButtonState.Pressed)
             {
@@ -167,7 +167,7 @@ namespace RealtimeSearch
                         string[] paths = new string[listView01.SelectedItems.Count];
                         for (int i = 0; i < listView01.SelectedItems.Count; ++i)
                         {
-                            paths[i] = ((File)listView01.SelectedItems[i]).Path;
+                            paths[i] = ((NodeContent)listView01.SelectedItems[i]).Path;
                         }
 
                         DataObject data = new DataObject();
@@ -222,7 +222,7 @@ namespace RealtimeSearch
         //
         void Property_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            File file = (target as ListView)?.SelectedItem as File;
+            NodeContent file = (target as ListView)?.SelectedItem as NodeContent;
             if (file != null)
             {
                 try
@@ -256,7 +256,7 @@ namespace RealtimeSearch
             if (items != null && items.Count >= 1)
             {
                 var message = (items.Count == 1)
-                    ? $"このファイルをごみ箱に移動しますか？\n\n{((File)items[0]).Path}"
+                    ? $"このファイルをごみ箱に移動しますか？\n\n{((NodeContent)items[0]).Path}"
                     : $"これらの {items.Count} 個の項目をごみ箱に移しますか？";
 
                 var result = MessageBox.Show(message, "削除確認", MessageBoxButton.OKCancel, MessageBoxImage.Question);
@@ -269,7 +269,7 @@ namespace RealtimeSearch
                         // ゴミ箱に捨てる
                         foreach (var item in items)
                         {
-                            Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(((File)item).Path, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+                            Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(((NodeContent)item).Path, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
                         }
                     }
                     catch (Exception ex)
@@ -283,10 +283,10 @@ namespace RealtimeSearch
         // 名前の変更
         void Rename_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            File file = (target as ListView)?.SelectedItem as File;
+            NodeContent file = (target as ListView)?.SelectedItem as NodeContent;
             if (file != null)
             {
-                if (!System.IO.File.Exists(file.Path) && !System.IO.Directory.Exists(file.Path))
+                if (!System.IO.File.Exists((string)file.Path) && !System.IO.Directory.Exists((string)file.Path))
                 {
                     MessageBox.Show($"{file.Path} が見つかりません。", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
@@ -321,8 +321,8 @@ namespace RealtimeSearch
 
             foreach (var item in items)
             {
-                File file = item as File;
-                if (file != null && (System.IO.File.Exists(file.Path) || System.IO.Directory.Exists(file.Path)))
+                NodeContent file = item as NodeContent;
+                if (file != null && (System.IO.File.Exists((string)file.Path) || System.IO.Directory.Exists((string)file.Path)))
                 {
                     Execute(file);
                 }
@@ -339,10 +339,10 @@ namespace RealtimeSearch
 
             foreach (var item in items)
             {
-                File file = item as File;
-                if (file != null && (System.IO.File.Exists(file.Path) || System.IO.Directory.Exists(file.Path)))
+                NodeContent file = item as NodeContent;
+                if (file != null && (System.IO.File.Exists((string)file.Path) || System.IO.Directory.Exists((string)file.Path)))
                 {
-                    Process.Start("explorer.exe", "/select,\"" + file.Path + "\"");
+                    Process.Start("explorer.exe", (string)("/select,\"" + file.Path + "\""));
                 }
             }
         }
@@ -355,7 +355,7 @@ namespace RealtimeSearch
 
             foreach (var item in (target as ListView)?.SelectedItems)
             {
-                File file = item as File;
+                NodeContent file = item as NodeContent;
                 if (file != null) files.Add(file.Path);
             }
 
@@ -366,7 +366,7 @@ namespace RealtimeSearch
         // ファイル名のコピー
         void CopyName_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            File file = (target as ListView)?.SelectedItem as File;
+            NodeContent file = (target as ListView)?.SelectedItem as NodeContent;
             if (file != null)
             {
                 string text = System.IO.Path.GetFileNameWithoutExtension(file.Path);

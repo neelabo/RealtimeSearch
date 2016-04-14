@@ -103,13 +103,14 @@
     <Compile Include="DirectoryNameBox.xaml.cs">
       <DependentUpon>DirectoryNameBox.xaml</DependentUpon>
     </Compile>
-    <Compile Include="FileIndex.cs" />
+    <Compile Include="NodeTree.cs" />
     <Compile Include="FileInfo.cs" />
+    <Compile Include="Node.cs" />
+    <Compile Include="NodeContent.cs" />
     <Compile Include="RenameWindow.xaml.cs">
       <DependentUpon>RenameWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Setting.cs" />
-    <Compile Include="File.cs" />
     <Compile Include="MainWindowVM.cs" />
     <Compile Include="RelayCommand.cs" />
     <Compile Include="SearchEngine.cs" />

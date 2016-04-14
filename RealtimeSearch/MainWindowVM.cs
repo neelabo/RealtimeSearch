@@ -60,7 +60,7 @@ namespace RealtimeSearch
         public SearchEngine SearchEngine { get; private set; }
 
         // 検索結果
-        public ObservableCollection<File> Files { get; private set; }
+        public ObservableCollection<NodeContent> Files { get; private set; }
 
         // 設定
         #region Property: Setting
@@ -91,6 +91,8 @@ namespace RealtimeSearch
 
         public MainWindowVM()
         {
+            FileInfo.InitializeDefaultResource();
+
             SearchEngine = new SearchEngine();
             SearchEngine.Start();
 
@@ -234,6 +236,7 @@ namespace RealtimeSearch
 
             Setting.WindowPlacement = placement;
         }
+
 
         // 結果変更
         private void SearchEngine_ResultChanged(object sender)

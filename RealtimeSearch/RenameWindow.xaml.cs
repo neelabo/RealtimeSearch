@@ -45,11 +45,11 @@ namespace RealtimeSearch
         }
         #endregion
 
-        private File _File;
+        private NodeContent _File;
 
 
         //
-        public RenameWindow(File file)
+        public RenameWindow(NodeContent file)
         {
             _File = file;
             this.NewName = System.IO.Path.GetFileName(file.Path);
@@ -154,9 +154,6 @@ namespace RealtimeSearch
                 {
                     System.IO.File.Move(src, dst);
                 }
-
-                // 項目保持を連絡
-                _File.IsKeep = true;
             }
             catch (Exception ex)
             {
