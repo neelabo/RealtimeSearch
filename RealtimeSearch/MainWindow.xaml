@@ -31,6 +31,7 @@
                 <Setter.Value>
                     <ContextMenu>
                         <MenuItem Header="開く(_O)" Command="{x:Static local:MainWindow.OpenCommand}" />
+                        <MenuItem Header="既定のアプリで開く" Command="{x:Static local:MainWindow.OpenCommandDefault}" />
                         <MenuItem Header="ファイルの場所を開く(_I)" Command="{x:Static local:MainWindow.OpenPlaceCommand}" />
                         <Separator/>
                         <MenuItem Header="ファイルをコピーする(_C)" Command="{x:Static local:MainWindow.CopyCommand}" />

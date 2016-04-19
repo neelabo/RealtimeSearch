@@ -126,6 +126,19 @@ namespace RealtimeSearch
             }
         }
 
+        //
+        private void ExecuteDefault(NodeContent file)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(file.Path);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+                MessageBox.Show(e.Message, "実行失敗", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
 
 
         private void keyword_KeyDown(object sender, KeyEventArgs e)
@@ -181,6 +194,7 @@ namespace RealtimeSearch
 
 
         public static readonly RoutedCommand OpenCommand = new RoutedCommand("OpenCommand", typeof(MainWindow));
+        public static readonly RoutedCommand OpenCommandDefault = new RoutedCommand("OpenCommandDefault", typeof(MainWindow));
         public static readonly RoutedCommand CopyCommand = new RoutedCommand("CopyCommand", typeof(MainWindow));
         public static readonly RoutedCommand OpenPlaceCommand = new RoutedCommand("OpenPlaceCommand", typeof(MainWindow));
         public static readonly RoutedCommand CopyNameCommand = new RoutedCommand("CopyNameCommand", typeof(MainWindow));
@@ -194,6 +208,8 @@ namespace RealtimeSearch
         {
             OpenCommand.InputGestures.Add(new KeyGesture(Key.Enter));
             listView01.CommandBindings.Add(new CommandBinding(OpenCommand, Open_Executed));
+
+            listView01.CommandBindings.Add(new CommandBinding(OpenCommandDefault, OpenDefault_Executed));
 
             CopyCommand.InputGestures.Add(new KeyGesture(Key.C, ModifierKeys.Control));
             listView01.CommandBindings.Add(new CommandBinding(CopyCommand, Copy_Executed));
@@ -325,6 +341,23 @@ namespace RealtimeSearch
                 if (file != null && (System.IO.File.Exists((string)file.Path) || System.IO.Directory.Exists((string)file.Path)))
                 {
                     Execute(file);
+                }
+            }
+        }
+
+        // ファイルを開く(既定)
+        void OpenDefault_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            var items = (target as ListView)?.SelectedItems;
+
+            if (items == null || items.Count > 10) return;
+
+            foreach (var item in items)
+            {
+                NodeContent file = item as NodeContent;
+                if (file != null && (System.IO.File.Exists((string)file.Path) || System.IO.Directory.Exists((string)file.Path)))
+                {
+                    ExecuteDefault(file);
                 }
             }
         }
