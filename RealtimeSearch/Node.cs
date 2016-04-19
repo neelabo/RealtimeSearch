@@ -34,7 +34,7 @@ namespace RealtimeSearch
         {
             Name = name;
 
-            foreach (var node in AllNodes())
+            foreach (var node in AllNodes)
             {
                 node.RefleshPath();
             }
@@ -114,6 +114,8 @@ namespace RealtimeSearch
 
             if (isDirectoryMaybe && Directory.Exists(node.Path))
             {
+                //Debug.WriteLine(node.Path);
+
                 try
                 {
                     var directories = Directory.GetDirectories(node.Path).Select(s => System.IO.Path.GetFileName(s)).ToList();
@@ -122,19 +124,16 @@ namespace RealtimeSearch
                     var files = Directory.GetFiles(node.Path).Select(s => System.IO.Path.GetFileName(s)).ToList();
                     files.Sort(Win32Api.StrCmpLogicalW);
 
-#if true
                     var directoryNodes = new Node[directories.Count];
                     Parallel.ForEach(directories, (s, state, index) =>
                     {
+                        Debug.Assert(directoryNodes[(int)index] == null);
                         directoryNodes[(int)index] = CreateTree(s, node, true);
                     });
 
                     var fileNodes = files.Select(s => CreateTree(s, node, false));
 
                     node.Children = directoryNodes.Concat(fileNodes).ToList();
-#else
-                    node.Children = directories.Concat(files).Select(s => CreateTree(s, node)).ToList();
-#endif
                 }
                 catch (Exception e)
                 {
@@ -203,7 +202,7 @@ namespace RealtimeSearch
             node.Parent?.Children.Remove(node);
             node.Parent = null;
 
-            foreach (var n in node.AllNodes())
+            foreach (var n in node.AllNodes)
             {
                 n.Content.IsRemoved = true;
             }
@@ -216,16 +215,19 @@ namespace RealtimeSearch
         /// すべてのNodeを走査。自身は含まない
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<Node> AllChildren()
+        public IEnumerable<Node> AllChildren
         {
-            if (Children != null)
+            get
             {
-                foreach (var child in Children)
+                if (Children != null)
                 {
-                    yield return child;
-                    foreach (var node in child.AllChildren())
+                    foreach (var child in Children)
                     {
-                        yield return node;
+                        yield return child;
+                        foreach (var node in child.AllChildren)
+                        {
+                            yield return node;
+                        }
                     }
                 }
             }
@@ -235,12 +237,15 @@ namespace RealtimeSearch
         /// すべてのNodeを走査。自身を含む
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<Node> AllNodes()
+        public IEnumerable<Node> AllNodes
         {
-            yield return this;
-            foreach (var child in AllChildren())
+            get
             {
-                yield return child;
+                yield return this;
+                foreach (var child in AllChildren)
+                {
+                    yield return child;
+                }
             }
         }
 

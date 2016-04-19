@@ -325,6 +325,7 @@ namespace RealtimeSearch
         public void CommandIndex(string[] paths)
         {
             _SearchCore.Collect(paths);
+            Debug.WriteLine($"{_SearchCore.NodeCount():#,0} 個のインデックス");
         }
 
         public void CommandReIndex()
@@ -339,7 +340,7 @@ namespace RealtimeSearch
                 Node node = _SearchCore.AddPath(root, path);
                 if (node != null)
                 {
-                    var items = _SearchCore.Search(SearchKeyword, node.AllNodes(), IsSearchFolder);
+                    var items = _SearchCore.Search(SearchKeyword, node.AllNodes, IsSearchFolder);
                     App.Current.Dispatcher.Invoke(() =>
                     {
                         foreach (var file in items)

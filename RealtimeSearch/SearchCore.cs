@@ -99,6 +99,15 @@ namespace RealtimeSearch
             System.GC.Collect();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public int NodeCount()
+        {
+            return _FileIndexDirectory.Sum(e => e.Value.NodeCount());
+        }
+
 
         /// <summary>
         /// インデックス追加
@@ -199,12 +208,15 @@ namespace RealtimeSearch
         /// すべてのNodeを走査
         /// </summary>
         /// <returns></returns>
-        private IEnumerable<Node> AllNodes()
+        private IEnumerable<Node> AllNodes
         {
-            foreach (var part in _FileIndexDirectory)
+            get
             {
-                foreach (var node in part.Value.Root.AllChildren())
-                    yield return node;
+                foreach (var part in _FileIndexDirectory)
+                {
+                    foreach (var node in part.Value.Root.AllChildren)
+                        yield return node;
+                }
             }
         }
 
@@ -229,7 +241,7 @@ namespace RealtimeSearch
         {
             lock (_Lock)
             {
-                SearchResult = new ObservableCollection<NodeContent>(Search(keyword, AllNodes(), isSearchFolder).Select(e => e.Content));
+                SearchResult = new ObservableCollection<NodeContent>(Search(keyword, AllNodes, isSearchFolder).Select(e => e.Content));
             }
         }
 

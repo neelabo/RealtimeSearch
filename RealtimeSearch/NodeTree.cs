@@ -58,6 +58,12 @@ namespace RealtimeSearch
             Root.Dump();
         }
 
+        // ノード数を返す
+        public int NodeCount()
+        {
+            return Root.AllNodes.Count();
+        }
+
 
         // 追加
         public Node AddNode(string path)
