@@ -192,3 +192,5 @@ ModelManifest.xml
 *.improj
 PublishToZip/RealtimeSearch*/
 PublishToZip/*.zip
+PublishToZip/*.xml
+/RealtimeSearch.png

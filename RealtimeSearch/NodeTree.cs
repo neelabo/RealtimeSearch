@@ -46,7 +46,7 @@ namespace RealtimeSearch
             _FileSystemWatcher.EnableRaisingEvents = true;
 
             // node
-            Root = Node.CreateTree(Path, null);
+            Root = Node.CreateTree(Path, null, true);
             DumpTree();
         }
 
@@ -54,7 +54,7 @@ namespace RealtimeSearch
         [Conditional("DEBUG")]
         public void DumpTree()
         {
-            Debug.WriteLine("----");
+            Debug.WriteLine("---- " + Path);
             Root.Dump();
         }
 

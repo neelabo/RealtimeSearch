@@ -107,14 +107,12 @@ namespace RealtimeSearch
             return Name;
         }
 
-
-
         //
-        public static Node CreateTree(string name, Node parent)
+        public static Node CreateTree(string name, Node parent, bool isDirectoryMaybe)
         {
             Node node = new Node(name, parent);
 
-            if (Directory.Exists(node.Path))
+            if (isDirectoryMaybe && Directory.Exists(node.Path))
             {
                 try
                 {
@@ -124,7 +122,19 @@ namespace RealtimeSearch
                     var files = Directory.GetFiles(node.Path).Select(s => System.IO.Path.GetFileName(s)).ToList();
                     files.Sort(Win32Api.StrCmpLogicalW);
 
+#if true
+                    var directoryNodes = new Node[directories.Count];
+                    Parallel.ForEach(directories, (s, state, index) =>
+                    {
+                        directoryNodes[(int)index] = CreateTree(s, node, true);
+                    });
+
+                    var fileNodes = files.Select(s => CreateTree(s, node, false));
+
+                    node.Children = directoryNodes.Concat(fileNodes).ToList();
+#else
                     node.Children = directories.Concat(files).Select(s => CreateTree(s, node)).ToList();
+#endif
                 }
                 catch (Exception e)
                 {
@@ -139,7 +149,7 @@ namespace RealtimeSearch
         static readonly char[] splitter = new char[] { '\\' };
 
         //
-        private Node SearchCore(string path, bool isCreate)
+        private Node Scanning(string path, bool isCreate)
         {
             if (path == Name) return this;
 
@@ -149,14 +159,15 @@ namespace RealtimeSearch
 
             foreach (var child in Children)
             {
-                var node = child.SearchCore(childPath, isCreate);
+                var node = child.Scanning(childPath, isCreate);
                 if (node != null) return node;
             }
 
             if (!isCreate) return null;
 
+            // 作成
             var tokens = childPath.Split(splitter, 2);
-            var childNode = CreateTree(tokens[0], this);
+            var childNode = CreateTree(tokens[0], this, true);
             this.Children.Add(childNode);
             childNode.Content.IsAdded = true;
             return childNode;
@@ -165,13 +176,13 @@ namespace RealtimeSearch
         //
         public Node Search(string path)
         {
-            return SearchCore(path, false);
+            return Scanning(path, false);
         }
 
         //
         public Node Add(string path)
         {
-            var node = SearchCore(path, true);
+            var node = Scanning(path, true);
             if (node != null && node.Content.IsAdded)
             {
                 node.Content.IsAdded = false; // 追加フラグをOFFにしておく
@@ -186,7 +197,7 @@ namespace RealtimeSearch
         //
         public Node Remove(string path)
         {
-            var node = SearchCore(path, false);
+            var node = Scanning(path, false);
             if (node == null) return null;
 
             node.Parent?.Children.Remove(node);
@@ -248,7 +259,7 @@ namespace RealtimeSearch
                 }
             }
 #endif
-            //Debug.WriteLine("Node.Count = " + AllNodes().Count());
+            //Debug.WriteLine($"{Path}:({AllNodes().Count()})");
         }
     }
 

@@ -100,7 +100,7 @@ namespace RealtimeSearch
         public bool IsPushPin
         {
             get { return IsFlag(NodeFlag.PushPin); }
-            set { SetFlag(NodeFlag.PushPin, value); }
+            set { SetFlag(NodeFlag.PushPin, value); OnPropertyChanged(); }
         }
 
 

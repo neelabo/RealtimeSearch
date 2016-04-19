@@ -298,15 +298,19 @@ namespace RealtimeSearch
                 if (Command.IsCancel) continue;
 
 #if DEBUG
-                //await Task.Delay(100); // 開発用遅延
+                await Task.Delay(100); // 開発用遅延
 #endif
                 try
                 {
-                    //var sw = new Stopwatch();
-                    //sw.Start();
+#if DEBUG
+                    var sw = new Stopwatch();
+                    sw.Start();
                     Command.Exec();
-                    //sw.Stop();
-                    //Debug.WriteLine($"({sw.ElapsedMilliseconds}ms) {Command}");
+                    sw.Stop();
+                    Debug.WriteLine($"({sw.ElapsedMilliseconds}ms) {Command}");
+#else
+                    Command.Exec();
+#endif
                 }
                 catch (Exception e)
                 {
@@ -317,7 +321,6 @@ namespace RealtimeSearch
                 Command = null;
             }
         }
-
 
         public void CommandIndex(string[] paths)
         {

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace RealtimeSearch
 {
@@ -56,7 +57,6 @@ namespace RealtimeSearch
             Collect();
         }
 
-
         /// <summary>
         /// 検索フォルダのインデックス化
         /// 更新分のみ
@@ -78,9 +78,13 @@ namespace RealtimeSearch
                     sub = _FileIndexDirectory[root];
                 }
 
-                sub.Collect();
                 newDinctionary.Add(root, sub);
             }
+
+            Parallel.ForEach(newDinctionary.Values, sub =>
+            {
+                sub.Collect();
+            });
 
             // 再登録されなかったパスの後処理を行う
             foreach (var a in _FileIndexDirectory)
