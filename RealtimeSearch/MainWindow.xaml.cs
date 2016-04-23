@@ -145,8 +145,13 @@ namespace RealtimeSearch
         {
             if (e.Key == Key.Enter)
             {
-                VM.Search();
+                VM.Search(true);
             }
+        }
+
+        private void keyword_LostFocus(object sender, RoutedEventArgs e)
+        {
+            VM.AddHistory(VM.Keyword);
         }
 
 
@@ -256,7 +261,7 @@ namespace RealtimeSearch
         // 
         void Search_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            VM.Search();
+            VM.Search(true);
         }
 
         //
@@ -572,6 +577,7 @@ namespace RealtimeSearch
             this.LogTextBox.AppendText(string.Format($"\n{++_LogCount}>{format}", args));
             this.LogTextBox.ScrollToEnd();
         }
+
     }
 
 

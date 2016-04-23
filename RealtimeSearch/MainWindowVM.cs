@@ -36,7 +36,6 @@ namespace RealtimeSearch
 
         public event EventHandler<SearchEngineState> StateMessageChanged;
 
-
         private string _DefaultWindowTitle;
         public string WindowTitle => _DefaultWindowTitle;
 
@@ -45,8 +44,12 @@ namespace RealtimeSearch
         public string Keyword
         {
             get { return _Keyword; }
-            set { _Keyword = value; OnPropertyChanged(); Search(); }
+            set { _Keyword = value; OnPropertyChanged(); Search(false); }
         }
+
+        // 検索履歴
+        public ObservableCollection<string> History { get; set; }
+
 
         // ステータスバー
         private string _Information;
@@ -92,6 +95,8 @@ namespace RealtimeSearch
         public MainWindowVM()
         {
             FileInfo.InitializeDefaultResource();
+
+            History = new ObservableCollection<string>();
 
             SearchEngine = new SearchEngine();
             SearchEngine.Start();
@@ -184,13 +189,9 @@ namespace RealtimeSearch
                         string text = Clipboard.GetText();
                         if (_CopyText == text) return; // コピーしたファイル名と同じであるなら処理しない
 
-                        // クリップボードテキストの余計な空白を削除
-                        var regex = new System.Text.RegularExpressions.Regex(@"\s+");
-                        text = regex.Replace(text, " ").Trim();
-
                         // 即時検索
-                        Keyword = text;
-                        Search();
+                        Keyword = new Regex(@"\s+").Replace(text, " ").Trim();
+                        AddHistory(Keyword);
                     }
                     return;
                 }
@@ -260,10 +261,42 @@ namespace RealtimeSearch
 
 
         //
-        public void Search()
+        public void Search(bool isAddHistory)
         {
-            SearchEngine.SearchRequest(Keyword, Setting.IsSearchFolder);
+            var keyword = new Regex(@"\s+").Replace(Keyword, " ").Trim();
+            SearchEngine.SearchRequest(keyword, Setting.IsSearchFolder);
+
+            if (isAddHistory) AddHistory(keyword);
         }
+
+        //
+        public void AddHistory(string keyword)
+        {
+            if (string.IsNullOrWhiteSpace(keyword)) return;
+
+            if (this.History.Count <= 0)
+            {
+                this.History.Add(keyword);
+            }
+            else if (History.First() != keyword)
+            {
+                int index = History.IndexOf(keyword);
+                if (index > 0)
+                {
+                    History.Move(index, 0);
+                }
+                else
+                {
+                    this.History.Insert(0, keyword);
+                }
+            }
+
+            while (History.Count > 6)
+            {
+                History.RemoveAt(History.Count - 1);
+            }
+        }
+
 
         //
         public void WebSearch()

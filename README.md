@@ -28,5 +28,5 @@
 
 ## 連絡先
 
-  * [ヨクアルナニカ](http://yokuarunanika.blogspot.jp/p/soft.html)
+  * [ヨクアルナニカ](http://yokuarunanika.blogspot.jp/)
   * [RealtimeSearch プロジェクトページ](https://bitbucket.org/neelabo/realtimesearch/)
