@@ -102,8 +102,7 @@
                             <Image Width="16" Height="16" Source="{StaticResource ic_reflesh_24px}"/>
                         </Button>
                         <ComboBox x:Name="keyword" Text="{Binding Keyword, Delay=200, UpdateSourceTrigger=PropertyChanged}"
-                                  
-                              VerticalAlignment="Bottom" KeyDown="keyword_KeyDown" FontSize="16" ItemsSource="{Binding History}"
+                              VerticalAlignment="Center" KeyDown="keyword_KeyDown" ItemsSource="{Binding History}"
                               IsEditable="True" BorderThickness="0" BorderBrush="red" LostFocus="keyword_LostFocus" LostKeyboardFocus="keyword_LostFocus">
                             <ComboBox.ItemContainerStyle>
                                 <Style TargetType="ComboBoxItem">
@@ -111,6 +110,11 @@
                                     <Setter Property="VerticalContentAlignment" Value="Center" />
                                 </Style>
                             </ComboBox.ItemContainerStyle>
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding .}" TextTrimming="CharacterEllipsis" MaxWidth="{Binding ElementName=keyword,Path=ActualWidth}" MinWidth="200"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
                         </ComboBox>
                     </DockPanel>
                 </Border>
