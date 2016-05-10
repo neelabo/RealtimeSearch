@@ -131,7 +131,19 @@
 
 
             <Grid DockPanel.Dock="Bottom" Margin="2">
-                <TextBlock DockPanel.Dock="Bottom" x:Name="status" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Information}" TextDecorations="{x:Null}" />
+                <TextBlock TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Information}" TextDecorations="{x:Null}" >
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=indexInformation, Path=Text}" Value="">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock x:Name="indexInformation" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding IndexInformation}" TextDecorations="{x:Null}" />
             </Grid>
 
             <Grid>

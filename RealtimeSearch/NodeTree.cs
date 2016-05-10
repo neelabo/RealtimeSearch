@@ -39,7 +39,11 @@ namespace RealtimeSearch
         //
         public void Collect()
         {
-            if (!IsDarty) return;
+            if (!IsDarty)
+            {
+                Node.TotalCount += NodeCount();
+                return;
+            }
             IsDarty = false;
 
             // フォルダ監視開始

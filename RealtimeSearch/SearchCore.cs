@@ -81,6 +81,9 @@ namespace RealtimeSearch
                 newDinctionary.Add(root, sub);
             }
 
+
+            Node.TotalCount = 0;
+
             Parallel.ForEach(newDinctionary.Values, sub =>
             {
                 sub.Collect();

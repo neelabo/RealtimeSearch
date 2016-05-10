@@ -18,6 +18,9 @@ namespace RealtimeSearch
     /// </summary>
     public class Node
     {
+        // 非同期で加算されるため、正確な値にならない
+        public static int TotalCount { get; set; }
+
         private string _Name;
         public string Name
         {
@@ -63,13 +66,14 @@ namespace RealtimeSearch
         // コンテンツ
         public NodeContent Content;
 
-
         // コンストラクタ
         public Node(string name, Node parent)
         {
             Name = name;
             Parent = parent;
             Content = new NodeContent(Path);
+
+            TotalCount++;
         }
 
         // ファイル情報更新

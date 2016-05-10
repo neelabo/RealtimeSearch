@@ -43,6 +43,10 @@ namespace RealtimeSearch
         //
         public event EventHandler<SearchEngineState> StateMessageChanged;
 
+        //
+        public event EventHandler<string> IndexCountChanged;
+
+
         // 状態
         #region Property: State
         private SearchEngineState _State;
@@ -322,15 +326,42 @@ namespace RealtimeSearch
             }
         }
 
+
+        //
+        private void SendIndexCountChanged(string text)
+        {
+            App.Current.Dispatcher.Invoke(() => IndexCountChanged?.Invoke(this, text));
+        }
+
+        //
+        private void CreateIndex(Action action)
+        {
+            var tokenSource = new CancellationTokenSource();
+            Task.Run(async () =>
+            {
+                await Task.Delay(200);
+                while (!tokenSource.Token.IsCancellationRequested)
+                {
+                    SendIndexCountChanged($"{Node.TotalCount:#,0} 個のインデックス作成中");
+                    await Task.Delay(1000);
+                }
+                SendIndexCountChanged("");
+            });
+
+            action();
+
+            tokenSource.Cancel();
+        }
+
+
         public void CommandIndex(string[] paths)
         {
-            _SearchCore.Collect(paths);
-            Debug.WriteLine($"{_SearchCore.NodeCount():#,0} 個のインデックス");
+            CreateIndex(() => _SearchCore.Collect(paths));
         }
 
         public void CommandReIndex()
         {
-            _SearchCore.Collect();
+            CreateIndex(() => _SearchCore.Collect());
         }
 
         public void CommandAddIndex(string root, List<string> paths)

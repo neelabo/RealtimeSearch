@@ -52,12 +52,22 @@ namespace RealtimeSearch
 
 
         // ステータスバー
-        private string _Information;
+        private string _Information = "";
         public string Information
         {
             get { return _Information; }
             set { _Information = value; OnPropertyChanged(); }
         }
+
+        #region Property: IndexInformation
+        private string _IndexInformation = "";
+        public string IndexInformation
+        {
+            get { return _IndexInformation; }
+            set { _IndexInformation = value; OnPropertyChanged(); }
+        }
+        #endregion
+
 
         // 検索エンジン
         public SearchEngine SearchEngine { get; private set; }
@@ -102,7 +112,8 @@ namespace RealtimeSearch
             SearchEngine.Start();
 
             SearchEngine.ResultChanged += (s, e) => SearchEngine_ResultChanged(s);
-            SearchEngine.StateMessageChanged += (s, e) => StateMessageChanged(s, e);
+            SearchEngine.StateMessageChanged += StateMessageChanged;
+            SearchEngine.IndexCountChanged += SearchEngine_IndexCountChanged;
 
             // title
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
@@ -238,6 +249,18 @@ namespace RealtimeSearch
             Setting.WindowPlacement = placement;
         }
 
+        // 情報通知
+        private void SearchEngine_IndexCountChanged(object sender, string message)
+        {
+            if (SearchEngine.State == SearchEngineState.Search)
+            {
+                IndexInformation = message;
+            }
+            else
+            {
+                IndexInformation = "";
+            }
+        }
 
         // 結果変更
         private void SearchEngine_ResultChanged(object sender)
@@ -258,6 +281,7 @@ namespace RealtimeSearch
                 Information = string.Format("{0:#,0} 個の項目", Files.Count);
             }
         }
+
 
 
         //
