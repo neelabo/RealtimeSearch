@@ -116,15 +116,13 @@ namespace RealtimeSearch
             SearchEngine.IndexCountChanged += SearchEngine_IndexCountChanged;
 
             // title
-            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-            var ver = FileVersionInfo.GetVersionInfo(assembly.Location);
-            _DefaultWindowTitle = $"{assembly.GetName().Name} {ver.FileMajorPart}.{ver.ProductMinorPart}";
+            _DefaultWindowTitle = $"{App.Config.ProductName} {App.Config.ProductVersion}";
 #if DEBUG
             _DefaultWindowTitle += " [Debug]";
 #endif
 
             // setting filename
-            _SettingFileName = System.IO.Path.GetDirectoryName(assembly.Location) + "\\UserSetting.xml";
+            _SettingFileName = (App.Config.LocalApplicationDataPath) + "\\UserSetting.xml";
         }
 
 

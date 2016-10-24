@@ -190,7 +190,7 @@ ModelManifest.xml
 
 # UserLocal
 *.improj
-PublishToZip/RealtimeSearch*/
-PublishToZip/*.zip
-PublishToZip/*.xml
+PublishTo/RealtimeSearch*/
+PublishTo/*.zip
+PublishTo/*.xml
 /RealtimeSearch.png
