@@ -24,24 +24,24 @@ namespace RealtimeSearch
     /// </summary>
     public partial class MainWindow : Window
     {
-        MainWindowVM VM;
+        private MainWindowVM _VM;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            VM = new MainWindowVM();
-            this.DataContext = VM;
+            _VM = new MainWindowVM();
+            this.DataContext = _VM;
 
             RegistRoutedCommand();
 
-            VM.PropertyChanged += MainWindowVM_PropertyChanged;
-            VM.StateMessageChanged += MainWindowVM_StateMessageChanged;
+            _VM.PropertyChanged += MainWindowVM_PropertyChanged;
+            _VM.StateMessageChanged += MainWindowVM_StateMessageChanged;
         }
 
         private void MainWindowVM_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(VM.Files))
+            if (e.PropertyName == nameof(_VM.Files))
             {
                 Dispatcher.BeginInvoke(new Action(GridViewColumnHeader_Reset), null);
             }
@@ -54,23 +54,23 @@ namespace RealtimeSearch
         private void Window_SourceInitialized(object sender, EventArgs e)
         {
             // 設定読み込み
-            VM.Open();
+            _VM.Open();
 
             // ウィンドウ座標復元
-            VM.RestoreWindowPlacement(this);
+            _VM.RestoreWindowPlacement(this);
 
             // ListViewレイアウト復元
-            RestoreListViewMemento(VM.Setting.ListViewColumnMemento);
+            RestoreListViewMemento(_VM.Setting.ListViewColumnMemento);
         }
 
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // クリップボード監視開始
-            VM.StartClipboardMonitor(this);
+            _VM.StartClipboardMonitor(this);
 
             // 検索パスが設定されていなければ設定画面を開く
-            if (VM.Setting.SearchPaths.Count <= 0)
+            if (_VM.Setting.SearchPaths.Count <= 0)
             {
                 ShowSettingWindow();
             }
@@ -80,22 +80,22 @@ namespace RealtimeSearch
         private void Window_Closing(object sender, EventArgs e)
         {
             // ListViewレイアウト保存
-            VM.Setting.ListViewColumnMemento = CreateListViewMemento();
+            _VM.Setting.ListViewColumnMemento = CreateListViewMemento();
 
             // ウィンドウ座標保存
-            VM.StoreWindowPlacement(this);
+            _VM.StoreWindowPlacement(this);
         }
 
 
         private void Window_Closed(object sender, EventArgs e)
         {
             // 設定保存
-            VM.Close();
+            _VM.Close();
         }
 
 
         //
-        void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             NodeContent file = ((ListViewItem)sender).Content as NodeContent;
             if (file == null) return;
@@ -108,14 +108,14 @@ namespace RealtimeSearch
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(VM.Setting.ExternalApplication))
+                if (string.IsNullOrWhiteSpace(_VM.Setting.ExternalApplication))
                 {
                     System.Diagnostics.Process.Start(file.Path);
                 }
                 else
                 {
-                    var commandName = VM.Setting.ExternalApplication;
-                    var arguments = VM.Setting.ExternalApplicationParam.Replace("$(file)", file.Path);
+                    var commandName = _VM.Setting.ExternalApplication;
+                    var arguments = _VM.Setting.ExternalApplicationParam.Replace("$(file)", file.Path);
                     System.Diagnostics.Process.Start(commandName, arguments);
                 }
             }
@@ -145,25 +145,25 @@ namespace RealtimeSearch
         {
             if (e.Key == Key.Enter)
             {
-                VM.Search(true);
+                _VM.Search(true);
             }
         }
 
         private void keyword_LostFocus(object sender, RoutedEventArgs e)
         {
-            VM.AddHistory(VM.Keyword);
+            _VM.AddHistory(_VM.Keyword);
         }
 
 
         // ドラッグ用
-        Point _DragStart;
-        ListViewItem _DragDowned;
+        private Point _dragStart;
+        private ListViewItem _dragDowned;
 
         // ファイルのドラッグ判定開始
         private void PreviewMouseDown_Event(object sender, MouseButtonEventArgs e)
         {
-            _DragDowned = sender as ListViewItem;
-            _DragStart = e.GetPosition(_DragDowned);
+            _dragDowned = sender as ListViewItem;
+            _dragStart = e.GetPosition(_dragDowned);
         }
 
         // ファイルのドラッグ開始
@@ -172,13 +172,13 @@ namespace RealtimeSearch
             var s = sender as ListViewItem;
             var pn = s.Content as NodeContent;
 
-            if (_DragDowned != null && _DragDowned == s && e.LeftButton == MouseButtonState.Pressed)
+            if (_dragDowned != null && _dragDowned == s && e.LeftButton == MouseButtonState.Pressed)
             {
                 var current = e.GetPosition(s);
-                if (Math.Abs(current.X - _DragStart.X) > SystemParameters.MinimumHorizontalDragDistance ||
-                    Math.Abs(current.Y - _DragStart.Y) > SystemParameters.MinimumVerticalDragDistance)
+                if (Math.Abs(current.X - _dragStart.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                    Math.Abs(current.Y - _dragStart.Y) > SystemParameters.MinimumVerticalDragDistance)
                 {
-                    _DragDowned = null;
+                    _dragDowned = null;
 
                     if (listView01.SelectedItems.Count > 0)
                     {
@@ -209,7 +209,7 @@ namespace RealtimeSearch
         public static readonly RoutedCommand WebSearchCommand = new RoutedCommand("WebSearchCommand", typeof(MainWindow));
         public static readonly RoutedCommand PropertyCommand = new RoutedCommand("PropertyCommand", typeof(MainWindow));
 
-        void RegistRoutedCommand()
+        private void RegistRoutedCommand()
         {
             OpenCommand.InputGestures.Add(new KeyGesture(Key.Enter));
             listView01.CommandBindings.Add(new CommandBinding(OpenCommand, Open_Executed));
@@ -241,7 +241,7 @@ namespace RealtimeSearch
         }
 
         //
-        void Property_Executed(object target, ExecutedRoutedEventArgs e)
+        private void Property_Executed(object target, ExecutedRoutedEventArgs e)
         {
             NodeContent file = (target as ListView)?.SelectedItem as NodeContent;
             if (file != null)
@@ -259,19 +259,19 @@ namespace RealtimeSearch
 
 
         // 
-        void Search_Executed(object target, ExecutedRoutedEventArgs e)
+        private void Search_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            VM.Search(true);
+            _VM.Search(true);
         }
 
         //
-        void WebSearch_Executed(object target, ExecutedRoutedEventArgs e)
+        private void WebSearch_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            VM.WebSearch();
+            _VM.WebSearch();
         }
 
         // ファイル削除
-        void Delete_Executed(object target, ExecutedRoutedEventArgs e)
+        private void Delete_Executed(object target, ExecutedRoutedEventArgs e)
         {
             var items = (target as ListView)?.SelectedItems;
             if (items != null && items.Count >= 1)
@@ -302,7 +302,7 @@ namespace RealtimeSearch
         }
 
         // 名前の変更
-        void Rename_Executed(object target, ExecutedRoutedEventArgs e)
+        private void Rename_Executed(object target, ExecutedRoutedEventArgs e)
         {
             NodeContent file = (target as ListView)?.SelectedItem as NodeContent;
             if (file != null)
@@ -313,7 +313,7 @@ namespace RealtimeSearch
                     return;
                 }
 
-                VM.IsEnableClipboardListner = false;
+                _VM.IsEnableClipboardListner = false;
                 try
                 {
                     var dialog = new RenameWindow(file);
@@ -327,14 +327,14 @@ namespace RealtimeSearch
                 }
                 finally
                 {
-                    VM.IsEnableClipboardListner = true;
+                    _VM.IsEnableClipboardListner = true;
                 }
             }
         }
 
 
         // ファイルを開く
-        void Open_Executed(object target, ExecutedRoutedEventArgs e)
+        private void Open_Executed(object target, ExecutedRoutedEventArgs e)
         {
             var items = (target as ListView)?.SelectedItems;
 
@@ -351,7 +351,7 @@ namespace RealtimeSearch
         }
 
         // ファイルを開く(既定)
-        void OpenDefault_Executed(object target, ExecutedRoutedEventArgs e)
+        private void OpenDefault_Executed(object target, ExecutedRoutedEventArgs e)
         {
             var items = (target as ListView)?.SelectedItems;
 
@@ -369,7 +369,7 @@ namespace RealtimeSearch
 
 
         // ファイルの場所を開く
-        void OpenPlace_Executed(object target, ExecutedRoutedEventArgs e)
+        private void OpenPlace_Executed(object target, ExecutedRoutedEventArgs e)
         {
             var items = (target as ListView)?.SelectedItems;
 
@@ -387,7 +387,7 @@ namespace RealtimeSearch
 
 
         // ファイルのコピー
-        void Copy_Executed(object target, ExecutedRoutedEventArgs e)
+        private void Copy_Executed(object target, ExecutedRoutedEventArgs e)
         {
             var files = new System.Collections.Specialized.StringCollection();
 
@@ -402,13 +402,13 @@ namespace RealtimeSearch
 
 
         // ファイル名のコピー
-        void CopyName_Executed(object target, ExecutedRoutedEventArgs e)
+        private void CopyName_Executed(object target, ExecutedRoutedEventArgs e)
         {
             NodeContent file = (target as ListView)?.SelectedItem as NodeContent;
             if (file != null)
             {
                 string text = System.IO.Path.GetFileNameWithoutExtension(file.Path);
-                VM.SetClipboard(text);
+                _VM.SetClipboard(text);
                 //System.Windows.Clipboard.SetDataObject(text);
             }
         }
@@ -417,17 +417,17 @@ namespace RealtimeSearch
         #region リストのソート
 
         // リストのソート用
-        GridViewColumnHeader _LastHeaderClicked = null;
-        ListSortDirection _LastDirection = ListSortDirection.Ascending;
+        private GridViewColumnHeader _lastHeaderClicked = null;
+        private ListSortDirection _lastDirection = ListSortDirection.Ascending;
 
         private void GridViewColumnHeader_Reset()
         {
-            if (_LastHeaderClicked != null)
+            if (_lastHeaderClicked != null)
             {
-                _LastHeaderClicked.Column.HeaderTemplate = null;
-                _LastHeaderClicked = null;
+                _lastHeaderClicked.Column.HeaderTemplate = null;
+                _lastHeaderClicked = null;
             }
-            _LastDirection = ListSortDirection.Ascending;
+            _lastDirection = ListSortDirection.Ascending;
         }
 
         private void GridViewColumnHeader_ClickHandler(object sender, RoutedEventArgs e)
@@ -441,13 +441,13 @@ namespace RealtimeSearch
             {
                 if (headerClicked.Role != GridViewColumnHeaderRole.Padding)
                 {
-                    if (headerClicked != _LastHeaderClicked)
+                    if (headerClicked != _lastHeaderClicked)
                     {
                         direction = ListSortDirection.Ascending;
                     }
                     else
                     {
-                        if (_LastDirection == ListSortDirection.Ascending)
+                        if (_lastDirection == ListSortDirection.Ascending)
                         {
                             direction = ListSortDirection.Descending;
                         }
@@ -475,13 +475,13 @@ namespace RealtimeSearch
                     }
 
                     // Remove arrow from previously sorted header
-                    if (_LastHeaderClicked != null && _LastHeaderClicked != headerClicked)
+                    if (_lastHeaderClicked != null && _lastHeaderClicked != headerClicked)
                     {
-                        _LastHeaderClicked.Column.HeaderTemplate = null;
+                        _lastHeaderClicked.Column.HeaderTemplate = null;
                     }
 
-                    _LastHeaderClicked = headerClicked;
-                    _LastDirection = direction;
+                    _lastHeaderClicked = headerClicked;
+                    _lastDirection = direction;
                 }
             }
         }
@@ -506,7 +506,7 @@ namespace RealtimeSearch
 
         private void ShowSettingWindow()
         {
-            var window = new SettingWindow(VM.Setting);
+            var window = new SettingWindow(_VM.Setting);
             window.Owner = this;
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             window.ShowDialog();
@@ -568,16 +568,15 @@ namespace RealtimeSearch
 
 
         // for Debug
-        private int _LogCount;
+        private int _logCount;
 
         [Conditional("DEBUG")]
         public void Log(string format, params object[] args)
         {
             if (this.DebugInfo.Visibility != Visibility.Visible) return;
-            this.LogTextBox.AppendText(string.Format($"\n{++_LogCount}>{format}", args));
+            this.LogTextBox.AppendText(string.Format($"\n{++_logCount}>{format}", args));
             this.LogTextBox.ScrollToEnd();
         }
-
     }
 
 

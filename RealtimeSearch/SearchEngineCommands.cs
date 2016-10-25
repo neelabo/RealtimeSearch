@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace RealtimeSearch
 {
-	// command base
+    // command base
     public abstract class SearchEngineCommand
     {
         public SearchEngine SearchEngine { get; set; }
@@ -21,7 +21,7 @@ namespace RealtimeSearch
     }
 
 
-	// index request
+    // index request
     public class IndexCommand : SearchEngineCommand
     {
         public string[] Paths { get; set; }
@@ -36,7 +36,7 @@ namespace RealtimeSearch
     }
 
 
-	// re-index request
+    // re-index request
     public class ReIndexCommand : SearchEngineCommand
     {
         public override void Exec()
@@ -50,7 +50,7 @@ namespace RealtimeSearch
     }
 
 
-	// add path requestr
+    // add path requestr
     public class AddIndexCommand : SearchEngineCommand
     {
         public string Root { get; set; }
@@ -66,7 +66,7 @@ namespace RealtimeSearch
     }
 
 
-	// remove path request
+    // remove path request
     public class RemoveIndexCommand : SearchEngineCommand
     {
         public string Root { get; set; }

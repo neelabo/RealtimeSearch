@@ -32,22 +32,22 @@ namespace RealtimeSearch
             }
         }
         #endregion
-    
+
         #region Property: CollectionViewSource
-        private CollectionViewSource _CollectionViewSource;
+        private CollectionViewSource _collectionViewSource;
         public CollectionViewSource CollectionViewSource
         {
-            get { return _CollectionViewSource; }
-            set { _CollectionViewSource = value; OnPropertyChanged(); }
+            get { return _collectionViewSource; }
+            set { _collectionViewSource = value; OnPropertyChanged(); }
         }
         #endregion
 
         #region Property: SelectedPath
-        private string _SelectedPath;
+        private string _selectedPath;
         public string SelectedPath
         {
-            get { return _SelectedPath; }
-            set { _SelectedPath = value; OnPropertyChanged(); }
+            get { return _selectedPath; }
+            set { _selectedPath = value; OnPropertyChanged(); }
         }
         #endregion
 
@@ -215,6 +215,5 @@ namespace RealtimeSearch
                 UpdateInputGestureText(item);
             }
         }
-
     }
 }

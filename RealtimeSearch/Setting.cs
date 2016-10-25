@@ -45,33 +45,33 @@ namespace RealtimeSearch
 
         #region Property: IsMonitorClipboard
         [DataMember]
-        private bool _IsMonitorClipboard;
+        private bool _isMonitorClipboard;
         public bool IsMonitorClipboard
         {
-            get { return _IsMonitorClipboard; }
-            set { _IsMonitorClipboard = value; OnPropertyChanged(); }
+            get { return _isMonitorClipboard; }
+            set { _isMonitorClipboard = value; OnPropertyChanged(); }
         }
         #endregion
 
 
         #region Property: IsTopmost
         [DataMember]
-        private bool _IsTopmost;
+        private bool _isTopmost;
         public bool IsTopmost
         {
-            get { return _IsTopmost; }
-            set { _IsTopmost = value; OnPropertyChanged(); }
+            get { return _isTopmost; }
+            set { _isTopmost = value; OnPropertyChanged(); }
         }
         #endregion
 
 
         #region Property: IsSearchFolder
         [DataMember]
-        private bool _IsSearchFolder;
+        private bool _isSearchFolder;
         public bool IsSearchFolder
         {
-            get { return _IsSearchFolder; }
-            set { _IsSearchFolder = value; OnPropertyChanged(); }
+            get { return _isSearchFolder; }
+            set { _isSearchFolder = value; OnPropertyChanged(); }
         }
         #endregion
 
@@ -84,22 +84,22 @@ namespace RealtimeSearch
 
 
         #region Property: ExternalApplication
-        private string _ExternalApplication;
+        private string _externalApplication;
         [DataMember]
         public string ExternalApplication
         {
-            get { return _ExternalApplication; }
-            set { _ExternalApplication = value.Trim(); OnPropertyChanged(); }
+            get { return _externalApplication; }
+            set { _externalApplication = value.Trim(); OnPropertyChanged(); }
         }
         #endregion
 
 
         #region Property: ExternalApplicationParam
-        private string _ExternalApplicationParam;
+        private string _externalApplicationParam;
         [DataMember]
         public string ExternalApplicationParam
         {
-            get { return _ExternalApplicationParam; }
+            get { return _externalApplicationParam; }
             set
             {
                 var s = value.Trim();
@@ -107,7 +107,7 @@ namespace RealtimeSearch
                 {
                     s = (s + " \"$(file)\"").Trim();
                 }
-                _ExternalApplicationParam = s;
+                _externalApplicationParam = s;
                 OnPropertyChanged();
             }
         }

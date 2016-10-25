@@ -82,5 +82,4 @@ namespace RealtimeSearch
         RESTORE = 9,
         SHOWDEFAULT = 10,
     }
-
 }

@@ -36,15 +36,15 @@ namespace RealtimeSearch
 
         public event EventHandler<SearchEngineState> StateMessageChanged;
 
-        private string _DefaultWindowTitle;
-        public string WindowTitle => _DefaultWindowTitle;
+        private string _defaultWindowTitle;
+        public string WindowTitle => _defaultWindowTitle;
 
         // 検索キーワード
-        private string _Keyword = "";
+        private string _keyword = "";
         public string Keyword
         {
-            get { return _Keyword; }
-            set { _Keyword = value; OnPropertyChanged(); Search(false); }
+            get { return _keyword; }
+            set { _keyword = value; OnPropertyChanged(); Search(false); }
         }
 
         // 検索履歴
@@ -52,19 +52,19 @@ namespace RealtimeSearch
 
 
         // ステータスバー
-        private string _Information = "";
+        private string _information = "";
         public string Information
         {
-            get { return _Information; }
-            set { _Information = value; OnPropertyChanged(); }
+            get { return _information; }
+            set { _information = value; OnPropertyChanged(); }
         }
 
         #region Property: IndexInformation
-        private string _IndexInformation = "";
+        private string _indexInformation = "";
         public string IndexInformation
         {
-            get { return _IndexInformation; }
-            set { _IndexInformation = value; OnPropertyChanged(); }
+            get { return _indexInformation; }
+            set { _indexInformation = value; OnPropertyChanged(); }
         }
         #endregion
 
@@ -77,19 +77,19 @@ namespace RealtimeSearch
 
         // 設定
         #region Property: Setting
-        private Setting _Setting;
+        private Setting _setting;
         public Setting Setting
         {
-            get { return _Setting; }
-            set { _Setting = value; OnPropertyChanged(); }
+            get { return _setting; }
+            set { _setting = value; OnPropertyChanged(); }
         }
         #endregion
 
         // 設定ファイル名
-        private string _SettingFileName;
+        private string _settingFileName;
 
         // クリップボード監視
-        private ClipboardListner _ClipboardListner;
+        private ClipboardListner _clipboardListner;
 
         // クリップボード監視フラグ
         public bool IsEnableClipboardListner { get; set; }
@@ -116,13 +116,13 @@ namespace RealtimeSearch
             SearchEngine.IndexCountChanged += SearchEngine_IndexCountChanged;
 
             // title
-            _DefaultWindowTitle = $"{App.Config.ProductName} {App.Config.ProductVersion}";
+            _defaultWindowTitle = $"{App.Config.ProductName} {App.Config.ProductVersion}";
 #if DEBUG
-            _DefaultWindowTitle += " [Debug]";
+            _defaultWindowTitle += " [Debug]";
 #endif
 
             // setting filename
-            _SettingFileName = (App.Config.LocalApplicationDataPath) + "\\UserSetting.xml";
+            _settingFileName = (App.Config.LocalApplicationDataPath) + "\\UserSetting.xml";
         }
 
 
@@ -130,9 +130,9 @@ namespace RealtimeSearch
         public void Open()
         {
             // 設定の読み込み
-            if (System.IO.File.Exists(_SettingFileName))
+            if (System.IO.File.Exists(_settingFileName))
             {
-                Setting = Setting.Load(_SettingFileName);
+                Setting = Setting.Load(_settingFileName);
                 SearchEngine.IndexRequest(Setting.SearchPaths.ToArray()); // インデックス初期化
             }
             else
@@ -148,8 +148,8 @@ namespace RealtimeSearch
         public void StartClipboardMonitor(Window window)
         {
             // クリップボード監視
-            _ClipboardListner = new ClipboardListner(window);
-            _ClipboardListner.ClipboardUpdate += ClipboardListner_DrawClipboard;
+            _clipboardListner = new ClipboardListner(window);
+            _clipboardListner.ClipboardUpdate += ClipboardListner_DrawClipboard;
 
             IsEnableClipboardListner = true;
         }
@@ -160,12 +160,12 @@ namespace RealtimeSearch
             SearchEngine.IndexRequest(Setting.SearchPaths.ToArray());
         }
 
-        private string _CopyText;
+        private string _copyText;
 
         public void SetClipboard(string text)
         {
             System.Windows.Clipboard.SetDataObject(text);
-            _CopyText = text;
+            _copyText = text;
         }
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
@@ -196,7 +196,7 @@ namespace RealtimeSearch
                     if (Setting.IsMonitorClipboard && Clipboard.ContainsText())
                     {
                         string text = Clipboard.GetText();
-                        if (_CopyText == text) return; // コピーしたファイル名と同じであるなら処理しない
+                        if (_copyText == text) return; // コピーしたファイル名と同じであるなら処理しない
 
                         // 即時検索
                         Keyword = new Regex(@"\s+").Replace(text, " ").Trim();
@@ -217,10 +217,10 @@ namespace RealtimeSearch
         public void Close()
         {
             // クリップボード監視終了
-            _ClipboardListner.Dispose();
+            _clipboardListner.Dispose();
 
             // 設定の保存
-            Setting.Save(_SettingFileName);
+            Setting.Save(_settingFileName);
         }
 
 
@@ -341,7 +341,7 @@ namespace RealtimeSearch
 
     // ファイルサイズを表示用に整形する
     [ValueConversion(typeof(long), typeof(string))]
-    class FileSizeConverter : IValueConverter
+    internal class FileSizeConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
@@ -358,7 +358,7 @@ namespace RealtimeSearch
 
     // コマンド状態を処理中表示に変換する
     [ValueConversion(typeof(SearchEngineCommand), typeof(Visibility))]
-    class CommandToVisibilityConverter : IValueConverter
+    internal class CommandToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
@@ -374,7 +374,7 @@ namespace RealtimeSearch
 
     // 文字列状態を処理中表示に変換する
     [ValueConversion(typeof(string), typeof(Visibility))]
-    class StringToVisibilityConverter : IValueConverter
+    internal class StringToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {

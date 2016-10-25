@@ -49,18 +49,18 @@ namespace RealtimeSearch
 
         // 状態
         #region Property: State
-        private SearchEngineState _State;
+        private SearchEngineState _state;
         public SearchEngineState State
         {
-            get { return _State; }
+            get { return _state; }
             set
             {
-                if (_State != value)
+                if (_state != value)
                 {
-                    _State = value;
+                    _state = value;
                     OnPropertyChanged();
                     OnPropertyChanged("StateMessage");
-                    App.Current.Dispatcher.Invoke(() => StateMessageChanged?.Invoke(this, _State));
+                    App.Current.Dispatcher.Invoke(() => StateMessageChanged?.Invoke(this, _state));
                 }
             }
         }
@@ -72,9 +72,9 @@ namespace RealtimeSearch
         {
             get
             {
-                if (_State == SearchEngineState.Search)
+                if (_state == SearchEngineState.Search)
                     return "処理中です";
-                else if (_State == SearchEngineState.SearchResultEmpty)
+                else if (_state == SearchEngineState.SearchResultEmpty)
                     return "条件に一致する項目はありません。";
                 else
                     return null;
@@ -84,51 +84,51 @@ namespace RealtimeSearch
 
         // 現在のコマンド
         #region Property: Command
-        private SearchEngineCommand _Command;
+        private SearchEngineCommand _command;
         public SearchEngineCommand Command
         {
-            get { return _Command; }
-            set { _Command = value; OnPropertyChanged(); }
+            get { return _command; }
+            set { _command = value; OnPropertyChanged(); }
         }
         #endregion
 
 
         // 現在のコマンド予約数
         #region Property: CommandCount
-        private int _CommandCount;
+        private int _commandCount;
         public int CommandCount
         {
-            get { return _CommandCount; }
-            set { _CommandCount = value; OnPropertyChanged(); }
+            get { return _commandCount; }
+            set { _commandCount = value; OnPropertyChanged(); }
         }
         #endregion
 
 
         // コマンドリスト
-        private List<SearchEngineCommand> _CommandList;
+        private List<SearchEngineCommand> _commandList;
 
         // コマンドの製造番号用カウンタ
-        private int _CommandSerialNumber;
+        private int _commandSerialNumber;
 
         // エンジンとなるタスク
-        private Task _Task;
+        private Task _task;
 
         // コマンド数セマフォ。エンジンタスク駆動に利用
-        private SemaphoreSlim _CommandSemaphore;
+        private SemaphoreSlim _commandSemaphore;
 
         // 排他処理用ロック
-        private Object _Lock = new Object();
+        private Object _lock = new Object();
 
         // 検索コア
-        private SearchCore _SearchCore;
+        private SearchCore _searchCore;
 
         // 検索結果に対応している現在のキーワード
         #region Property: SearchKeyword
-        private string _SearchKeyword = "";
+        private string _searchKeyword = "";
         public string SearchKeyword
         {
-            get { return _SearchKeyword; }
-            private set { _SearchKeyword = value; OnPropertyChanged(); }
+            get { return _searchKeyword; }
+            private set { _searchKeyword = value; OnPropertyChanged(); }
         }
         #endregion
 
@@ -137,7 +137,7 @@ namespace RealtimeSearch
         public bool IsSearchFolder { get; private set; }
 
         // 検索結果
-        public ObservableCollection<NodeContent> SearchResult { get { return _SearchCore.SearchResult; } }
+        public ObservableCollection<NodeContent> SearchResult { get { return _searchCore.SearchResult; } }
 
         // 検索結果の変更イベント
         public event EventHandler ResultChanged;
@@ -152,35 +152,35 @@ namespace RealtimeSearch
         {
             Current = this;
 
-            _SearchCore = new SearchCore();
-            _CommandSemaphore = new SemaphoreSlim(0);
-            _CommandList = new List<SearchEngineCommand>();
+            _searchCore = new SearchCore();
+            _commandSemaphore = new SemaphoreSlim(0);
+            _commandList = new List<SearchEngineCommand>();
         }
 
 
         public void Start()
         {
-            _Task = Task.Run(() => EngineAsync());
+            _task = Task.Run(() => EngineAsync());
         }
 
 
         private void AddCommand(SearchEngineCommand command)
         {
             command.SearchEngine = this;
-            command.SerialNumber = _CommandSerialNumber++;
-            _CommandList.Add(command);
-            CommandCount = _CommandList.Count;
+            command.SerialNumber = _commandSerialNumber++;
+            _commandList.Add(command);
+            CommandCount = _commandList.Count;
 
-            _CommandSemaphore.Release();
+            _commandSemaphore.Release();
         }
 
 
         // インデックス化リクエスト
         public void IndexRequest(string[] paths)
         {
-            lock (_Lock)
+            lock (_lock)
             {
-                _CommandList.ForEach(cmd => { if (cmd is IndexCommand || cmd is ReIndexCommand) cmd.IsCancel = true; });
+                _commandList.ForEach(cmd => { if (cmd is IndexCommand || cmd is ReIndexCommand) cmd.IsCancel = true; });
 
                 AddCommand(new IndexCommand() { Paths = paths });
             }
@@ -190,9 +190,9 @@ namespace RealtimeSearch
         // 再インデックス化リクエスト
         public void ReIndexRequest()
         {
-            lock (_Lock)
+            lock (_lock)
             {
-                if (_CommandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
+                if (_commandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
 
                 AddCommand(new ReIndexCommand());
             }
@@ -202,12 +202,12 @@ namespace RealtimeSearch
         // パス追加リクエスト
         public void AddIndexRequest(string root, string path)
         {
-            lock (_Lock)
+            lock (_lock)
             {
-                if (_CommandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
+                if (_commandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
 
                 // コマンドをまとめる？
-                AddIndexCommand command = (_CommandList.Count >= 1) ? _CommandList.LastOrDefault(c => c is AddIndexCommand && ((AddIndexCommand)c).Root == root) as AddIndexCommand : null;
+                AddIndexCommand command = (_commandList.Count >= 1) ? _commandList.LastOrDefault(c => c is AddIndexCommand && ((AddIndexCommand)c).Root == root) as AddIndexCommand : null;
                 if (command != null && command.Root == root)
                 {
                     command.Paths.Add(path);
@@ -226,9 +226,9 @@ namespace RealtimeSearch
         // パス削除リクエスト
         public void RemoveIndexRequest(string root, string path)
         {
-            lock (_Lock)
+            lock (_lock)
             {
-                if (_CommandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
+                if (_commandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
 
                 AddCommand(new RemoveIndexCommand() { Root = root, Path = path });
             }
@@ -238,9 +238,9 @@ namespace RealtimeSearch
         // リネームリクエスト
         public void RenameIndexRequest(string root, string oldPath, string path)
         {
-            lock (_Lock)
+            lock (_lock)
             {
-                if (_CommandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
+                if (_commandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
                 AddCommand(new RenameIndexCommand() { Root = root, OldPath = oldPath, Path = path });
             }
         }
@@ -249,9 +249,9 @@ namespace RealtimeSearch
         // 情報更新リクエスト
         public void RefleshIndexRequest(string root, string path)
         {
-            lock (_Lock)
+            lock (_lock)
             {
-                if (_CommandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
+                if (_commandList.Any(cmd => cmd is IndexCommand || cmd is ReIndexCommand)) return;
                 AddCommand(new RefleshIndexCommand() { Root = root, Path = path });
             }
         }
@@ -263,13 +263,13 @@ namespace RealtimeSearch
             keyword = keyword ?? "";
             keyword = keyword.Trim();
 
-            lock (_Lock)
+            lock (_lock)
             {
-                _CommandList.ForEach(cmd => { if (cmd is SearchCommand) cmd.IsCancel = true; });
+                _commandList.ForEach(cmd => { if (cmd is SearchCommand) cmd.IsCancel = true; });
 
                 // 他のコマンドが存在する場合のみメッセージ更新
                 // 制限する理由は、ちらつき防止のため
-                if (Command != null || _CommandList.Count > 1)
+                if (Command != null || _commandList.Count > 1)
                 {
                     ResultChanged?.Invoke(this, null);
                     State = string.IsNullOrEmpty(keyword) ? SearchEngineState.None : SearchEngineState.Search;
@@ -288,15 +288,15 @@ namespace RealtimeSearch
             while (true)
             {
                 // コマンドがあることをSemaphoreで検知する
-                await _CommandSemaphore.WaitAsync();
+                await _commandSemaphore.WaitAsync();
 
-                lock (_Lock)
+                lock (_lock)
                 {
                     // コマンド取り出し
-                    Command = _CommandList[0];
-                    _CommandList.RemoveAt(0);
+                    Command = _commandList[0];
+                    _commandList.RemoveAt(0);
 
-                    CommandCount = _CommandList.Count;
+                    CommandCount = _commandList.Count;
                 }
 
                 if (Command.IsCancel) continue;
@@ -356,22 +356,22 @@ namespace RealtimeSearch
 
         public void CommandIndex(string[] paths)
         {
-            CreateIndex(() => _SearchCore.Collect(paths));
+            CreateIndex(() => _searchCore.Collect(paths));
         }
 
         public void CommandReIndex()
         {
-            CreateIndex(() => _SearchCore.Collect());
+            CreateIndex(() => _searchCore.Collect());
         }
 
         public void CommandAddIndex(string root, List<string> paths)
         {
             foreach (var path in paths)
             {
-                Node node = _SearchCore.AddPath(root, path);
+                Node node = _searchCore.AddPath(root, path);
                 if (node != null)
                 {
-                    var items = _SearchCore.Search(SearchKeyword, node.AllNodes, IsSearchFolder);
+                    var items = _searchCore.Search(SearchKeyword, node.AllNodes, IsSearchFolder);
                     App.Current.Dispatcher.Invoke(() =>
                     {
                         foreach (var file in items)
@@ -387,7 +387,7 @@ namespace RealtimeSearch
 
         public void CommandRemoveIndex(string root, string path)
         {
-            Node node = _SearchCore.RemovePath(root, path);
+            Node node = _searchCore.RemovePath(root, path);
 
             var items = SearchResult.Where(f => f.IsRemoved).ToList();
             App.Current.Dispatcher.Invoke(() =>
@@ -403,10 +403,10 @@ namespace RealtimeSearch
 
         public void CommandRenameIndex(string root, string oldFileName, string fileName)
         {
-            var node = _SearchCore.RenamePath(root, oldFileName, fileName);
+            var node = _searchCore.RenamePath(root, oldFileName, fileName);
             if (node != null && !SearchResult.Contains(node.Content))
             {
-                var items = _SearchCore.Search(SearchKeyword, new List<Node>() { node }, IsSearchFolder);
+                var items = _searchCore.Search(SearchKeyword, new List<Node>() { node }, IsSearchFolder);
 
                 if (items.Count() > 0)
                 {
@@ -427,7 +427,7 @@ namespace RealtimeSearch
         // ファイル情報更新
         public void CommandRefleshIndex(string root, string path)
         {
-            _SearchCore.RefleshIndex(root, path);
+            _searchCore.RefleshIndex(root, path);
         }
 
 
@@ -435,9 +435,9 @@ namespace RealtimeSearch
         // 検索
         public void CommandSearch(string keyword, bool isSearchFolder)
         {
-            _SearchCore.UpdateSearchResult(keyword, isSearchFolder);
+            _searchCore.UpdateSearchResult(keyword, isSearchFolder);
 
-            lock (_Lock)
+            lock (_lock)
             {
                 SearchKeyword = keyword;
                 IsSearchFolder = isSearchFolder;
@@ -448,7 +448,7 @@ namespace RealtimeSearch
         // 検索結果状態更新
         private void UpdateSearchResultState()
         {
-            if (_CommandList.Any(n => n is SearchCommand))
+            if (_commandList.Any(n => n is SearchCommand))
             {
                 //State = SearchEngineState.Search;
             }

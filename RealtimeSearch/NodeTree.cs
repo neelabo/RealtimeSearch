@@ -47,7 +47,7 @@ namespace RealtimeSearch
             IsDarty = false;
 
             // フォルダ監視開始
-            _FileSystemWatcher.EnableRaisingEvents = true;
+            _fileSystemWatcher.EnableRaisingEvents = true;
 
             // node
             Root = Node.CreateTree(Path, null, true);
@@ -120,24 +120,24 @@ namespace RealtimeSearch
         #region FileSystemWatcher 
 
         // ファイル変更監視
-        private FileSystemWatcher _FileSystemWatcher;
+        private FileSystemWatcher _fileSystemWatcher;
 
         private void InitializeWatcher()
         {
-            _FileSystemWatcher = new FileSystemWatcher();
-            _FileSystemWatcher.Path = Path;
-            _FileSystemWatcher.IncludeSubdirectories = true;
-            _FileSystemWatcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.Size;
-            _FileSystemWatcher.Created += Watcher_Created;
-            _FileSystemWatcher.Deleted += Watcher_Deleted;
-            _FileSystemWatcher.Renamed += Watcher_Renamed;
-            _FileSystemWatcher.Changed += Watcher_Changed;
+            _fileSystemWatcher = new FileSystemWatcher();
+            _fileSystemWatcher.Path = Path;
+            _fileSystemWatcher.IncludeSubdirectories = true;
+            _fileSystemWatcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.Size;
+            _fileSystemWatcher.Created += Watcher_Created;
+            _fileSystemWatcher.Deleted += Watcher_Deleted;
+            _fileSystemWatcher.Renamed += Watcher_Renamed;
+            _fileSystemWatcher.Changed += Watcher_Changed;
         }
 
         private void TerminateWatcher()
         {
-            _FileSystemWatcher.Dispose();
-            _FileSystemWatcher = null;
+            _fileSystemWatcher.Dispose();
+            _fileSystemWatcher = null;
         }
 
         private void Watcher_Created(object sender, FileSystemEventArgs e)

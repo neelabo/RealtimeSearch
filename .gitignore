@@ -193,4 +193,6 @@ ModelManifest.xml
 PublishTo/RealtimeSearch*/
 PublishTo/*.zip
 PublishTo/*.xml
+PublishTo/*.msi
+PublishTo/*.wixpdb
 /RealtimeSearch.png

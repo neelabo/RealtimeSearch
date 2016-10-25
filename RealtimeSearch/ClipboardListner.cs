@@ -23,11 +23,11 @@ namespace RealtimeSearch
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private extern static void RemoveClipboardFormatListener(IntPtr hwnd);
 
-        const int WM_CLOSE = 0x0010;
-        const int WM_CLIPBOARDUPDATE = 0x031D;
+        private const int WM_CLOSE = 0x0010;
+        private const int WM_CLIPBOARDUPDATE = 0x031D;
 
-        Window _Window;
-        IntPtr _Handle;
+        private Window _window;
+        private IntPtr _handle;
 
         public event EventHandler<Window> ClipboardUpdate;
 
@@ -36,9 +36,9 @@ namespace RealtimeSearch
         {
             if (ClipboardUpdate != null)
             {
-                _Window.Dispatcher.BeginInvoke(new Action(() =>
+                _window.Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    ClipboardUpdate(this, _Window);
+                    ClipboardUpdate(this, _window);
                 }));
             }
         }
@@ -52,28 +52,28 @@ namespace RealtimeSearch
 
         public void Open(Window window)
         {
-            if (_Handle != IntPtr.Zero) throw new ApplicationException("ClipboardListner is already opened.");
+            if (_handle != IntPtr.Zero) throw new ApplicationException("ClipboardListner is already opened.");
 
-            _Window = window;
-            _Handle = new WindowInteropHelper(window).Handle;
+            _window = window;
+            _handle = new WindowInteropHelper(window).Handle;
 
-            AddClipboardFormatListener(_Handle);
+            AddClipboardFormatListener(_handle);
 
-            HwndSource source = HwndSource.FromHwnd(_Handle);
+            HwndSource source = HwndSource.FromHwnd(_handle);
             source.AddHook(new HwndSourceHook(WndProc));
         }
 
-        
+
         public void Close()
         {
-            if (_Handle != IntPtr.Zero)
+            if (_handle != IntPtr.Zero)
             {
-                RemoveClipboardFormatListener(_Handle);
-                _Handle = IntPtr.Zero;
+                RemoveClipboardFormatListener(_handle);
+                _handle = IntPtr.Zero;
             }
         }
 
-        
+
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             if (msg == WM_CLIPBOARDUPDATE)
@@ -84,7 +84,7 @@ namespace RealtimeSearch
             return IntPtr.Zero;
         }
 
-        
+
         public void Dispose()
         {
             Close();

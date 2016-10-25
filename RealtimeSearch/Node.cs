@@ -21,14 +21,14 @@ namespace RealtimeSearch
         // 非同期で加算されるため、正確な値にならない
         public static int TotalCount { get; set; }
 
-        private string _Name;
+        private string _name;
         public string Name
         {
-            get { return _Name; }
+            get { return _name; }
             private set
             {
-                _Name = value;
-                NormalizedWord = ToNormalisedWord(_Name);
+                _name = value;
+                NormalizedWord = ToNormalisedWord(_name);
             }
         }
 
@@ -149,7 +149,7 @@ namespace RealtimeSearch
             return node;
         }
 
-        static readonly char[] splitter = new char[] { '\\' };
+        private static readonly char[] s_splitter = new char[] { '\\' };
 
         //
         private Node Scanning(string path, bool isCreate)
@@ -169,7 +169,7 @@ namespace RealtimeSearch
             if (!isCreate) return null;
 
             // 作成
-            var tokens = childPath.Split(splitter, 2);
+            var tokens = childPath.Split(s_splitter, 2);
             var childNode = CreateTree(tokens[0], this, true);
             this.Children.Add(childNode);
             childNode.Content.IsAdded = true;
@@ -271,5 +271,4 @@ namespace RealtimeSearch
             //Debug.WriteLine($"{Path}:({AllNodes().Count()})");
         }
     }
-
 }

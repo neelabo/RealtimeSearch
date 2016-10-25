@@ -24,11 +24,11 @@ namespace RealtimeSearch
         // DestroyIcon関数
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool DestroyIcon(IntPtr hIcon);
+        private static extern bool DestroyIcon(IntPtr hIcon);
 
         // SHObjectProperties関数
         [DllImport("shell32.dll", CharSet = CharSet.Auto)]
-        static extern bool SHObjectProperties(IntPtr hwnd, uint shopObjectType, [MarshalAs(UnmanagedType.LPWStr)] string pszObjectName, [MarshalAs(UnmanagedType.LPWStr)] string pszPropertyPage);
+        private static extern bool SHObjectProperties(IntPtr hwnd, uint shopObjectType, [MarshalAs(UnmanagedType.LPWStr)] string pszObjectName, [MarshalAs(UnmanagedType.LPWStr)] string pszPropertyPage);
 
         private const uint SHOP_PRINTERNAME = 0x1;
         private const uint SHOP_FILEPATH = 0x2;
@@ -70,58 +70,58 @@ namespace RealtimeSearch
         };
         #endregion
 
-        private string _Path;
-        private bool _IsDirectory;
+        private string _path;
+        private bool _isDirectory;
 
 
         // constructor
         public FileInfo(string path)
         {
-            _Path = path;
-            _IsDirectory = System.IO.Directory.Exists(path);
+            _path = path;
+            _isDirectory = System.IO.Directory.Exists(path);
         }
 
 
-        private string _TypeName;
+        private string _typeName;
         public string TypeName
         {
             get
             {
-                if (_TypeName == null) _TypeName = CreateTypeName(_Path, _IsDirectory);
-                return _TypeName;
+                if (_typeName == null) _typeName = CreateTypeName(_path, _isDirectory);
+                return _typeName;
             }
         }
 
         //
-        private BitmapSource _IconSource;
+        private BitmapSource _iconSource;
         public BitmapSource IconSource
         {
             get
             {
-                if (_IconSource == null) _IconSource = CreateIcon(_Path, _IsDirectory);
-                return _IconSource;
+                if (_iconSource == null) _iconSource = CreateIcon(_path, _isDirectory);
+                return _iconSource;
             }
         }
 
 
-        private long? _Size;
+        private long? _size;
         public long Size
         {
             get
             {
-                if (_Size == null) _Size = GetSize(_Path);
-                return (long)_Size;
+                if (_size == null) _size = GetSize(_path);
+                return (long)_size;
             }
         }
 
 
-        private DateTime? _LastWriteTime;
+        private DateTime? _lastWriteTime;
         public DateTime LastWriteTime
         {
             get
             {
-                if (_LastWriteTime == null) _LastWriteTime = GetLastWriteTime(_Path);
-                return (DateTime)_LastWriteTime;
+                if (_lastWriteTime == null) _lastWriteTime = GetLastWriteTime(_path);
+                return (DateTime)_lastWriteTime;
             }
         }
 
@@ -129,13 +129,13 @@ namespace RealtimeSearch
 
         #region アイコンリソース取得 (簡易版)
 
-        static Dictionary<string, string> _TypeNameDictionary = new Dictionary<string, string>();
-        static Dictionary<string, BitmapSource> _IconDictionary = new Dictionary<string, BitmapSource>();
+        private static Dictionary<string, string> s_typeNameDictionary = new Dictionary<string, string>();
+        private static Dictionary<string, BitmapSource> s_iconDictionary = new Dictionary<string, BitmapSource>();
 
-        static string _FolderTypeName;
-        static BitmapSource _FolderIcon;
-        static string _DefaultTypeName;
-        static BitmapSource _DefaultIcon;
+        private static string s_folderTypeName;
+        private static BitmapSource s_folderIcon;
+        private static string s_defaultTypeName;
+        private static BitmapSource s_defaultIcon;
 
         /// <summary>
         /// ファイルの標準アイコンを準備
@@ -143,10 +143,10 @@ namespace RealtimeSearch
         public static void InitializeDefaultResource()
         {
             const string path = "__dummy_file__";
-            _FolderTypeName = GetTypeNameWithAttribute(path, FILE_ATTRIBUTE_DIRECTORY);
-            _FolderIcon = GetTypeIconSourceWithAttribute(path, IconSize.Small, FILE_ATTRIBUTE_DIRECTORY);
-            _DefaultTypeName = GetTypeNameWithAttribute(path, 0);
-            _DefaultIcon = GetTypeIconSourceWithAttribute(path, IconSize.Small, 0);
+            s_folderTypeName = GetTypeNameWithAttribute(path, FILE_ATTRIBUTE_DIRECTORY);
+            s_folderIcon = GetTypeIconSourceWithAttribute(path, IconSize.Small, FILE_ATTRIBUTE_DIRECTORY);
+            s_defaultTypeName = GetTypeNameWithAttribute(path, 0);
+            s_defaultIcon = GetTypeIconSourceWithAttribute(path, IconSize.Small, 0);
         }
 
 
@@ -162,25 +162,25 @@ namespace RealtimeSearch
 
             if (isDirectory)
             {
-                typeName = _FolderTypeName;
+                typeName = s_folderTypeName;
             }
             else
             {
                 string ext = System.IO.Path.GetExtension(path).ToLower();
                 if (!string.IsNullOrEmpty(ext))
                 {
-                    if (!_TypeNameDictionary.TryGetValue(ext, out typeName))
+                    if (!s_typeNameDictionary.TryGetValue(ext, out typeName))
                     {
                         typeName = GetTypeNameWithAttribute(ext, 0);
                         if (typeName != null)
                         {
-                            _TypeNameDictionary.Add(ext, typeName);
+                            s_typeNameDictionary.Add(ext, typeName);
                         }
                     }
                 }
             }
 
-            return typeName ?? _DefaultTypeName;
+            return typeName ?? s_defaultTypeName;
         }
 
 
@@ -196,24 +196,24 @@ namespace RealtimeSearch
 
             if (isDirectory)
             {
-                icon = _FolderIcon;
+                icon = s_folderIcon;
             }
             else
             {
                 string ext = System.IO.Path.GetExtension(path).ToLower();
                 if (!string.IsNullOrEmpty(ext))
                 {
-                    if (!_IconDictionary.TryGetValue(ext, out icon))
+                    if (!s_iconDictionary.TryGetValue(ext, out icon))
                     {
                         icon = GetTypeIconSourceWithAttribute(ext, IconSize.Small, 0);
                         if (icon != null)
                         {
-                            _IconDictionary.Add(ext, icon);
+                            s_iconDictionary.Add(ext, icon);
                         }
                     }
                 }
             }
-            return icon ?? _DefaultIcon;
+            return icon ?? s_defaultIcon;
         }
 
         #endregion

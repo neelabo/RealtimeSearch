@@ -37,21 +37,21 @@ namespace RealtimeSearch
         #endregion
 
         #region Property: NewName
-        private string _NewName;
+        private string _newName;
         public string NewName
         {
-            get { return _NewName; }
-            set { _NewName = value; OnPropertyChanged(); }
+            get { return _newName; }
+            set { _newName = value; OnPropertyChanged(); }
         }
         #endregion
 
-        private NodeContent _File;
+        private NodeContent _file;
 
 
         //
         public RenameWindow(NodeContent file)
         {
-            _File = file;
+            _file = file;
             this.NewName = System.IO.Path.GetFileName(file.Path);
 
             InitializeComponent();
@@ -63,7 +63,7 @@ namespace RealtimeSearch
         public static readonly RoutedCommand CloseCommand = new RoutedCommand();
         public static readonly RoutedCommand OkCommand = new RoutedCommand();
 
-        void InitializeCommand()
+        private void InitializeCommand()
         {
             // ok command
             OkCommand.InputGestures.Add(new KeyGesture(Key.Enter));
@@ -80,17 +80,17 @@ namespace RealtimeSearch
             TextBox.PreviewKeyDown += TextBox_KeyDown;
         }
 
-        int keyCount;
+        private int _keyCount;
 
         private void TextBox_KeyDown(object sender, KeyEventArgs e)
         {
             // 最初の方向入力に限りカーソル位置を固定する
-            if (keyCount == 0 && (e.Key == Key.Up || e.Key == Key.Down || e.Key == Key.Left || e.Key == Key.Up))
+            if (_keyCount == 0 && (e.Key == Key.Up || e.Key == Key.Down || e.Key == Key.Left || e.Key == Key.Up))
             {
                 int pos = TextBox.SelectionStart + TextBox.SelectionLength;
                 TextBox.Select(pos, 0);
 
-                keyCount++;
+                _keyCount++;
             }
         }
 
@@ -109,7 +109,7 @@ namespace RealtimeSearch
 
         private bool Rename()
         {
-            string src = _File.Path;
+            string src = _file.Path;
             string dst = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(src), NewName);
 
             if (src == dst) return true;
