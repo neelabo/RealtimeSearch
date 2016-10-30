@@ -29,7 +29,7 @@ namespace RealtimeSearch
         #region NotifyPropertyChanged
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
 
-        protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = "")
+        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = "")
         {
             if (PropertyChanged != null)
             {
@@ -38,9 +38,33 @@ namespace RealtimeSearch
         }
         #endregion
 
-        public string Path { get; set; }
 
-        public string Name => System.IO.Path.GetFileName(Path);
+        /// <summary>
+        /// Path property.
+        /// </summary>
+        private string _path;
+        public string Path
+        {
+            get { return _path; }
+            set { if (_path != value) { _path = value; RaisePropertyChanged(); UpdateName(); } }
+        }
+
+        private void UpdateName()
+        {
+            Name = System.IO.Path.GetFileName(Path);
+        }
+
+        /// <summary>
+        /// Name property.
+        /// </summary>
+        private string _name;
+        public string Name
+        {
+            get { return _name; }
+            set { if (_name != value) { _name = value; RaisePropertyChanged(); } }
+        }
+
+
 
         // フォルダ表示名
         public string DirectoryName
@@ -100,7 +124,7 @@ namespace RealtimeSearch
         public bool IsPushPin
         {
             get { return IsFlag(NodeFlag.PushPin); }
-            set { SetFlag(NodeFlag.PushPin, value); OnPropertyChanged(); }
+            set { SetFlag(NodeFlag.PushPin, value); RaisePropertyChanged(); }
         }
 
 
@@ -115,11 +139,12 @@ namespace RealtimeSearch
         public void Reflesh()
         {
             FileInfo = new FileInfo(Path);
-            OnPropertyChanged(nameof(Path));
-            OnPropertyChanged(nameof(Name));
-            OnPropertyChanged(nameof(FileInfo));
-            OnPropertyChanged(nameof(DirectoryName));
-            OnPropertyChanged(nameof(Detail));
+            RaisePropertyChanged(nameof(Path));
+            //RaisePropertyChanged(nameof(Name));
+            UpdateName();
+            RaisePropertyChanged(nameof(FileInfo));
+            RaisePropertyChanged(nameof(DirectoryName));
+            RaisePropertyChanged(nameof(Detail));
         }
 
         // プロパティウィンドウを開く

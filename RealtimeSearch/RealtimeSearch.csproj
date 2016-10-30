@@ -102,6 +102,13 @@
     </ApplicationDefinition>
     <Compile Include="ClipboardListner.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="RenameControl.xaml.cs">
+      <DependentUpon>RenameControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="RenameManager.xaml.cs">
+      <DependentUpon>RenameManager.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="VisualTreeTools.cs" />
     <Compile Include="DirectoryNameBox.xaml.cs">
       <DependentUpon>DirectoryNameBox.xaml</DependentUpon>
     </Compile>
@@ -111,9 +118,6 @@
     <Compile Include="NodeContent.cs" />
     <Compile Include="RenamePaletteControl.xaml.cs">
       <DependentUpon>RenamePaletteControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="RenameWindow.xaml.cs">
-      <DependentUpon>RenameWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Setting.cs" />
     <Compile Include="MainWindowVM.cs" />
@@ -141,13 +145,17 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="RenameControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="RenameManager.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="RenamePaletteControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="RenameWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="SettingWindow.xaml">
       <SubType>Designer</SubType>

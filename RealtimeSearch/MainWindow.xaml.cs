@@ -37,7 +37,23 @@ namespace RealtimeSearch
 
             _VM.PropertyChanged += MainWindowVM_PropertyChanged;
             _VM.StateMessageChanged += MainWindowVM_StateMessageChanged;
+
+            // cancel rename triggers
+            this.MouseLeftButtonDown += (s, e) => this.RenameManager.Stop();
+            this.MouseRightButtonDown += (s, e) => this.RenameManager.Stop();
+            this.Deactivated += (s, e) => this.RenameManager.Stop();
+            //this.SizeChanged += (s, e) => this.RenameControl.Stop();
+
+            this.listView01.AddHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler(listView01_ScrollChanged));
         }
+
+        void listView01_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            this.RenameManager.Stop();
+            //Debug.WriteLine("SCROLL");
+            //throw new NotImplementedException();
+        }
+
 
         private void MainWindowVM_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -304,32 +320,116 @@ namespace RealtimeSearch
         // 名前の変更
         private void Rename_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            NodeContent file = (target as ListView)?.SelectedItem as NodeContent;
-            if (file != null)
-            {
-                if (!System.IO.File.Exists((string)file.Path) && !System.IO.Directory.Exists((string)file.Path))
-                {
-                    MessageBox.Show($"{file.Path} が見つかりません。", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
+            var listView = target as ListView;
+            var item = listView?.SelectedItem as NodeContent;
 
-                _VM.IsEnableClipboardListner = false;
-                try
+            if (item != null)
+            {
+                var listViewItem = VisualTreeTools.GetListViewItemFromItem(listView, item);
+                var textBlock = VisualTreeTools.FindVisualChild<TextBlock>(listViewItem, "FileNameTextBlock");
+
+                // 
+                if (textBlock != null)
                 {
-                    var dialog = new RenameWindow(file);
-                    dialog.Owner = this;
-                    dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                    dialog.ShowDialog();
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-                finally
-                {
-                    _VM.IsEnableClipboardListner = true;
+                    var rename = new RenameControl();
+                    rename.Target = textBlock;
+                    rename.Closing += (s, ev) =>
+                    {
+                        //Debug.WriteLine($"{ev.OldValue} => {ev.NewValue}");
+                        if (ev.OldValue != ev.NewValue)
+                        {
+                            NodeContent file = (target as ListView)?.SelectedItem as NodeContent;
+                            file.Name = ev.NewValue;
+                            bool result = Rename(file, ev.NewValue);
+                            if (!result) file.Reflesh();
+                        }
+                    };
+                    rename.Closed += (s, ev) =>
+                    {
+                        listViewItem.Focus();
+                        if (ev.MoveRename != 0)
+                        {
+                            RenameNext(ev.MoveRename);
+                        }
+                    };
+
+                    this.RenameManager.Open(rename);
+
+                    return;
+
                 }
             }
+
+        }
+
+        //
+        private void RenameNext(int delta)
+        {
+            if (this.listView01.SelectedIndex < 0) return;
+
+            // 選択項目を1つ移動
+            this.listView01.SelectedIndex = (this.listView01.SelectedIndex + this.listView01.Items.Count + delta) % this.listView01.Items.Count;
+
+            // リネーム発動
+            Rename_Executed(this.listView01, null);
+        }
+
+        //
+        private bool Rename(NodeContent file, string newName)
+        {
+            string src = file.Path;
+            string dst = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(src), newName);
+
+            if (src == dst) return true;
+
+            // 大文字小文字の変換は正常
+            if (string.Compare(src, dst, true) == 0)
+            {
+                // nop.
+            }
+
+            // 重複ファイル名回避
+            else if (System.IO.File.Exists(dst) || System.IO.Directory.Exists(dst))
+            {
+                string dstBase = dst;
+                string dir = System.IO.Path.GetDirectoryName(dst);
+                string name = System.IO.Path.GetFileNameWithoutExtension(dst);
+                string ext = System.IO.Path.GetExtension(dst);
+                int count = 1;
+
+                do
+                {
+                    dst = $"{dir}\\{name} ({++count}){ext}";
+                }
+                while (System.IO.File.Exists(dst) || System.IO.Directory.Exists(dst));
+
+                // 確認
+                var resut = MessageBox.Show($"{System.IO.Path.GetFileName(dstBase)} は既に存在します。\n{System.IO.Path.GetFileName(dst)} に名前を変更しますか？", "名前の変更の確認", MessageBoxButton.OKCancel);
+                if (resut != MessageBoxResult.OK)
+                {
+                    return false;
+                }
+            }
+
+            // 名前変更実行
+            try
+            {
+                if (System.IO.Directory.Exists(src))
+                {
+                    System.IO.Directory.Move(src, dst);
+                }
+                else
+                {
+                    System.IO.File.Move(src, dst);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("名前の変更に失敗しました。\n\n" + ex.Message, "通知", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            return true;
         }
 
 
@@ -414,7 +514,7 @@ namespace RealtimeSearch
         }
 
 
-        #region リストのソート
+#region リストのソート
 
         // リストのソート用
         private GridViewColumnHeader _lastHeaderClicked = null;
@@ -496,7 +596,7 @@ namespace RealtimeSearch
             dataView.Refresh();
         }
 
-        #endregion
+#endregion
 
 
         private void SettingButton_Click(object sender, RoutedEventArgs e)
@@ -513,7 +613,7 @@ namespace RealtimeSearch
         }
 
 
-        #region ListViewColumnMemento
+#region ListViewColumnMemento
 
         // カラムヘッダ文字列取得
         private string GetColumnHeaderText(GridViewColumn column)
@@ -564,7 +664,7 @@ namespace RealtimeSearch
             }
         }
 
-        #endregion
+#endregion
 
 
         // for Debug

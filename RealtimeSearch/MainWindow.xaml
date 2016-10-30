@@ -163,8 +163,12 @@
                             <Label Content="{Binding Header, RelativeSource={RelativeSource AncestorType={x:Type GridViewColumn}}}"/>
                         </DataTemplate>
 
-                        <DataTemplate x:Key="ItemFileNameTemplate">
+                        <!--
                             <DockPanel ToolTip="{Binding Detail}">
+                        -->
+                        
+                        <DataTemplate x:Key="ItemFileNameTemplate">
+                            <DockPanel>
                                 <CheckBox DockPanel.Dock="Right" Template="{StaticResource PushpinCheckBoxTemplate}" Width="16" Height="16" IsChecked="{Binding IsPushPin}" >
                                     <CheckBox.Style>
                                         <Style TargetType="CheckBox">
@@ -182,7 +186,7 @@
                                 </CheckBox>
 
                                 <Image DockPanel.Dock="Left" Source="{Binding FileInfo.IconSource}" Width="16" Margin="0,0,4,0"/>
-                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock x:Name="FileNameTextBlock" Text="{Binding Name}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
                             </DockPanel>
                         </DataTemplate>
 
@@ -271,6 +275,8 @@
 
         </DockPanel>
 
+        <local:RenameManager x:Name="RenameManager"/>
+        
     </Grid>
 
 </Window>
