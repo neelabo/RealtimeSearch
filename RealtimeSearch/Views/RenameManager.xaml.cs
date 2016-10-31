@@ -32,7 +32,7 @@ namespace RealtimeSearch
 
             var pos = rename.Target.TranslatePoint(new Point(0, 0), this);
             Canvas.SetLeft(rename, pos.X - 3);
-            Canvas.SetTop(rename, pos.Y - 1);
+            Canvas.SetTop(rename, pos.Y - 2);
 
             this.Root.Children.Add(rename);
 

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 
 
-namespace RealtimeSearch
+namespace RealtimeSearch.Search
 {
     /// <summary>
     /// 

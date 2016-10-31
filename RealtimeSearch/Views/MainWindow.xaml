@@ -6,20 +6,29 @@
 -->
 
 <Window
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:RealtimeSearch"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="RealtimeSearch.MainWindow"
-        Title="{Binding WindowTitle}" Height="600" Width="800" Icon="App.ico" 
-        Topmost="{Binding Setting.IsTopmost}"
-        Loaded="Window_Loaded" Closing="Window_Closing" Closed="Window_Closed" SourceInitialized="Window_SourceInitialized" >
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:RealtimeSearch"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    x:Class="RealtimeSearch.MainWindow"
+    Title="{Binding WindowTitle}"
+    Height="600"
+    Width="800"
+    Topmost="{Binding Setting.IsTopmost}"
+    Loaded="Window_Loaded" Closing="Window_Closing" Closed="Window_Closed" SourceInitialized="Window_SourceInitialized" >
 
+    <!--
+    
+    -->
 
     <Window.Resources>
 
         <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
         <local:CommandToVisibilityConverter x:Key="CommandToVisibility"/>
         <local:StringToVisibilityConverter x:Key="StringToVisibility"/>
+        <local:NullToVisibilityConverter x:Key="NullToVisibility"/>
 
         <Style TargetType="{x:Type ListViewItem}">
 
@@ -102,7 +111,7 @@
                             <Image Width="16" Height="16" Source="{StaticResource ic_reflesh_24px}"/>
                         </Button>
                         <ComboBox x:Name="keyword" Text="{Binding Keyword, Delay=200, UpdateSourceTrigger=PropertyChanged}"
-                              VerticalAlignment="Center" KeyDown="keyword_KeyDown" ItemsSource="{Binding History}"
+                              VerticalAlignment="Center" KeyDown="keyword_KeyDown" ItemsSource="{Binding History.Collection}"
                               IsEditable="True" BorderThickness="0" BorderBrush="red" LostFocus="keyword_LostFocus" LostKeyboardFocus="keyword_LostFocus">
                             <ComboBox.ItemContainerStyle>
                                 <Style TargetType="ComboBoxItem">
@@ -123,31 +132,66 @@
             <!-- Debug Info -->
             <StackPanel x:Name="DebugInfo" DockPanel.Dock="Bottom" Visibility="Collapsed">
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Background="#FFF8F8F8">
-                    <TextBlock Margin="2" TextWrapping="NoWrap" Text="{Binding SearchEngine.CommandCount, StringFormat={}{0}\, }" />
-                    <TextBlock Margin="2" TextWrapping="NoWrap" Text="{Binding SearchEngine.Command}" />
+                    <TextBlock Margin="2" TextWrapping="NoWrap" Text="{Binding Models.SearchEngine.CommandCount, StringFormat={}{0}\, }" />
+                    <TextBlock Margin="2" TextWrapping="NoWrap" Text="{Binding Models.SearchEngine.Command}" />
                 </StackPanel>
                 <TextBox x:Name="LogTextBox" DockPanel.Dock="Bottom" Height="64" VerticalScrollBarVisibility="Visible" />
             </StackPanel>
 
 
-            <Grid DockPanel.Dock="Bottom" Margin="2">
-                <TextBlock TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Information}" TextDecorations="{x:Null}" >
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding ElementName=indexInformation, Path=Text}" Value="">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
-                <TextBlock x:Name="indexInformation" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding IndexInformation}" TextDecorations="{x:Null}" />
+            <Grid DockPanel.Dock="Bottom" Margin="0" >
+
+                <DockPanel>
+
+                    <Button x:Name="ToggleInforPanel" DockPanel.Dock="Right" Margin="0" Width="20" Height="20" VerticalAlignment="Center"
+                            Command="{Binding ToggleDetailVisibleCommand}"
+                            Style="{StaticResource IconButton}" >
+                        <Grid Background="Transparent" >
+                            <Path Stroke="#414141" Stretch="Uniform" Margin="2">
+                            <Path.Style>
+                                <Style TargetType="Path">
+                                    <Setter Property="Data" Value="m0,10 L10,0 20,10"/>
+                                    <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Setting.IsDetailVisibled}" Value="True">
+                                            <Setter Property="Data" Value="m0,0 L10,10 20,0"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Path.Style>
+                        </Path>
+                        </Grid>
+
+                    </Button>
+        
+                    
+                    <Grid>
+                        <TextBlock TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Models.Information}" TextDecorations="{x:Null}" >
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=indexInformation, Path=Text}" Value="">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <TextBlock x:Name="indexInformation" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Models.IndexInformation}" TextDecorations="{x:Null}" />
+                    </Grid>
+                </DockPanel>
             </Grid>
 
+            
+            <Border DockPanel.Dock="Bottom" BorderBrush="LightGray" BorderThickness="0" Background="#F8F8F8" Margin="0,2,0,0"
+                    Visibility="{Binding Setting.IsDetailVisibled, Converter={StaticResource BoolToVisibility}}">
+                <TextBox IsReadOnly="True" BorderThickness="0" Margin="5" Background="Transparent"
+                         Text="{Binding ElementName=listView01, Path=SelectedItem.Detail, Mode=OneWay}">
+                </TextBox>
+            </Border>
+
             <Grid>
-                <ListView x:Name="listView01" Foreground="Black" ButtonBase.Click="GridViewColumnHeader_ClickHandler" ItemsSource="{Binding Files}" BorderThickness="0" 
+                <ListView x:Name="listView01" Foreground="Black" ButtonBase.Click="GridViewColumnHeader_ClickHandler" ItemsSource="{Binding Models.Files}" BorderThickness="0" 
                           FocusVisualStyle="{x:Null}"
                           HorizontalAlignment="Stretch"
                           ScrollViewer.CanContentScroll="True"
@@ -166,7 +210,7 @@
                         <!--
                             <DockPanel ToolTip="{Binding Detail}">
                         -->
-                        
+
                         <DataTemplate x:Key="ItemFileNameTemplate">
                             <DockPanel>
                                 <CheckBox DockPanel.Dock="Right" Template="{StaticResource PushpinCheckBoxTemplate}" Width="16" Height="16" IsChecked="{Binding IsPushPin}" >
@@ -221,14 +265,14 @@
                     </ListView.View>
                 </ListView>
 
-                <StackPanel Margin="0,40,0,0" Visibility="{Binding Path=SearchEngine.StateMessage, Converter={StaticResource StringToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Top" Background="White">
-                    <TextBlock Margin="10" TextTrimming="CharacterEllipsis" Text="{Binding SearchEngine.SearchKeyword}" HorizontalAlignment="Center">
+                <StackPanel Margin="0,40,0,0" Visibility="{Binding Path=Models.SearchEngine.StateMessage, Converter={StaticResource StringToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Top" Background="White">
+                    <TextBlock Margin="10" TextTrimming="CharacterEllipsis" Text="{Binding Models.SearchEngine.SearchKeyword}" HorizontalAlignment="Center">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
                                 <Setter Property="Foreground" Value="Gray"/>
                                 <Setter Property="Visibility" Value="Collapsed"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SearchEngine.State}" Value="SearchResultEmpty">
+                                    <DataTrigger Binding="{Binding Models.SearchEngine.State}" Value="SearchResultEmpty">
                                         <Setter Property="Visibility" Value="Visible"/>
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -237,14 +281,14 @@
                     </TextBlock>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
                         <Grid Visibility="{Binding ElementName=BusyText, Path=Visibility}" Width="34"/>
-                        <TextBlock x:Name="textBlock_Busy" Text="{Binding Path=SearchEngine.StateMessage}" Foreground="Gray"/>
+                        <TextBlock x:Name="textBlock_Busy" Text="{Binding Path=Models.SearchEngine.StateMessage}" Foreground="Gray"/>
                         <TextBlock x:Name="BusyText" Margin="2,0" Width="30">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Foreground" Value="Gray"/>
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SearchEngine.State}" Value="Search">
+                                        <DataTrigger Binding="{Binding Models.SearchEngine.State}" Value="Search">
                                             <Setter Property="Visibility" Value="Visible"/>
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -276,7 +320,7 @@
         </DockPanel>
 
         <local:RenameManager x:Name="RenameManager"/>
-        
+
     </Grid>
 
 </Window>

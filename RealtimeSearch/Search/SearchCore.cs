@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace RealtimeSearch
+namespace RealtimeSearch.Search
 {
     /// <summary>
     /// 検索コア

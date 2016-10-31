@@ -12,7 +12,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RealtimeSearch"
         mc:Ignorable="d"
-        Title="設定" Height="340" Width="460" Icon="App.ico">
+        Title="設定" Height="340" Width="460">
 
     <Window.Resources>
         <Style TargetType="FrameworkElement" x:Key="Phrase">
@@ -97,8 +97,21 @@
                                     </Style.Triggers>
                                 </Style>
                             </DockPanel.Style>
+
+                            <DockPanel DockPanel.Dock="Top">
+                                
                             <TextBlock MinWidth="80" Text="パラメーター：" VerticalAlignment="Center" Margin="2"/>
-                            <TextBox Text="{Binding Setting.ExternalApplicationParam}" Margin="2" ToolTip="$(file) がファイルパスに置換されます。&#xa;定義されていない場合 &quot;$(file)&quot; が自動追加されます"/>
+                                <TextBox Text="{Binding Setting.ExternalApplicationParam}" Margin="2" ToolTip="$(file) がファイルパスに置換されます。&#xa;定義されていない場合 &quot;$(file)&quot; が自動追加されます"/>
+                            </DockPanel>
+
+                            <DockPanel Margin="0,2">
+                                
+                            <TextBlock MinWidth="80" Text="拡張子：" VerticalAlignment="Center" Margin="2"/>
+                                <TextBox Text="{Binding Setting.ExternalApplicationFilter}" Margin="2" ToolTip="対応拡張子を登録します。例：&quot;.bmp;.png;.jpg&quot;&#xa;定義されていない場合、全てのファイルが対象となります"/>
+
+                            </DockPanel>
+
+
                         </DockPanel>
 
                     </StackPanel>

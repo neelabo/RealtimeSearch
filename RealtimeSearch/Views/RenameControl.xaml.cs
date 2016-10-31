@@ -51,9 +51,6 @@ namespace RealtimeSearch
         /// <summary>
         /// Target property.
         /// </summary>
-        /// <summary>
-        /// Target property.
-        /// </summary>
         private TextBlock _target;
         public TextBlock Target
         {
@@ -68,13 +65,20 @@ namespace RealtimeSearch
                     Text = _target.Text;
                     _old = Text;
                     _new = Text;
+                    
+                    /*
+                    var padding = Target.Padding;
+                    padding.Top += 1;
+                    padding.Bottom += 1;
+                    padding.Right += 20;
+                    */
+
+                    this.RenameTextBox.FontFamily = Target.FontFamily;
+                    this.RenameTextBox.FontSize = Target.FontSize;
                 }
             }
         }
-  
 
-
-        //private Visibility _targetVisibility;
 
         //
         public RenameControl()
@@ -86,10 +90,6 @@ namespace RealtimeSearch
 
         private string _old;
         private string _new;
-
-        //private TextBlock _target;
-        //private Action<string, string> _closing;
-        //private Action<string, string> _closed;
 
         private int _moveRename;
 
@@ -130,8 +130,6 @@ namespace RealtimeSearch
             _closing = true;
 
             _new = isSuccess ? Text : _old;
-
-            //System.Windows.Input.Keyboard.ClearFocus();
 
             var args = new RenameClosingEventArgs() { OldValue = _old, NewValue = _new };
             Closing?.Invoke(this, args);
@@ -192,5 +190,15 @@ namespace RealtimeSearch
             }
         }
 
+        private void RenameTextBox_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            Stop(true);
+            e.Handled = true;
+        }
+
+        private void MeasureText_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            this.RenameTextBox.MinWidth = this.MeasureText.ActualWidth + 30;
+        }
     }
 }

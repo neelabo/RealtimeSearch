@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RealtimeSearch
+namespace RealtimeSearch.Search
 {
     /// <summary>
     /// Node

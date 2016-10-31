@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RealtimeSearch
+namespace RealtimeSearch.Search
 {
     [Flags]
     public enum NodeFlag
@@ -82,7 +82,7 @@ namespace RealtimeSearch
         {
             get
             {
-                string sizeText = (FileInfo.Size > 0) ? $"サイズ: {(FileInfo.Size + 1024 - 1) / 1024:#,0} KB\n" : "";
+                string sizeText = (FileInfo.Size >= 0) ? $"サイズ: {(FileInfo.Size + 1024 - 1) / 1024:#,0} KB\n" : "サイズ: --\n";
                 return $"{Name}\n種類: {FileInfo.TypeName}\n{sizeText}更新日時: {FileInfo.LastWriteTime.ToString("yyyy/MM/dd HH:mm")}\nフォルダー: {DirectoryName}";
             }
         }

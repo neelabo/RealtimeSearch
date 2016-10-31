@@ -3,6 +3,7 @@
 // This software is released under the MIT License.
 // http://opensource.org/licenses/mit-license.php
 
+using RealtimeSearch.Search;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -35,42 +36,31 @@ namespace RealtimeSearch
 
             RegistRoutedCommand();
 
-            _VM.PropertyChanged += MainWindowVM_PropertyChanged;
-            _VM.StateMessageChanged += MainWindowVM_StateMessageChanged;
+            _VM.FilesChanged += MainWindowVM_FilesChanged;
 
             // cancel rename triggers
             this.MouseLeftButtonDown += (s, e) => this.RenameManager.Stop();
             this.MouseRightButtonDown += (s, e) => this.RenameManager.Stop();
             this.Deactivated += (s, e) => this.RenameManager.Stop();
-            //this.SizeChanged += (s, e) => this.RenameControl.Stop();
 
             this.listView01.AddHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler(listView01_ScrollChanged));
+        }
+
+        private void MainWindowVM_FilesChanged(object sender, EventArgs e)
+        {
+            this.Dispatcher.BeginInvoke(new Action(GridViewColumnHeader_Reset), null);
         }
 
         void listView01_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             this.RenameManager.Stop();
-            //Debug.WriteLine("SCROLL");
-            //throw new NotImplementedException();
         }
 
-
-        private void MainWindowVM_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(_VM.Files))
-            {
-                Dispatcher.BeginInvoke(new Action(GridViewColumnHeader_Reset), null);
-            }
-        }
-
-        private void MainWindowVM_StateMessageChanged(object sender, SearchEngineState e)
-        {
-        }
 
         private void Window_SourceInitialized(object sender, EventArgs e)
         {
             // 設定読み込み
-            _VM.Open();
+            _VM.Open(this);
 
             // ウィンドウ座標復元
             _VM.RestoreWindowPlacement(this);
@@ -83,7 +73,7 @@ namespace RealtimeSearch
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // クリップボード監視開始
-            _VM.StartClipboardMonitor(this);
+            //_VM.StartClipboardMonitor(this);
 
             // 検索パスが設定されていなければ設定画面を開く
             if (_VM.Setting.SearchPaths.Count <= 0)
@@ -109,13 +99,13 @@ namespace RealtimeSearch
             _VM.Close();
         }
 
-
         //
         private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             NodeContent file = ((ListViewItem)sender).Content as NodeContent;
             if (file == null) return;
 
+            // 外部アプリ起動
             Execute(file);
         }
 
@@ -124,15 +114,15 @@ namespace RealtimeSearch
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(_VM.Setting.ExternalApplication))
-                {
-                    System.Diagnostics.Process.Start(file.Path);
-                }
-                else
+                if (!string.IsNullOrWhiteSpace(_VM.Setting.ExternalApplication) && _VM.Setting.CheckExternalApplicationFilter(file.Path))
                 {
                     var commandName = _VM.Setting.ExternalApplication;
                     var arguments = _VM.Setting.ExternalApplicationParam.Replace("$(file)", file.Path);
                     System.Diagnostics.Process.Start(commandName, arguments);
+                }
+                else
+                {
+                    System.Diagnostics.Process.Start(file.Path);
                 }
             }
             catch (Exception e)
@@ -157,6 +147,7 @@ namespace RealtimeSearch
         }
 
 
+        //
         private void keyword_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -167,7 +158,7 @@ namespace RealtimeSearch
 
         private void keyword_LostFocus(object sender, RoutedEventArgs e)
         {
-            _VM.AddHistory(_VM.Keyword);
+            _VM.History.Add(_VM.Keyword); // TODO: ここはおかしい
         }
 
 
@@ -211,8 +202,6 @@ namespace RealtimeSearch
                 }
             }
         }
-
-
 
         public static readonly RoutedCommand OpenCommand = new RoutedCommand("OpenCommand", typeof(MainWindow));
         public static readonly RoutedCommand OpenCommandDefault = new RoutedCommand("OpenCommandDefault", typeof(MainWindow));
@@ -508,13 +497,13 @@ namespace RealtimeSearch
             if (file != null)
             {
                 string text = System.IO.Path.GetFileNameWithoutExtension(file.Path);
-                _VM.SetClipboard(text);
+                _VM.ClipboardSearch.SetClipboard(text);
                 //System.Windows.Clipboard.SetDataObject(text);
             }
         }
 
 
-#region リストのソート
+        #region リストのソート
 
         // リストのソート用
         private GridViewColumnHeader _lastHeaderClicked = null;
@@ -596,7 +585,7 @@ namespace RealtimeSearch
             dataView.Refresh();
         }
 
-#endregion
+        #endregion
 
 
         private void SettingButton_Click(object sender, RoutedEventArgs e)
@@ -613,7 +602,7 @@ namespace RealtimeSearch
         }
 
 
-#region ListViewColumnMemento
+        #region ListViewColumnMemento
 
         // カラムヘッダ文字列取得
         private string GetColumnHeaderText(GridViewColumn column)
@@ -664,7 +653,7 @@ namespace RealtimeSearch
             }
         }
 
-#endregion
+        #endregion
 
 
         // for Debug
