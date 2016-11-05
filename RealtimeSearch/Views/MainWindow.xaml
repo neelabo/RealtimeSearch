@@ -183,7 +183,7 @@
             </Grid>
 
             
-            <Border DockPanel.Dock="Bottom" BorderBrush="LightGray" BorderThickness="0" Background="#F8F8F8" Margin="0,2,0,0"
+            <Border DockPanel.Dock="Bottom" BorderBrush="LightGray" BorderThickness="0,1,0,0" Margin="0"
                     Visibility="{Binding Setting.IsDetailVisibled, Converter={StaticResource BoolToVisibility}}">
                 <TextBox IsReadOnly="True" BorderThickness="0" Margin="5" Background="Transparent"
                          Text="{Binding ElementName=listView01, Path=SelectedItem.Detail, Mode=OneWay}">

@@ -129,7 +129,7 @@ namespace RealtimeSearch
             if (_closing) return;
             _closing = true;
 
-            _new = isSuccess ? Text : _old;
+            _new = isSuccess ? Text.Trim() : _old;
 
             var args = new RenameClosingEventArgs() { OldValue = _old, NewValue = _new };
             Closing?.Invoke(this, args);
