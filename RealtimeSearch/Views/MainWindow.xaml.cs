@@ -114,21 +114,49 @@ namespace RealtimeSearch
         {
             try
             {
-                if (!string.IsNullOrWhiteSpace(_VM.Setting.ExternalApplication) && _VM.Setting.CheckExternalApplicationFilter(file.Path))
+                foreach (var program in _VM.Setting.ExternalPrograms)
                 {
-                    var commandName = _VM.Setting.ExternalApplication;
-                    var arguments = _VM.Setting.ExternalApplicationParam.Replace("$(file)", file.Path);
-                    System.Diagnostics.Process.Start(commandName, arguments);
+                    if (program.CheckExtensions(file.Path))
+                    {
+                        Execute(file, program);
+                        return;
+                    }
                 }
-                else
-                {
-                    System.Diagnostics.Process.Start(file.Path);
-                }
+                System.Diagnostics.Process.Start(file.Path); // terminator
             }
             catch (Exception e)
             {
                 Debug.WriteLine(e.Message);
                 MessageBox.Show(e.Message, "実行失敗", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        //
+        private void Execute(NodeContent file, int programId)
+        {
+            try
+            {
+                Execute(file, _VM.Setting.ExternalPrograms[programId - 1]);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+                MessageBox.Show(e.Message, "実行失敗", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        //
+        private void Execute(NodeContent file, ExternalProgram program)
+        {
+            if (!string.IsNullOrWhiteSpace(program.Program))
+            {
+                var commandName = program.Program;
+                var arguments = program.Parameter.Replace("$(file)", file.Path);
+                System.Diagnostics.Process.Start(commandName, arguments);
+            }
+            else
+            {
+                System.Diagnostics.Process.Start(file.Path);
             }
         }
 
@@ -204,6 +232,9 @@ namespace RealtimeSearch
         }
 
         public static readonly RoutedCommand OpenCommand = new RoutedCommand("OpenCommand", typeof(MainWindow));
+        public static readonly RoutedCommand OpenCommand1 = new RoutedCommand("OpenCommand1", typeof(MainWindow));
+        public static readonly RoutedCommand OpenCommand2 = new RoutedCommand("OpenCommand2", typeof(MainWindow));
+        public static readonly RoutedCommand OpenCommand3 = new RoutedCommand("OpenCommand3", typeof(MainWindow));
         public static readonly RoutedCommand OpenCommandDefault = new RoutedCommand("OpenCommandDefault", typeof(MainWindow));
         public static readonly RoutedCommand CopyCommand = new RoutedCommand("CopyCommand", typeof(MainWindow));
         public static readonly RoutedCommand OpenPlaceCommand = new RoutedCommand("OpenPlaceCommand", typeof(MainWindow));
@@ -219,6 +250,16 @@ namespace RealtimeSearch
             OpenCommand.InputGestures.Add(new KeyGesture(Key.Enter));
             listView01.CommandBindings.Add(new CommandBinding(OpenCommand, Open_Executed));
 
+            OpenCommand1.InputGestures.Add(new KeyGesture(Key.D1, ModifierKeys.Control));
+            listView01.CommandBindings.Add(new CommandBinding(OpenCommand1, OpenEx1_Executed));
+
+            OpenCommand2.InputGestures.Add(new KeyGesture(Key.D2, ModifierKeys.Control));
+            listView01.CommandBindings.Add(new CommandBinding(OpenCommand2, OpenEx2_Executed));
+
+            OpenCommand3.InputGestures.Add(new KeyGesture(Key.D3, ModifierKeys.Control));
+            listView01.CommandBindings.Add(new CommandBinding(OpenCommand3, OpenEx3_Executed));
+
+            OpenCommandDefault.InputGestures.Add(new KeyGesture(Key.Enter, ModifierKeys.Control));
             listView01.CommandBindings.Add(new CommandBinding(OpenCommandDefault, OpenDefault_Executed));
 
             CopyCommand.InputGestures.Add(new KeyGesture(Key.C, ModifierKeys.Control));
@@ -422,38 +463,69 @@ namespace RealtimeSearch
         }
 
 
-        // ファイルを開く
-        private void Open_Executed(object target, ExecutedRoutedEventArgs e)
+        private enum ExecuteType
+        {
+            Default,
+            ExternalPrograms,
+            SelectedExternalProgram,
+        }
+
+        //
+        private void Open_Executed(object target, ExecutedRoutedEventArgs e, ExecuteType executeType, int programId = 0)
         {
             var items = (target as ListView)?.SelectedItems;
 
-            if (items == null || items.Count > 10) return;
+            if (items == null) return;
 
             foreach (var item in items)
             {
                 NodeContent file = item as NodeContent;
                 if (file != null && (System.IO.File.Exists((string)file.Path) || System.IO.Directory.Exists((string)file.Path)))
                 {
-                    Execute(file);
+                    switch (executeType)
+                    {
+                        default:
+                        case ExecuteType.Default:
+                            ExecuteDefault(file);
+                            break;
+                        case ExecuteType.ExternalPrograms:
+                            Execute(file);
+                            break;
+                        case ExecuteType.SelectedExternalProgram:
+                            Execute(file, programId);
+                            break;
+                    }
                 }
             }
+        }
+
+
+        // ファイルを開く(Ex1)
+        private void OpenEx1_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 1);
+        }
+
+        private void OpenEx2_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 2);
+        }
+
+        private void OpenEx3_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 3);
+        }
+
+        // ファイルを開く
+        private void Open_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            Open_Executed(target, e, ExecuteType.ExternalPrograms);
         }
 
         // ファイルを開く(既定)
         private void OpenDefault_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            var items = (target as ListView)?.SelectedItems;
-
-            if (items == null || items.Count > 10) return;
-
-            foreach (var item in items)
-            {
-                NodeContent file = item as NodeContent;
-                if (file != null && (System.IO.File.Exists((string)file.Path) || System.IO.Directory.Exists((string)file.Path)))
-                {
-                    ExecuteDefault(file);
-                }
-            }
+            Open_Executed(target, e, ExecuteType.Default);
         }
 
 
@@ -462,7 +534,7 @@ namespace RealtimeSearch
         {
             var items = (target as ListView)?.SelectedItems;
 
-            if (items == null || items.Count > 10) return;
+            if (items == null) return;
 
             foreach (var item in items)
             {

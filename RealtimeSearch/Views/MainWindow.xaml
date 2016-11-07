@@ -39,8 +39,12 @@
             <Setter Property="ContextMenu">
                 <Setter.Value>
                     <ContextMenu>
-                        <MenuItem Header="開く(_O)" Command="{x:Static local:MainWindow.OpenCommand}" />
+                        <MenuItem Header="開く(_O)" Command="{x:Static local:MainWindow.OpenCommand}"/>
                         <MenuItem Header="既定のアプリで開く" Command="{x:Static local:MainWindow.OpenCommandDefault}" />
+                        <MenuItem Header="外部アプリ１で開く" Command="{x:Static local:MainWindow.OpenCommand1}"/>
+                        <MenuItem Header="外部アプリ２で開く" Command="{x:Static local:MainWindow.OpenCommand2}"/>
+                        <MenuItem Header="外部アプリ３で開く" Command="{x:Static local:MainWindow.OpenCommand3}"/>
+                        <Separator/>
                         <MenuItem Header="ファイルの場所を開く(_I)" Command="{x:Static local:MainWindow.OpenPlaceCommand}" />
                         <Separator/>
                         <MenuItem Header="ファイルをコピーする(_C)" Command="{x:Static local:MainWindow.CopyCommand}" />
@@ -145,6 +149,7 @@
 
                     <Button x:Name="ToggleInforPanel" DockPanel.Dock="Right" Margin="0" Width="20" Height="20" VerticalAlignment="Center"
                             Command="{Binding ToggleDetailVisibleCommand}"
+                            ToolTip="ファイル詳細"
                             Style="{StaticResource IconButton}" >
                         <Grid Background="Transparent" >
                             <Path Stroke="#414141" Stretch="Uniform" Margin="2">

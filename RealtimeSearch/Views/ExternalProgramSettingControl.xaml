@@ -1,0 +1,58 @@
+﻿<!--
+    Copyright (c) 2015-2016 Mitsuhiro Ito (nee)
+
+    This software is released under the MIT License.
+    http://opensource.org/licenses/mit-license.php
+-->
+
+<UserControl x:Class="RealtimeSearch.ExternalProgramSettingControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RealtimeSearch"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+
+    <StackPanel x:Name="Root" Margin="5">
+
+        <StackPanel Orientation="Horizontal">
+            <!--
+            <CheckBox Checked="{Binding Program.IsEnabled}" VerticalAlignment="Center"/>
+            -->
+            <TextBlock Text="{Binding Header}" FontWeight="Bold" Margin="5"/>
+        </StackPanel>
+
+        <StackPanel Margin="20,0,0,0">
+            <DockPanel Margin="2" LastChildFill="True">
+                <TextBlock MinWidth="80" Text="プログラム：" VerticalAlignment="Center" Margin="2"/>
+                <local:DirectoryNameBox x:Name="ExAppPath" Margin="2" SelectDirectory="False" Title="プログラムの選択" Filter="EXE|*.exe|すべてのファイル|*.*"
+                            ToolTip="プログラムのパスを指定します&#xa;指定がない場合は既定のアプリを起動します"
+                            Note="プログラムのパスを入力してください"
+                            Text="{Binding Program.Program, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+            </DockPanel>
+            <DockPanel Margin="2,2,2,5" LastChildFill="True">
+                <DockPanel.Style>
+                    <Style TargetType="DockPanel">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ElementName=ExAppPath, Path=Text}" Value="">
+                                <Setter Property="IsEnabled" Value="False"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DockPanel.Style>
+
+                <DockPanel DockPanel.Dock="Top">
+                    <TextBlock MinWidth="80" Text="パラメーター：" VerticalAlignment="Center" Margin="2"/>
+                    <TextBox Text="{Binding Program.Parameter}" Margin="2" ToolTip="$(file) がファイルパスに置換されます。&#xa;定義されていない場合 &quot;$(file)&quot; が自動追加されます"/>
+                </DockPanel>
+
+                <DockPanel Margin="0,2">
+                    <TextBlock MinWidth="80" Text="拡張子：" VerticalAlignment="Center" Margin="2"/>
+                    <TextBox Text="{Binding Program.Extensions}" Margin="2" ToolTip="対応拡張子を登録します。例：&quot;bmp png jpg&quot;&#xa;定義されていない場合、全てのファイルが対象となります&#xa;この設定は「開く」で対応する外部アプリを決定するために使用されます"/>
+                </DockPanel>
+
+            </DockPanel>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

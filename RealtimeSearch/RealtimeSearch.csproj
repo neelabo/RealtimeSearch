@@ -102,10 +102,14 @@
     </ApplicationDefinition>
     <Compile Include="Models\ClipboardListner.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="Models\ExternalProgram.cs" />
     <Compile Include="Models\History.cs" />
     <Compile Include="Models\MainWindowModel.cs" />
     <Compile Include="Models\Models.cs" />
     <Compile Include="ViewModels\ClipboardSearch.cs" />
+    <Compile Include="Views\ExternalProgramSettingControl.xaml.cs">
+      <DependentUpon>ExternalProgramSettingControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\RenameControl.xaml.cs">
       <DependentUpon>RenameControl.xaml</DependentUpon>
     </Compile>
@@ -132,6 +136,10 @@
     <Page Include="Views\DirectoryNameBox.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\ExternalProgramSettingControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
