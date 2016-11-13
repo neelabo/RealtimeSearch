@@ -122,8 +122,7 @@ namespace RealtimeSearch
         /// <param name="keyword"></param>
         public void Search(string keyword)
         {
-
-            SearchEngine.SearchRequest(keyword, _setting.IsSearchFolder);
+            SearchEngine.SearchRequest(keyword, _setting.SearchOption);
         }
     }
 

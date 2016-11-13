@@ -28,7 +28,8 @@ namespace RealtimeSearch.Search
             private set
             {
                 _name = value;
-                NormalizedWord = ToNormalisedWord(_name);
+                NormalizedFazyWord = ToNormalisedWord(_name, true);
+                NormalizedUnitWord = ToNormalisedWord(_name, false);
             }
         }
 
@@ -61,7 +62,10 @@ namespace RealtimeSearch.Search
         public bool IsDirectory => Children != null;
 
         // 検索用正規化ファイル名
-        public string NormalizedWord { get; private set; }
+        public string NormalizedFazyWord { get; private set; }
+
+        // 検索用正規化ファイル名。ひらかな、カタカナを区別する
+        public string NormalizedUnitWord { get; private set; }
 
         // コンテンツ
         public NodeContent Content;
@@ -92,14 +96,17 @@ namespace RealtimeSearch.Search
 
 
         // 正規化された文字列に変換する
-        public static string ToNormalisedWord(string src)
+        public static string ToNormalisedWord(string src, bool isFazy)
         {
             string s = src.Normalize(NormalizationForm.FormKC); // 正規化
-            s = s.Replace(" ", ""); // 空白を削除する
 
             s = s.ToUpper(); // アルファベットを大文字にする
-            s = Microsoft.VisualBasic.Strings.StrConv(s, Microsoft.VisualBasic.VbStrConv.Katakana); // ひらがなをカタカナにする
-            s = s.Replace("ー", "-"); // 長音をハイフンにする 
+            if (isFazy)
+            {
+                s = Microsoft.VisualBasic.Strings.StrConv(s, Microsoft.VisualBasic.VbStrConv.Katakana); // ひらがなをカタカナにする
+                s = s.Replace("ー", "-"); // 長音をハイフンにする 
+                s = s.Replace(" ", ""); // 空白を削除する
+            }
 
             return s;
         }

@@ -133,8 +133,9 @@ namespace RealtimeSearch.Search
         #endregion
 
 
-        // 検索結果に対応しているフォルダオプション
-        public bool IsSearchFolder { get; private set; }
+        // 検索結果に対応している検索オプション
+        public SearchOption SearchOption { get; private set; }
+
 
         // 検索結果
         public ObservableCollection<NodeContent> SearchResult { get { return _searchCore.SearchResult; } }
@@ -258,7 +259,7 @@ namespace RealtimeSearch.Search
 
 
         // 検索リクエスト
-        public void SearchRequest(string keyword, bool isSearchFolder)
+        public void SearchRequest(string keyword, SearchOption option)
         {
             keyword = keyword ?? "";
             keyword = keyword.Trim();
@@ -275,7 +276,7 @@ namespace RealtimeSearch.Search
                     State = string.IsNullOrEmpty(keyword) ? SearchEngineState.None : SearchEngineState.Search;
                 }
 
-                AddCommand(new SearchCommand() { Keyword = keyword, IsSearchFolder = isSearchFolder });
+                AddCommand(new SearchCommand() { Keyword = keyword, Option = option });
             }
         }
 
@@ -371,7 +372,7 @@ namespace RealtimeSearch.Search
                 Node node = _searchCore.AddPath(root, path);
                 if (node != null)
                 {
-                    var items = _searchCore.Search(SearchKeyword, node.AllNodes, IsSearchFolder);
+                    var items = _searchCore.Search(SearchKeyword, node.AllNodes, SearchOption);
                     App.Current.Dispatcher.Invoke(() =>
                     {
                         foreach (var file in items)
@@ -406,7 +407,7 @@ namespace RealtimeSearch.Search
             var node = _searchCore.RenamePath(root, oldFileName, fileName);
             if (node != null && !SearchResult.Contains(node.Content))
             {
-                var items = _searchCore.Search(SearchKeyword, new List<Node>() { node }, IsSearchFolder);
+                var items = _searchCore.Search(SearchKeyword, new List<Node>() { node }, SearchOption);
 
                 if (items.Count() > 0)
                 {
@@ -433,14 +434,14 @@ namespace RealtimeSearch.Search
 
 
         // 検索
-        public void CommandSearch(string keyword, bool isSearchFolder)
+        public void CommandSearch(string keyword, SearchOption option)
         {
-            _searchCore.UpdateSearchResult(keyword, isSearchFolder);
+            _searchCore.UpdateSearchResult(keyword, option);
 
             lock (_lock)
             {
                 SearchKeyword = keyword;
-                IsSearchFolder = isSearchFolder;
+                SearchOption = option.Clone();
                 UpdateSearchResultState();
             }
         }

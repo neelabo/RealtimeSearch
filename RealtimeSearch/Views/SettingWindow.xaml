@@ -80,7 +80,6 @@
                     <TextBlock Text="設定" Style="{StaticResource Header}"/>
                     <StackPanel Style="{StaticResource Phrase}">
                         <CheckBox  Margin="2"   IsChecked="{Binding Setting.IsMonitorClipboard}" VerticalAlignment="Center" Content="クリップボードを監視" ToolTip="クリップボードを監視し、コピーされたテキストで即座に検索を開始します"/>
-                        <CheckBox  Margin="2"   IsChecked="{Binding Setting.IsSearchFolder}" VerticalAlignment="Center" Content="フォルダを検索結果に含める"/>
                         <CheckBox  Margin="2"  IsChecked="{Binding Setting.IsTopmost}" VerticalAlignment="Center" Content="常に手前に表示"/>
                     </StackPanel>
 

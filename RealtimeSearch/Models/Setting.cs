@@ -66,15 +66,17 @@ namespace RealtimeSearch
         #endregion
 
 
-        #region Property: IsSearchFolder
-        [DataMember(Name = nameof(IsSearchFolder))]
-        private bool _isSearchFolder;
-        public bool IsSearchFolder
+        /// <summary>
+        /// SearchOption property.
+        /// </summary>
+        private Search.SearchOption _searchOption;
+        [DataMember]
+        public Search.SearchOption SearchOption
         {
-            get { return _isSearchFolder; }
-            set { _isSearchFolder = value; RaisePropertyChanged(); }
+            get { return _searchOption; }
+            set { if (_searchOption != value) { _searchOption = value; RaisePropertyChanged(); } }
         }
-        #endregion
+
 
         /// <summary>
         /// IsDetailVisibled property.
@@ -107,7 +109,7 @@ namespace RealtimeSearch
         {
             SearchPaths = new ObservableCollection<string>();
             IsMonitorClipboard = true;
-            IsSearchFolder = true;
+            SearchOption = new Search.SearchOption();
             ExternalPrograms = new List<ExternalProgram>();
             ExternalPrograms.Add(new ExternalProgram());
             ExternalPrograms.Add(new ExternalProgram());

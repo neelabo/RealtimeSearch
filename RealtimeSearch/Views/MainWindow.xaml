@@ -103,9 +103,20 @@
         <DockPanel>
 
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4" >
-                <Button Style="{StaticResource IconButton}" DockPanel.Dock="Right" Width="25" Height="25" x:Name="SettingButton" Click="SettingButton_Click" Margin="2,0,0,0" ToolTip="設定">
+
+                <local:DropDownMenuButton DockPanel.Dock="Right" Width="25" Height="25" Style="{StaticResource IconTogglrButton}" Margin="2,0,0,0">
                     <Image Width="16" Height="16" Source="{StaticResource ic_settings_24px}"/>
-                </Button>
+                    <local:DropDownMenuButton.DropDownContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="単語一致" IsCheckable="True" IsChecked="{Binding Setting.SearchOption.IsWord}"/>
+                            <MenuItem Header="完全一致" IsCheckable="True" IsChecked="{Binding Setting.SearchOption.IsPerfect}"/>
+                            <MenuItem Header="フォルダーを含める" IsCheckable="True" IsChecked="{Binding Setting.SearchOption.AllowFolder}"/>
+                            <Separator />
+                            <MenuItem Header="設定を開く..." Click="SettingButton_Click"/>
+                        </ContextMenu>
+                    </local:DropDownMenuButton.DropDownContextMenu>
+                </local:DropDownMenuButton>
+
                 <Border BorderBrush="#FFDDDDDD" BorderThickness="1">
                     <DockPanel >
                         <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="25" Height="25" Command="{x:Static local:MainWindow.WebSearchCommand}" ToolTip="Web検索(Ctrl+F)">
@@ -115,7 +126,7 @@
                             <Image Width="16" Height="16" Source="{StaticResource ic_reflesh_24px}"/>
                         </Button>
                         <ComboBox x:Name="keyword" Text="{Binding Keyword, Delay=200, UpdateSourceTrigger=PropertyChanged}"
-                              VerticalAlignment="Center" KeyDown="keyword_KeyDown" ItemsSource="{Binding History.Collection}"
+                              VerticalAlignment="Center" KeyDown="keyword_KeyDown" ItemsSource="{Binding History.Collection}" IsTextSearchCaseSensitive="True"
                               IsEditable="True" BorderThickness="0" BorderBrush="red" LostFocus="keyword_LostFocus" LostKeyboardFocus="keyword_LostFocus">
                             <ComboBox.ItemContainerStyle>
                                 <Style TargetType="ComboBoxItem">

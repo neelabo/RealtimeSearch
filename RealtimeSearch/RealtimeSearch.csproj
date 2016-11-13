@@ -107,6 +107,7 @@
     <Compile Include="Models\MainWindowModel.cs" />
     <Compile Include="Models\Models.cs" />
     <Compile Include="ViewModels\ClipboardSearch.cs" />
+    <Compile Include="Views\DropDownMenuButton.cs" />
     <Compile Include="Views\ExternalProgramSettingControl.xaml.cs">
       <DependentUpon>ExternalProgramSettingControl.xaml</DependentUpon>
     </Compile>
