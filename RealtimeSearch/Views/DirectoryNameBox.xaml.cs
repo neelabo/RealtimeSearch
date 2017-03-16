@@ -13,7 +13,7 @@ using System.Windows;
 using System.Windows.Controls;
 
 
-namespace RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch
 {
     /// <summary>
     /// FilenameBox.xaml の相互作用ロジック

@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Xml.Linq;
 
-namespace RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch
 {
     /// <summary>
     /// アプリ全体の設定

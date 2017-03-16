@@ -5,10 +5,11 @@
     http://opensource.org/licenses/mit-license.php
 -->
 
-<Application x:Class="RealtimeSearch.App"
+<Application x:Class="NeeLaboratory.RealtimeSearch.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="Views/MainWindow.xaml"
+             xmlns:local="clr-namespace:NeeLaboratory.RealtimeSearch"
              DispatcherUnhandledException="Application_DispatcherUnhandledException" Startup="Application_Startup">
     <Application.Resources>
        

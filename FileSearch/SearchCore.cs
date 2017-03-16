@@ -3,14 +3,16 @@
 // This software is released under the MIT License.
 // http://opensource.org/licenses/mit-license.php
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace RealtimeSearch.Search
+namespace NeeLaboratory.IO.Search
 {
     [DataContract]
     public class SearchOption
@@ -37,11 +39,33 @@ namespace RealtimeSearch.Search
         }
     }
 
+
+    public enum NodeChangedAction
+    {
+        None,
+        Add,
+        Remove,
+        Rename,
+    }
+
+    public class NodeChangedEventArgs : EventArgs
+    {
+        public NodeChangedAction Action { get; set; }
+        public Node Node { get; set; }
+
+        public NodeChangedEventArgs(NodeChangedAction action, Node node)
+        {
+            this.Action = action;
+            this.Node = node;
+        }
+    }
+
+
     /// <summary>
     /// 検索コア
     /// 検索フォルダのファイルをインデックス化して保存し、検索を行う
     /// </summary>
-    public class SearchCore
+    internal class SearchCore
     {
         private List<string> _roots;
 
@@ -50,6 +74,7 @@ namespace RealtimeSearch.Search
         private List<string> _keys;
 
         public ObservableCollection<NodeContent> SearchResult { get; private set; }
+
 
 
         /// <summary>
@@ -84,6 +109,10 @@ namespace RealtimeSearch.Search
             Collect();
         }
 
+
+        //
+        internal event EventHandler<NodeTreeFileSystemEventArgs> FileSystemChanged;
+
         /// <summary>
         /// 検索フォルダのインデックス化
         /// 更新分のみ
@@ -99,6 +128,7 @@ namespace RealtimeSearch.Search
                 if (!_fileIndexDirectory.ContainsKey(root))
                 {
                     sub = new NodeTree(root);
+                    sub.FileSystemChanged += (s, e) => FileSystemChanged?.Invoke(s, e);
                 }
                 else
                 {
@@ -139,6 +169,8 @@ namespace RealtimeSearch.Search
         }
 
 
+        public event EventHandler<NodeChangedEventArgs> NodeChanged;
+
         /// <summary>
         /// インデックス追加
         /// </summary>
@@ -151,7 +183,9 @@ namespace RealtimeSearch.Search
                 return null;
             }
 
-            return _fileIndexDirectory[root].AddNode(path);
+            var node = _fileIndexDirectory[root].AddNode(path);
+            NodeChanged?.Invoke(this, new NodeChangedEventArgs(NodeChangedAction.Add, node));
+            return node;
         }
 
 
@@ -167,7 +201,10 @@ namespace RealtimeSearch.Search
                 return null;
             }
 
-            return _fileIndexDirectory[root].RemoveNode(path);
+            var node = _fileIndexDirectory[root].RemoveNode(path);
+            NodeChanged?.Invoke(this, new NodeChangedEventArgs(NodeChangedAction.Remove, node));
+
+            return node;
         }
 
         /// <summary>
@@ -183,8 +220,12 @@ namespace RealtimeSearch.Search
                 return null;
             }
 
-            return _fileIndexDirectory[root].Rename(oldFileName, newFileName);
+            var node = _fileIndexDirectory[root].Rename(oldFileName, newFileName);
+            NodeChanged?.Invoke(this, new NodeChangedEventArgs(NodeChangedAction.Rename, node));
+
+            return node;
         }
+
 
 
 
@@ -324,6 +365,15 @@ namespace RealtimeSearch.Search
             }
         }
 
+        //
+        public ObservableCollection<NodeContent> Search(string keyword, SearchOption option)
+        {
+            lock (_lock)
+            {
+                return new ObservableCollection<NodeContent>(Search(keyword, AllNodes, option).Select(e => e.Content));
+            }
+        }
+
         /// <summary>
         /// 検索
         /// </summary>
@@ -335,6 +385,9 @@ namespace RealtimeSearch.Search
         {
             // pushpin保存
             var pushpins = entries.Where(f => f.Content.IsPushPin);
+
+            // キーワード無し
+            if (string.IsNullOrWhiteSpace(keyword)) return pushpins;
 
             // キーワード登録
             SetKeys(keyword, option);

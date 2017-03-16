@@ -15,7 +15,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 
 
-namespace RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch
 {
     /// <summary>
     /// SettingWindow.xaml の相互作用ロジック

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch
 {
     public static class Win32Api
     {

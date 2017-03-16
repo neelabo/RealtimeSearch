@@ -9,7 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 
-namespace RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch
 {
     /// <summary>
     /// ドロップ ダウン メニューを表示する為のボタン コントロール クラスです。

@@ -15,7 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch
 {
 
     public class RenameClosingEventArgs : EventArgs

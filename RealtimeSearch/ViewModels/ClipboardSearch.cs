@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 
-namespace RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch
 {
     public class ClipboardChangedEventArgs : EventArgs
     {

@@ -13,8 +13,20 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 
 
-namespace RealtimeSearch.Search
+namespace NeeLaboratory.IO.Search
 {
+    internal class NodeTreeFileSystemEventArgs
+    {
+        public string NodePath { get; private set; }
+        public FileSystemEventArgs FileSystemEventArgs { get; private set; }
+
+        public NodeTreeFileSystemEventArgs(string path, FileSystemEventArgs args)
+        {
+            this.NodePath = path;
+            this.FileSystemEventArgs = args;
+        }
+    }
+
     /// <summary>
     /// 
     /// </summary>
@@ -128,18 +140,28 @@ namespace RealtimeSearch.Search
             _fileSystemWatcher.Path = Path;
             _fileSystemWatcher.IncludeSubdirectories = true;
             _fileSystemWatcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.Size;
-            _fileSystemWatcher.Created += Watcher_Created;
-            _fileSystemWatcher.Deleted += Watcher_Deleted;
-            _fileSystemWatcher.Renamed += Watcher_Renamed;
+            ////_fileSystemWatcher.Created += Watcher_Created;
+            ////_fileSystemWatcher.Deleted += Watcher_Deleted;
+            ////_fileSystemWatcher.Renamed += Watcher_Renamed;
+            _fileSystemWatcher.Created += Watcher_Changed;
+            _fileSystemWatcher.Deleted += Watcher_Changed;
+            _fileSystemWatcher.Renamed += Watcher_Changed;
             _fileSystemWatcher.Changed += Watcher_Changed;
         }
 
         private void TerminateWatcher()
         {
+            FileSystemChanged = null;
+
             _fileSystemWatcher.Dispose();
             _fileSystemWatcher = null;
         }
 
+
+
+        internal event EventHandler<NodeTreeFileSystemEventArgs> FileSystemChanged;
+
+#if false
         private void Watcher_Created(object sender, FileSystemEventArgs e)
         {
             SearchEngine.Current.AddIndexRequest(Path, e.FullPath);
@@ -154,13 +176,15 @@ namespace RealtimeSearch.Search
         {
             SearchEngine.Current.RenameIndexRequest(Path, e.OldFullPath, e.FullPath);
         }
+#endif
 
         private void Watcher_Changed(object sender, FileSystemEventArgs e)
         {
-            SearchEngine.Current.RefleshIndexRequest(Path, e.FullPath);
+            ////SearchEngine.Current.RefleshIndexRequest(Path, e.FullPath);
+            FileSystemChanged?.Invoke(sender, new NodeTreeFileSystemEventArgs(Path, e));
         }
 
-        #endregion
+#endregion
 
         public void Dispose()
         {

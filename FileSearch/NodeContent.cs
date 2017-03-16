@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RealtimeSearch.Search
+namespace NeeLaboratory.IO.Search
 {
     [Flags]
     public enum NodeFlag
@@ -147,11 +147,13 @@ namespace RealtimeSearch.Search
             RaisePropertyChanged(nameof(Detail));
         }
 
+#if false
         // プロパティウィンドウを開く
         public void OpenProperty(System.Windows.Window window)
         {
             FileInfo.OpenProperty(window, Path);
         }
+#endif
 
         // 表示文字列
         public override string ToString()

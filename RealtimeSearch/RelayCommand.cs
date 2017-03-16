@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 using System.Windows.Input;
 
-namespace RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch
 {
     /// <summary>
     /// その機能を中継することのみを目的とするコマンド

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch
 {
     public class MainWindowModel
     {

@@ -7,8 +7,8 @@
     <ProjectGuid>{488DD86A-CA8C-4CEC-9FB1-ECD8CD77EFED}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RealtimeSearch</RootNamespace>
-    <AssemblyName>RealtimeSearch</AssemblyName>
+    <RootNamespace>NeeLaboratory.RealtimeSearch</RootNamespace>
+    <AssemblyName>NeeLaboratory.RealtimeSearch</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -82,6 +82,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -105,7 +106,7 @@
     <Compile Include="Models\ExternalProgram.cs" />
     <Compile Include="Models\History.cs" />
     <Compile Include="Models\MainWindowModel.cs" />
-    <Compile Include="Models\Models.cs" />
+    <Compile Include="Models\MainModel.cs" />
     <Compile Include="ViewModels\ClipboardSearch.cs" />
     <Compile Include="Views\DropDownMenuButton.cs" />
     <Compile Include="Views\ExternalProgramSettingControl.xaml.cs">
@@ -121,14 +122,10 @@
     <Compile Include="Views\DirectoryNameBox.xaml.cs">
       <DependentUpon>DirectoryNameBox.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Search\NodeTree.cs" />
     <Compile Include="Models\FileInfo.cs" />
-    <Compile Include="Search\Node.cs" />
-    <Compile Include="Search\NodeContent.cs" />
     <Compile Include="Models\Setting.cs" />
     <Compile Include="ViewModels\MainWindowVM.cs" />
     <Compile Include="RelayCommand.cs" />
-    <Compile Include="Search\SearchEngine.cs" />
     <Compile Include="Views\SettingWindow.xaml.cs">
       <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
@@ -150,7 +147,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Search\SearchCore.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -192,7 +188,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-    <Compile Include="Search\SearchEngineCommands.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
@@ -214,7 +209,12 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\FileSearch\NeeLaboratory.IO.Search.csproj">
+      <Project>{f8053574-48a7-4d8d-a55e-63c26d01e519}</Project>
+      <Name>NeeLaboratory.IO.Search</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

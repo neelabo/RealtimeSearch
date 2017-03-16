@@ -3,7 +3,7 @@
 // This software is released under the MIT License.
 // http://opensource.org/licenses/mit-license.php
 
-using RealtimeSearch.Search;
+using NeeLaboratory.IO.Search;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,7 +18,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 
-namespace RealtimeSearch
+
+namespace NeeLaboratory.RealtimeSearch
 {
     /// <summary>
     /// MainWindow.xaml の相互作用ロジック
@@ -176,11 +177,11 @@ namespace RealtimeSearch
 
 
         //
-        private void keyword_KeyDown(object sender, KeyEventArgs e)
+        private async void keyword_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
-                _VM.Search(true);
+                await _VM.SearchAsync(true);
             }
         }
 
@@ -294,7 +295,7 @@ namespace RealtimeSearch
             {
                 try
                 {
-                    file.OpenProperty(this);
+                    FileInfo.OpenProperty(this, file.Path);
                 }
                 catch (Exception ex)
                 {
@@ -305,9 +306,9 @@ namespace RealtimeSearch
 
 
         // 
-        private void Search_Executed(object target, ExecutedRoutedEventArgs e)
+        private async void Search_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            _VM.Search(true);
+            await _VM.SearchAsync(true);
         }
 
         //
@@ -399,6 +400,7 @@ namespace RealtimeSearch
 
             // 選択項目を1つ移動
             this.listView01.SelectedIndex = (this.listView01.SelectedIndex + this.listView01.Items.Count + delta) % this.listView01.Items.Count;
+            this.listView01.UpdateLayout();
 
             // リネーム発動
             Rename_Executed(this.listView01, null);

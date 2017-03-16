@@ -14,7 +14,7 @@ using System.Windows;
 using System.Windows.Threading;
 
 
-namespace RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch
 {
     /// <summary>
     /// App.xaml の相互作用ロジック

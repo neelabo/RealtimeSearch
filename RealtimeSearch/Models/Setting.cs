@@ -15,7 +15,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch
 {
     [DataContract]
     public class ListViewColumnMemento
@@ -69,9 +69,9 @@ namespace RealtimeSearch
         /// <summary>
         /// SearchOption property.
         /// </summary>
-        private Search.SearchOption _searchOption;
+        private NeeLaboratory.IO.Search.SearchOption _searchOption;
         [DataMember]
-        public Search.SearchOption SearchOption
+        public NeeLaboratory.IO.Search.SearchOption SearchOption
         {
             get { return _searchOption; }
             set { if (_searchOption != value) { _searchOption = value; RaisePropertyChanged(); } }
@@ -109,7 +109,7 @@ namespace RealtimeSearch
         {
             SearchPaths = new ObservableCollection<string>();
             IsMonitorClipboard = true;
-            SearchOption = new Search.SearchOption();
+            SearchOption = new NeeLaboratory.IO.Search.SearchOption();
             ExternalPrograms = new List<ExternalProgram>();
             ExternalPrograms.Add(new ExternalProgram());
             ExternalPrograms.Add(new ExternalProgram());

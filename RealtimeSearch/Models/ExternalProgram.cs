@@ -12,7 +12,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch
 {
     [DataContract]
     public class ExternalProgram : INotifyPropertyChanged

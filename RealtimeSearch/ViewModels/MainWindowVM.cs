@@ -17,9 +17,8 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Collections.ObjectModel;
-using RealtimeSearch.Search;
 
-namespace RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch
 {
     public class MainWindowVM : INotifyPropertyChanged
     {
@@ -45,15 +44,15 @@ namespace RealtimeSearch
         public string Keyword
         {
             get { return _keyword; }
-            set { _keyword = value; RaisePropertyChanged(); Search(false); }
+            set { _keyword = value; RaisePropertyChanged(); SearchAsync(false); }
         }
 
 
         /// <summary>
         /// Models property.
         /// </summary>
-        private Models _models;
-        public Models Models
+        private MainModel _models;
+        public MainModel Models
         {
             get { return _models; }
             set { if (_models != value) { _models = value; RaisePropertyChanged(); } }
@@ -119,7 +118,8 @@ namespace RealtimeSearch
         //
         private void Models_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(Models.Files))
+            if (e.PropertyName == nameof(Models.SearchResult))
+            //if (e.PropertyName == nameof(Models.Files))
             {
                 FilesChanged?.Invoke(sender, null);
                 RaisePropertyChanged(nameof(WindowTitle));
@@ -133,7 +133,7 @@ namespace RealtimeSearch
             Setting.SearchPaths.CollectionChanged += SearchPaths_CollectionChanged;
 
             // 初期化
-            Models = new Models(Setting);
+            Models = new MainModel(Setting);
             Models.PropertyChanged += Models_PropertyChanged;
 
 
@@ -198,11 +198,11 @@ namespace RealtimeSearch
 
 
         //
-        public void Search(bool isAddHistory)
+        public async Task SearchAsync(bool isAddHistory)
         {
             var keyword = new Regex(@"\s+").Replace(this.Keyword, " ").Trim();
 
-            Models.Search(keyword);
+            await Models.SearchAsync(keyword);
 
             if (isAddHistory) History.Add(keyword);
         }
@@ -260,6 +260,7 @@ namespace RealtimeSearch
 
 
     // コマンド状態を処理中表示に変換する
+    /*
     [ValueConversion(typeof(SearchEngineCommand), typeof(Visibility))]
     internal class CommandToVisibilityConverter : IValueConverter
     {
@@ -274,6 +275,7 @@ namespace RealtimeSearch
             throw new NotImplementedException();
         }
     }
+    */
 
     // 文字列状態を処理中表示に変換する
     [ValueConversion(typeof(string), typeof(Visibility))]
