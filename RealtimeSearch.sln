@@ -12,9 +12,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		THIRDPARTY_LICENSES.md = THIRDPARTY_LICENSES.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeeLaboratory.IO.Search", "NeeLaboratory.IO.Search\NeeLaboratory.IO.Search.csproj", "{F8053574-48A7-4D8D-A55E-63C26D01E519}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeeLaboratory.IO.Search", "NeeLaboratory.IO.Search\NeeLaboratory.IO.Search\NeeLaboratory.IO.Search.csproj", "{F8053574-48A7-4D8D-A55E-63C26D01E519}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeeLaboratory.IO.SearchTests", "NeeLaboratory.IO.SearchTests\NeeLaboratory.IO.SearchTests.csproj", "{EA02F6C9-A7C8-4BC5-B332-88F9FF2D877B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeeLaboratory.IO.SearchTests", "NeeLaboratory.IO.Search\NeeLaboratory.IO.SearchTests\NeeLaboratory.IO.SearchTests.csproj", "{EA02F6C9-A7C8-4BC5-B332-88F9FF2D877B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

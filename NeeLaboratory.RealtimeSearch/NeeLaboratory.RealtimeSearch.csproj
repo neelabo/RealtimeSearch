@@ -209,7 +209,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NeeLaboratory.IO.Search\NeeLaboratory.IO.Search.csproj">
+    <ProjectReference Include="..\NeeLaboratory.IO.Search\NeeLaboratory.IO.Search\NeeLaboratory.IO.Search.csproj">
       <Project>{f8053574-48a7-4d8d-a55e-63c26d01e519}</Project>
       <Name>NeeLaboratory.IO.Search</Name>
     </ProjectReference>
