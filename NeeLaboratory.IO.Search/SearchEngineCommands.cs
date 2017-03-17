@@ -55,7 +55,7 @@ namespace NeeLaboratory.IO.Search
         protected override async Task ExecuteAsync(CancellationToken token)
         {
             await Task.Yield();
-            _target.ResetArea_Execute(_args);
+            _target.ResetArea_Execute(_args, token);
         }
     }
 
@@ -201,7 +201,7 @@ namespace NeeLaboratory.IO.Search
         /// </summary>
         /// <param name="command"></param>
         /// <param name="token"></param>
-        internal void Enqueue(SearchCommand command, CancellationToken token)
+        internal void Enqueue(CommandBase command, CancellationToken token)
         {
             command.CancellationToken = token;
             Enqueue(command);

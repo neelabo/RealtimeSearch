@@ -6,6 +6,7 @@ Param(
 trap { break }
 
 $product = 'RealtimeSearch'
+$assembly = 'NeeLaboratory.RealtimeSearch'
 
 $config = 'Release'
 
@@ -50,14 +51,14 @@ if ($Target -eq "Clean")
 
 #-----------------------
 # variables
-$solutionDir = "E:\Documents\Visual Studio 2015\Projects\$product"
+$solutionDir = ".."
 $solution = "$solutionDir\$product.sln"
-$projectDir = "$solutionDir\$product"
+$projectDir = "$solutionDir\$assembly"
 $productDir = "$projectDir\bin\$config"
 
 #----------------------
 # build
-$msbuild = 'C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe'
+$msbuild = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe'
 & $msbuild $solution /p:Configuration=$config /t:Clean,Build
 if ($? -ne $true)
 {
@@ -139,9 +140,9 @@ function New-Zip
 # WiX
 function New-Msi
 {
-	$candle = 'C:\Program Files (x86)\WiX Toolset v3.10\bin\candle.exe'
-	$light = 'C:\Program Files (x86)\WiX Toolset v3.10\bin\light.exe'
-	$heat = 'C:\Program Files (x86)\WiX Toolset v3.10\bin\heat.exe'
+	$candle = 'C:\Program Files (x86)\WiX Toolset v3.11\bin\candle.exe'
+	$light = 'C:\Program Files (x86)\WiX Toolset v3.11\bin\light.exe'
+	$heat = 'C:\Program Files (x86)\WiX Toolset v3.11\bin\heat.exe'
 
 
 	$config = "$product.exe.config"

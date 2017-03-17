@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NeeLaboratory.IO.Search
@@ -120,8 +121,10 @@ namespace NeeLaboratory.IO.Search
         }
 
         //
-        public static Node CreateTree(string name, Node parent, bool isDirectoryMaybe)
+        public static Node CreateTree(string name, Node parent, bool isDirectoryMaybe, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             Node node = new Node(name, parent);
 
             if (isDirectoryMaybe && Directory.Exists(node.Path))
@@ -137,15 +140,20 @@ namespace NeeLaboratory.IO.Search
                     files.Sort(Win32Api.StrCmpLogicalW);
 
                     var directoryNodes = new Node[directories.Count];
-                    Parallel.ForEach(directories, (s, state, index) =>
+                    ParallelOptions options = new ParallelOptions() { CancellationToken = token };
+                    Parallel.ForEach(directories, options, (s, state, index) =>
                     {
                         Debug.Assert(directoryNodes[(int)index] == null);
-                        directoryNodes[(int)index] = CreateTree(s, node, true);
+                        directoryNodes[(int)index] = CreateTree(s, node, true, options.CancellationToken);
                     });
 
-                    var fileNodes = files.Select(s => CreateTree(s, node, false));
+                    var fileNodes = files.Select(s => CreateTree(s, node, false, token));
 
                     node.Children = directoryNodes.Concat(fileNodes).ToList();
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
                 }
                 catch (Exception e)
                 {
@@ -178,7 +186,7 @@ namespace NeeLaboratory.IO.Search
 
             // 作成
             var tokens = childPath.Split(s_splitter, 2);
-            var childNode = CreateTree(tokens[0], this, true);
+            var childNode = CreateTree(tokens[0], this, true, CancellationToken.None);
             this.Children.Add(childNode);
             childNode.Content.IsAdded = true;
             return childNode;

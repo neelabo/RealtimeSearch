@@ -46,7 +46,10 @@ namespace NeeLaboratory.IO.Search
 
         public SearchEngineState State => _commandEngine.State;
 
-        public int NodeCount => _core.NodeCount();
+        /// <summary>
+        /// ノード数(おおよそ)
+        /// </summary>
+        public int NodeCountMaybe => Node.TotalCount; // _core.NodeCount();
 
         private SerarchCommandEngine _commandEngine;
 
@@ -125,6 +128,8 @@ namespace NeeLaboratory.IO.Search
         }
 
 
+        private CancellationTokenSource _resetAreaCancellationTokenSource;
+
 
         /// <summary>
         /// 検索範囲の再構築
@@ -133,15 +138,21 @@ namespace NeeLaboratory.IO.Search
         {
             if (_commandEngine == null) return;
 
+            // one command only.
+            _resetAreaCancellationTokenSource?.Cancel();
+            _resetAreaCancellationTokenSource = new CancellationTokenSource();
+
             var command = new ResetAreaCommand(this, new ResetAreaCommandArgs() { Area = _searchAreas?.ToArray() });
-            _commandEngine.Enqueue(command);
+            _commandEngine.Enqueue(command, _resetAreaCancellationTokenSource.Token);
         }
 
-
-        internal void ResetArea_Execute(ResetAreaCommandArgs args)
+        internal void ResetArea_Execute(ResetAreaCommandArgs args, CancellationToken token)
         {
-            _core.Collect(args.Area);
-            Debug.WriteLine($"NodeCount = {_core.NodeCount()}");
+            token.ThrowIfCancellationRequested();
+
+            // 設計不十分のため、コマンド実行中のキャンセル不可
+            _core.Collect(args.Area, CancellationToken.None);
+            ////Debug.WriteLine($"NodeCount = {_core.NodeCount()}");
         }
 
         /// <summary>
@@ -294,5 +305,5 @@ namespace NeeLaboratory.IO.Search
         public SearchResult Result { get; set; }
     }
 
-    
+
 }

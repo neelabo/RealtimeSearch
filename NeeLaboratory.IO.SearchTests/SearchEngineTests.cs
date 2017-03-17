@@ -84,7 +84,7 @@ namespace NeeLaboratory.IO.Search.Tests
             await engine.WaitAsync();
 
             // 反映された情報の確認
-            int nodeCount = engine.NodeCount;
+            int nodeCount = engine.NodeCountMaybe;
             _testContext.WriteLine($"NodeCount: {nodeCount}");
             Debug.Assert(nodeCount > 0);
 

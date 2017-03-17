@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NeeLaboratory.IO.Search
@@ -93,7 +94,7 @@ namespace NeeLaboratory.IO.Search
         /// 検索フォルダのインデックス化
         /// </summary>
         /// <param name="roots">検索フォルダ群</param>
-        public void Collect(string[] roots)
+        public void Collect(string[] roots, CancellationToken token)
         {
             _roots.Clear();
 
@@ -106,7 +107,7 @@ namespace NeeLaboratory.IO.Search
                 }
             }
 
-            Collect();
+            Collect(token);
         }
 
 
@@ -117,8 +118,10 @@ namespace NeeLaboratory.IO.Search
         /// 検索フォルダのインデックス化
         /// 更新分のみ
         /// </summary>
-        public void Collect()
+        public void Collect(CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             var newDinctionary = new Dictionary<string, NodeTree>();
 
             foreach (var root in _roots)
@@ -141,9 +144,10 @@ namespace NeeLaboratory.IO.Search
 
             Node.TotalCount = 0;
 
-            Parallel.ForEach(newDinctionary.Values, sub =>
+            ParallelOptions options = new ParallelOptions() { CancellationToken = token };
+            Parallel.ForEach(newDinctionary.Values, options, sub =>
             {
-                sub.Collect();
+                sub.Collect(options.CancellationToken);
             });
 
             // 再登録されなかったパスの後処理を行う

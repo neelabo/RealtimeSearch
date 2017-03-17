@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using NeeLaboratory.IO.Search;
 using System.Threading;
 using System.Diagnostics;
+using System.Windows.Threading;
 
 namespace NeeLaboratory.RealtimeSearch
 {
@@ -37,7 +38,24 @@ namespace NeeLaboratory.RealtimeSearch
         public bool IsBusy
         {
             get { return _IsBusy; }
-            set { if (_IsBusy != value) { _IsBusy = value; RaisePropertyChanged(); } }
+            set
+            {
+                if (_IsBusy != value)
+                {
+                    _IsBusy = value;
+
+                    if (_IsBusy)
+                    {
+                        _timer.Start();
+                    }
+                    else
+                    {
+                        _timer.Stop();
+                    }
+
+                    RaisePropertyChanged();
+                }
+            }
         }
 
 
@@ -55,6 +73,9 @@ namespace NeeLaboratory.RealtimeSearch
 
         Setting _setting;
 
+
+        private DispatcherTimer _timer;
+
         /// <summary>
         /// コンストラクタ
         /// TODO: 設定をわたしているが、設定の読込もここでしょ
@@ -62,6 +83,10 @@ namespace NeeLaboratory.RealtimeSearch
         /// <param name="setting"></param>
         public Models(Setting setting)
         {
+            _timer = new DispatcherTimer();
+            _timer.Interval = TimeSpan.FromMilliseconds(1000);
+            _timer.Tick += ProgressTimer_Tick;
+
             _setting = setting;
 
             _searchEngine = new SearchEngine();
@@ -104,27 +129,15 @@ namespace NeeLaboratory.RealtimeSearch
 
             try
             {
+                IsBusy = true;
+
                 // 同時に実行可能なのは1検索のみ。以前の検索はキャンセルして新しい検索コマンドを発行
                 _searchCancellationTokenSource?.Cancel();
                 _searchCancellationTokenSource = new CancellationTokenSource();
-
-                var searchTask = _searchEngine.SearchAsync(keyword, _setting.SearchOption, _searchCancellationTokenSource.Token);
-                while (true)
-                {
-                    await Task.Run(async () =>
-                    {
-                        await Task.Yield();
-                        searchTask.Wait(1000, _searchCancellationTokenSource.Token);
-                    });
-                    if (searchTask.IsCompleted) break;
-                    IsBusy = true;
-                    Information = GetSearchEngineProgress();
-                }
-                var result = searchTask.Result;
-                SearchResult = result;
+                SearchResult = await _searchEngine.SearchAsync(keyword, _setting.SearchOption, _searchCancellationTokenSource.Token);
 
                 IsBusy = false;
-                Information = $"{result.Items.Count:#,0} 個の項目";
+                Information = $"{SearchResult.Items.Count:#,0} 個の項目";
             }
             catch (OperationCanceledException)
             {
@@ -133,9 +146,16 @@ namespace NeeLaboratory.RealtimeSearch
             }
             catch (Exception e)
             {
+                IsBusy = false;
                 Information = e.Message;
                 throw;
             }
+        }
+
+        //
+        private void ProgressTimer_Tick(object sender, EventArgs e)
+        {
+            Information = GetSearchEngineProgress();
         }
 
         /// <summary>
@@ -146,7 +166,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             if (_searchEngine.State == SearchEngineState.Collect)
             {
-                return $"{_searchEngine.NodeCount:#,0} 個のインデックス作成中...";
+                return $"{_searchEngine.NodeCountMaybe:#,0} 個のインデックス作成中...";
             }
             else if (_searchEngine.State == SearchEngineState.Search)
             {

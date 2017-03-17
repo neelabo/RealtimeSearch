@@ -111,10 +111,12 @@ namespace NeeLaboratory.IO.Utility
             catch (OperationCanceledException)
             {
                 Result = CommandResult.Canceled;
+                Debug.WriteLine($"{this}: canceled.");
                 OnCanceled();
             }
             catch (Exception e)
             {
+                Debug.WriteLine($"{this}: excepted!!");
                 OnException(e);
                 throw;
             }

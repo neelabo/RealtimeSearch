@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
-
+using System.Threading;
 
 namespace NeeLaboratory.IO.Search
 {
@@ -49,8 +49,10 @@ namespace NeeLaboratory.IO.Search
         }
 
         //
-        public void Collect()
+        public void Collect(CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             if (!IsDarty)
             {
                 Node.TotalCount += NodeCount();
@@ -62,7 +64,7 @@ namespace NeeLaboratory.IO.Search
             _fileSystemWatcher.EnableRaisingEvents = true;
 
             // node
-            Root = Node.CreateTree(Path, null, true);
+            Root = Node.CreateTree(Path, null, true, token);
             DumpTree();
         }
 
