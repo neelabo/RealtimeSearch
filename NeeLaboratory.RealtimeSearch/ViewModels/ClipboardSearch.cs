@@ -28,9 +28,6 @@ namespace NeeLaboratory.RealtimeSearch
 
         public event EventHandler<ClipboardChangedEventArgs> ClipboardChanged;
 
-
-        //public bool IsEnableClipboardListner { get; set; }
-
         //
         public ClipboardSearch(Setting setting)
         {
@@ -43,8 +40,6 @@ namespace NeeLaboratory.RealtimeSearch
             // クリップボード監視
             _clipboardListner = new ClipboardListner(window);
             _clipboardListner.ClipboardUpdate += ClipboardListner_DrawClipboard;
-
-            //IsEnableClipboardListner = true;
         }
 
         //
@@ -89,8 +84,6 @@ namespace NeeLaboratory.RealtimeSearch
                         if (_copyText == text) return; // コピーしたファイル名と同じであるなら処理しない
 
                         // 即時検索
-                        //Keyword = new Regex(@"\s+").Replace(text, " ").Trim();
-                        //History.Add(Keyword); // なぜここで再登録？
                         ClipboardChanged?.Invoke(this, new ClipboardChangedEventArgs()
                         {
                             Keyword = new Regex(@"\s+").Replace(text, " ").Trim()

@@ -20,7 +20,7 @@ using System.Collections.ObjectModel;
 
 namespace NeeLaboratory.RealtimeSearch
 {
-    public class MainWindowVM : INotifyPropertyChanged
+    public class MainWindowViewModel : INotifyPropertyChanged
     {
         #region NotifyPropertyChanged
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
@@ -34,7 +34,7 @@ namespace NeeLaboratory.RealtimeSearch
         }
         #endregion
 
-        public event EventHandler FilesChanged;
+        public event EventHandler SearchResultChanged;
 
         private string _defaultWindowTitle;
         public string WindowTitle => _defaultWindowTitle;
@@ -44,15 +44,15 @@ namespace NeeLaboratory.RealtimeSearch
         public string Keyword
         {
             get { return _keyword; }
-            set { _keyword = value; RaisePropertyChanged(); SearchAsync(false); }
+            set { _keyword = value; RaisePropertyChanged(); var task = SearchAsync(); }
         }
 
 
         /// <summary>
         /// Models property.
         /// </summary>
-        private MainModel _models;
-        public MainModel Models
+        private Models _models;
+        public Models Models
         {
             get { return _models; }
             set { if (_models != value) { _models = value; RaisePropertyChanged(); } }
@@ -67,6 +67,17 @@ namespace NeeLaboratory.RealtimeSearch
         {
             get { return _history; }
             set { if (_history != value) { _history = value; RaisePropertyChanged(); } }
+        }
+
+
+        /// <summary>
+        /// ResultMessage property.
+        /// </summary>
+        private string _ResultMessage;
+        public string ResultMessage
+        {
+            get { return _ResultMessage; }
+            set { if (_ResultMessage != value) { _ResultMessage = value; RaisePropertyChanged(); } }
         }
 
 
@@ -85,11 +96,6 @@ namespace NeeLaboratory.RealtimeSearch
         // 設定ファイル名
         private string _settingFileName;
 
-        // クリップボード監視
-        //private ClipboardListner _clipboardListner;
-
-        // クリップボード監視フラグ
-        //public bool IsEnableClipboardListner { get; set; }
 
         public ClipboardSearch ClipboardSearch;
 
@@ -100,8 +106,10 @@ namespace NeeLaboratory.RealtimeSearch
             System.Threading.Thread.Sleep(ms);
         }
 
-
-        public MainWindowVM()
+        /// <summary>
+        /// 
+        /// </summary>
+        public MainWindowViewModel()
         {
             FileInfo.InitializeDefaultResource();
 
@@ -115,17 +123,34 @@ namespace NeeLaboratory.RealtimeSearch
             _settingFileName = (App.Config.LocalApplicationDataPath) + "\\UserSetting.xml";
         }
 
-        //
+        /// <summary>
+        /// Model PropertyChanged
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Models_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(Models.SearchResult))
-            //if (e.PropertyName == nameof(Models.Files))
             {
-                FilesChanged?.Invoke(sender, null);
-                RaisePropertyChanged(nameof(WindowTitle));
+                SearchResultChanged?.Invoke(sender, null);
+
+                if (Models.SearchResult.Items.Count == 0)
+                {
+                    ResultMessage = $"条件に一致する項目はありません。";
+                }
+                else
+                {
+                    ResultMessage = null;
+                }
+
+                History.Add(Models.SearchResult.Keyword);
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="window"></param>
         public void Open(Window window)
         {
             // 設定読み込み
@@ -133,14 +158,11 @@ namespace NeeLaboratory.RealtimeSearch
             Setting.SearchPaths.CollectionChanged += SearchPaths_CollectionChanged;
 
             // 初期化
-            Models = new MainModel(Setting);
+            Models = new Models(Setting);
             Models.PropertyChanged += Models_PropertyChanged;
-
 
             //
             History = new History();
-
-            //RaisePropertyChanged(nameof(Models)); // ##
 
             ClipboardSearch = new ClipboardSearch(Setting);
             ClipboardSearch.ClipboardChanged += ClipboardSearch_ClipboardChanged;
@@ -152,19 +174,16 @@ namespace NeeLaboratory.RealtimeSearch
         private void ClipboardSearch_ClipboardChanged(object sender, ClipboardChangedEventArgs e)
         {
             Keyword = e.Keyword;
-            History.Add(Keyword); // ## naze?
         }
 
         private void SearchPaths_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             Models.ReIndex();
-            ////SearchEngine.IndexRequest(Setting.SearchPaths.ToArray());
         }
 
         public void Close()
         {
             // クリップボード監視終了
-            //_clipboardListner.Dispose();
             ClipboardSearch.Stop();
 
             // 設定の保存
@@ -197,14 +216,15 @@ namespace NeeLaboratory.RealtimeSearch
 
 
 
-        //
-        public async Task SearchAsync(bool isAddHistory)
+        /// <summary>
+        /// 検索
+        /// </summary>
+        /// <returns></returns>
+        public async Task SearchAsync()
         {
             var keyword = new Regex(@"\s+").Replace(this.Keyword, " ").Trim();
 
             await Models.SearchAsync(keyword);
-
-            if (isAddHistory) History.Add(keyword);
         }
 
 
@@ -258,24 +278,6 @@ namespace NeeLaboratory.RealtimeSearch
         }
     }
 
-
-    // コマンド状態を処理中表示に変換する
-    /*
-    [ValueConversion(typeof(SearchEngineCommand), typeof(Visibility))]
-    internal class CommandToVisibilityConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            var cmd = (SearchEngineCommand)value;
-            return (cmd != null) ? Visibility.Visible : Visibility.Hidden;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
-    */
 
     // 文字列状態を処理中表示に変換する
     [ValueConversion(typeof(string), typeof(Visibility))]

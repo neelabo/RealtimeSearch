@@ -20,6 +20,11 @@ namespace NeeLaboratory.IO.Search
             _target = target;
         }
 
+        public CommandBase(SearchEngine target, CancellationToken token) : base(token)
+        {
+            _target = target;
+        }
+
         protected override Task ExecuteAsync(CancellationToken token)
         {
             throw new NotImplementedException();
@@ -49,8 +54,8 @@ namespace NeeLaboratory.IO.Search
 
         protected override async Task ExecuteAsync(CancellationToken token)
         {
-            _target.ResetArea_Execute(_args);
             await Task.Yield();
+            _target.ResetArea_Execute(_args);
         }
     }
 
@@ -79,8 +84,8 @@ namespace NeeLaboratory.IO.Search
 
         protected override async Task ExecuteAsync(CancellationToken token)
         {
+            await Task.Yield();
             SearchResult = _target.Search_Execute(_args);
-            await Task.Yield(); // ##
         }
     }
 
@@ -89,8 +94,6 @@ namespace NeeLaboratory.IO.Search
     /// </summary>
     internal class WaitCommand : CommandBase
     {
-        public SearchResult SearchResult { get; private set; }
-
         public WaitCommand(SearchEngine target, CommandArgs args) : base(target)
         {
         }
@@ -174,6 +177,9 @@ namespace NeeLaboratory.IO.Search
     /// </summary>
     internal class SerarchCommandEngine : Utility.CommandEngine
     {
+        /// <summary>
+        /// 状態
+        /// </summary>
         public SearchEngineState State
         {
             get
@@ -188,6 +194,17 @@ namespace NeeLaboratory.IO.Search
                 else
                     return SearchEngineState.Etc;
             }
+        }
+
+        /// <summary>
+        /// 登録
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="token"></param>
+        internal void Enqueue(SearchCommand command, CancellationToken token)
+        {
+            command.CancellationToken = token;
+            Enqueue(command);
         }
     }
 }

@@ -21,7 +21,7 @@ namespace NeeLaboratory.IO.Utility
         /// <summary>
         /// コマンドキャンセル
         /// </summary>
-        void Cancel();
+        //void Cancel();
 
         /// <summary>
         /// コマンド実行
@@ -48,7 +48,12 @@ namespace NeeLaboratory.IO.Utility
     public abstract class CommandBase : ICommand
     {
         // キャンセルトークン
-        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private CancellationToken _cancellationToken;
+        public CancellationToken CancellationToken
+        {
+            get { return _cancellationToken; }
+            set { _cancellationToken = value; }
+        }
 
         // コマンド終了通知
         private ManualResetEventSlim _complete = new ManualResetEventSlim(false);
@@ -62,18 +67,23 @@ namespace NeeLaboratory.IO.Utility
         }
 
         // キャンセル可能フラグ
-        public bool CanBeCanceled { get; set; } = true;
+        public bool CanBeCanceled => _cancellationToken.CanBeCanceled;
 
         /// <summary>
-        /// キャンセル要求
+        /// constructor
         /// </summary>
-        public virtual void Cancel()
+        public CommandBase()
         {
-            if (!CanBeCanceled) return;
+            _cancellationToken = CancellationToken.None;
+        }
 
-            _cancellationTokenSource.Cancel();
-
-            Result = CommandResult.Canceled;
+        /// <summary>
+        /// constructor
+        /// </summary>
+        /// <param name="token"></param>
+        public CommandBase(CancellationToken token)
+        {
+            _cancellationToken = token;
         }
 
 
@@ -86,7 +96,7 @@ namespace NeeLaboratory.IO.Utility
             if (_complete.IsSet) return;
 
             // cancel ?
-            if (_cancellationTokenSource.Token.IsCancellationRequested)
+            if (_cancellationToken.IsCancellationRequested)
             {
                 Result = CommandResult.Canceled;
                 return;
@@ -95,7 +105,7 @@ namespace NeeLaboratory.IO.Utility
             // execute
             try
             {
-                await ExecuteAsync(_cancellationTokenSource.Token);
+                await ExecuteAsync(_cancellationToken);
                 Result = CommandResult.Completed;
             }
             catch (OperationCanceledException)
@@ -130,7 +140,12 @@ namespace NeeLaboratory.IO.Utility
             var serial = _serial++;
 
             var sw = Stopwatch.StartNew();
-            await Task.Run(() => { _complete.Wait(token); Debug.WriteLine($"{serial}: WaitTask done."); });
+            await Task.Run(async () =>
+            {
+                await Task.Yield();
+                _complete.Wait(token);
+                Debug.WriteLine($"{serial}: WaitTask done.");
+            });
             Debug.WriteLine($"{serial}: WaitTime = {sw.ElapsedMilliseconds}ms");
         }
 
@@ -157,6 +172,7 @@ namespace NeeLaboratory.IO.Utility
         protected virtual void OnException(Exception e)
         {
         }
+
     }
 
 
@@ -255,7 +271,7 @@ namespace NeeLaboratory.IO.Utility
             lock (_lock)
             {
                 _cancellationTokenSource?.Cancel();
-                _command?.Cancel();
+                //_command?.Cancel();
             }
         }
 

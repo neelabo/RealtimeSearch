@@ -166,22 +166,22 @@
                             Style="{StaticResource IconButton}" >
                         <Grid Background="Transparent" >
                             <Path Stroke="#414141" Stretch="Uniform" Margin="2">
-                            <Path.Style>
-                                <Style TargetType="Path">
-                                    <Setter Property="Data" Value="m0,10 L10,0 20,10"/>
-                                    <Style.Triggers>
+                                <Path.Style>
+                                    <Style TargetType="Path">
+                                        <Setter Property="Data" Value="m0,10 L10,0 20,10"/>
+                                        <Style.Triggers>
                                             <DataTrigger Binding="{Binding Setting.IsDetailVisibled}" Value="True">
-                                            <Setter Property="Data" Value="m0,0 L10,10 20,0"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Path.Style>
-                        </Path>
+                                                <Setter Property="Data" Value="m0,0 L10,10 20,0"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Path.Style>
+                            </Path>
                         </Grid>
 
                     </Button>
-        
-                    
+
+
                     <Grid>
                         <TextBlock TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Models.Information}" TextDecorations="{x:Null}" >
                             <!--
@@ -204,7 +204,7 @@
                 </DockPanel>
             </Grid>
 
-            
+
             <Border DockPanel.Dock="Bottom" BorderBrush="LightGray" BorderThickness="0,1,0,0" Margin="0"
                     Visibility="{Binding Setting.IsDetailVisibled, Converter={StaticResource BoolToVisibility}}">
                 <TextBox IsReadOnly="True" BorderThickness="0" Margin="5" Background="Transparent"
@@ -287,35 +287,33 @@
                     </ListView.View>
                 </ListView>
 
-                <StackPanel Margin="0,40,0,0" Visibility="{Binding Path=Models.SearchEngine.StateMessage, Converter={StaticResource StringToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Top" Background="White">
-                    <TextBlock Margin="10" TextTrimming="CharacterEllipsis" Text="{Binding Models.SearchEngine.SearchKeyword}" HorizontalAlignment="Center">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="Gray"/>
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Models.SearchEngine.State}" Value="SearchResultEmpty">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
-                        <Grid Visibility="{Binding ElementName=BusyText, Path=Visibility}" Width="34"/>
-                        <TextBlock x:Name="textBlock_Busy" Text="{Binding Path=Models.SearchEngine.StateMessage}" Foreground="Gray"/>
-                        <TextBlock x:Name="BusyText" Margin="2,0" Width="30">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="Gray"/>
+                <!-- Result Message -->
+                <Grid x:Name="ResultMessage"
+                            HorizontalAlignment="Center" VerticalAlignment="Top" Margin="10,50,10,10" Background="White">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="{Binding Path=ResultMessage, Converter={StaticResource StringToVisibility}}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Models.IsBusy}" Value="True">
                                     <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Models.SearchEngine.State}" Value="Search">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <StackPanel>
+                        <TextBlock Margin="10" Text="{Binding Models.SearchResult.Keyword}" HorizontalAlignment="Center" Foreground="Gray"/>
+                        <TextBlock Margin="10" Text="{Binding ResultMessage}" HorizontalAlignment="Center" Foreground="Gray"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Busy Message -->
+                <Grid x:Name="BusyMessage" 
+                    HorizontalAlignment="Center" VerticalAlignment="Top" Margin="10,50,10,10"  Background="White"
+                    Visibility="{Binding Models.IsBusy, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel Orientation="Horizontal" Margin="10">
+                        <Grid Width="34"/>
+                        <TextBlock x:Name="textBlock_Busy" Text="処理中です" Foreground="Gray"/>
+                        <TextBlock x:Name="BusyText" Margin="2,0" Width="30" Foreground="Gray">
                             <TextBlock.Triggers>
                                 <EventTrigger RoutedEvent="TextBlock.Loaded">
                                     <BeginStoryboard>
@@ -334,11 +332,10 @@
                                 </EventTrigger>
                             </TextBlock.Triggers>
                         </TextBlock>
-
                     </StackPanel>
-                </StackPanel>
-            </Grid>
+                </Grid>
 
+            </Grid>
         </DockPanel>
 
         <local:RenameManager x:Name="RenameManager"/>

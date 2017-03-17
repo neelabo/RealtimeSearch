@@ -55,7 +55,7 @@
     <Compile Include="SearchEngineTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FileSearch\NeeLaboratory.IO.Search.csproj">
+    <ProjectReference Include="..\NeeLaboratory.IO.Search\NeeLaboratory.IO.Search.csproj">
       <Project>{F8053574-48A7-4D8D-A55E-63C26D01E519}</Project>
       <Name>NeeLaboratory.IO.Search</Name>
     </ProjectReference>

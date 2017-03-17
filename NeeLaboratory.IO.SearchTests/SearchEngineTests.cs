@@ -33,21 +33,14 @@ namespace NeeLaboratory.IO.Search.Tests
             // 初期化
             var engine = new SearchEngine();
             engine.Start();
-            //engine.Progress = new SearchEngineProgress(); // 状態通知用。 IProgress
 
             // 検索パス設定
-            string[] areas =  //new string[]
-            {
-                _folderSub1,
-                _folderRoot,
-            };
-            engine.SetSearchAreas(areas);
-            //engine.SearchAreas = areas;
+            engine.SearchAreas.Add(_folderSub1);
+            engine.SearchAreas.Add(_folderRoot);
 
 
             // 検索１：通常検索
             SearchOption option = new SearchOption() { IsPerfect = false };
-
             SearchResult result = await engine.SearchAsync("File1", option);
 
             // 結果表示
@@ -55,22 +48,6 @@ namespace NeeLaboratory.IO.Search.Tests
             {
                 _testContext.WriteLine($"{item.Name}");
             }
-
-
-#if false
-            // 検索2：イベントによるコールバック
-            engine.Searched += (s, e) => Debug.WriteLine("Searched!");
-            engine.SearchAsync("keyword", option); // なげっぱ
-
-            // 検索3：タスクによる
-            Task task = engine.SearchAsync("keyword", option);
-            task.ContinueWith<SearchResult>(() => are); かな？
-
-            // フォルダ状態変更等による結果変更の監視
-            var watcher = new SearchResultWatcher(engine, result);
-            watcher.Start();
-            // watcher.Stop();
-#endif
         }
 
 
@@ -168,105 +145,6 @@ namespace NeeLaboratory.IO.Search.Tests
 
             watcher.Stop();
         }
-
-
-#if false
-        [TestMethod()]
-        public void SearchEngineTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void StartTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void IndexRequestTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void ReIndexRequestTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void AddIndexRequestTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void RemoveIndexRequestTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void RenameIndexRequestTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void RefleshIndexRequestTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void SearchRequestTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void CommandIndexTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void CommandReIndexTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void CommandAddIndexTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void CommandRemoveIndexTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void CommandRenameIndexTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void CommandRefleshIndexTest()
-        {
-            Assert.Fail();
-        }
-
-        [TestMethod()]
-        public void CommandSearchTest()
-        {
-            Assert.Fail();
-        }
-#endif
     }
 
 }

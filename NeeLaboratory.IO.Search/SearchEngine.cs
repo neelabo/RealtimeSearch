@@ -129,24 +129,12 @@ namespace NeeLaboratory.IO.Search
         /// <summary>
         /// 検索範囲の再構築
         /// </summary>
-        /*
-        private void ResetArea()
-        {
-            if (_commandEngine == null) return;
-
-            var task = ResetAreaAsync();
-            task.Wait();
-        }
-        */
-
         private void ResetArea()
         {
             if (_commandEngine == null) return;
 
             var command = new ResetAreaCommand(this, new ResetAreaCommandArgs() { Area = _searchAreas?.ToArray() });
             _commandEngine.Enqueue(command);
-
-            //await command.WaitAsync();
         }
 
 
@@ -155,11 +143,6 @@ namespace NeeLaboratory.IO.Search
             _core.Collect(args.Area);
             Debug.WriteLine($"NodeCount = {_core.NodeCount()}");
         }
-
-
-        //
-        //public event EventHandler<SearchedEventArgs> Searched;
-
 
         /// <summary>
         /// 検索
@@ -184,7 +167,7 @@ namespace NeeLaboratory.IO.Search
             if (_commandEngine == null) throw new InvalidOperationException("engine stopped.");
 
             var command = new SearchCommand(this, new SearchExCommandArgs() { Keyword = keyword, Option = option });
-            _commandEngine.Enqueue(command);
+            _commandEngine.Enqueue(command, token);
 
             await command.WaitAsync(token);
             return command.SearchResult;
@@ -192,6 +175,7 @@ namespace NeeLaboratory.IO.Search
 
         internal SearchResult Search_Execute(SearchExCommandArgs args)
         {
+            ////Thread.Sleep(3000); //##
             return new SearchResult(args.Keyword, args.Option, _core.Search(args.Keyword, args.Option));
         }
 
@@ -310,46 +294,5 @@ namespace NeeLaboratory.IO.Search
         public SearchResult Result { get; set; }
     }
 
-
-
-
-    // Progressは必要そうでないので保留
-#if false
-    //
-    public enum SearchEngineProgressType
-    {
-        Index,
-        Search,
-    }
-
-    public class SearchEngineProgressValue
-    {
-        public SearchEngineProgressType ProgressType { get; set; }
-        public int Percentage { get; set; }
-    }
-
-    public class IndexerProgressValue : SearchEngineProgressValue
-    {
-        public int NodeCount { get; set; }
-    }
-
-
-    // これの実体化はアプリだな
-    public class SearchEngineProgress : IProgress<SearchEngineProgressValue>
-    {
-        public void Report(SearchEngineProgressValue value)
-        {
-            if (value.ProgressType == SearchEngineProgressType.Index)
-            {
-                var progress = value as IndexerProgressValue;
-                Debug.WriteLine($"Index...: {progress.NodeCount}");
-            }
-            else if (value.ProgressType == SearchEngineProgressType.Search)
-            {
-                Debug.WriteLine($"Search...: {value.Percentage}%");
-            }
-        }
-    }
-#endif
-
+    
 }

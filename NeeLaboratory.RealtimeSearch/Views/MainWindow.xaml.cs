@@ -26,18 +26,18 @@ namespace NeeLaboratory.RealtimeSearch
     /// </summary>
     public partial class MainWindow : Window
     {
-        private MainWindowVM _VM;
+        private MainWindowViewModel _VM;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            _VM = new MainWindowVM();
+            _VM = new MainWindowViewModel();
             this.DataContext = _VM;
 
             RegistRoutedCommand();
 
-            _VM.FilesChanged += MainWindowVM_FilesChanged;
+            _VM.SearchResultChanged += MainWindowVM_FilesChanged;
 
             // cancel rename triggers
             this.MouseLeftButtonDown += (s, e) => this.RenameManager.Stop();
@@ -181,13 +181,12 @@ namespace NeeLaboratory.RealtimeSearch
         {
             if (e.Key == Key.Enter)
             {
-                await _VM.SearchAsync(true);
+                await _VM.SearchAsync();
             }
         }
 
         private void keyword_LostFocus(object sender, RoutedEventArgs e)
         {
-            _VM.History.Add(_VM.Keyword); // TODO: ここはおかしい
         }
 
 
@@ -308,7 +307,7 @@ namespace NeeLaboratory.RealtimeSearch
         // 
         private async void Search_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            await _VM.SearchAsync(true);
+            await _VM.SearchAsync();
         }
 
         //

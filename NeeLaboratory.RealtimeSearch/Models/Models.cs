@@ -12,7 +12,7 @@ using System.Diagnostics;
 
 namespace NeeLaboratory.RealtimeSearch
 {
-    public class MainModel : INotifyPropertyChanged
+    public class Models : INotifyPropertyChanged
     {
         /// <summary>
         /// PropertyChanged event. 
@@ -24,25 +24,21 @@ namespace NeeLaboratory.RealtimeSearch
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
-
         /// <summary>
         /// 検索エンジン
         /// </summary>
-        private SearchEngine SearchEngine { get; set; }
+        private SearchEngine _searchEngine;
 
 
-#if false
         /// <summary>
-        /// Files property.
-        /// 検索結果
+        /// IsBusy property.
         /// </summary>
-        private ObservableCollection<NodeContent> _files;
-        public ObservableCollection<NodeContent> Files
+        private bool _IsBusy;
+        public bool IsBusy
         {
-            get { return _files; }
-            set { if (_files != value) { _files = value; RaisePropertyChanged(); } }
+            get { return _IsBusy; }
+            set { if (_IsBusy != value) { _IsBusy = value; RaisePropertyChanged(); } }
         }
-#endif
 
 
         /// <summary>
@@ -56,17 +52,6 @@ namespace NeeLaboratory.RealtimeSearch
             set { _information = value; RaisePropertyChanged(); }
         }
 
-#if false
-        /// <summary>
-        /// IndexInformation property.
-        /// </summary>
-        private string _indexInformation = "";
-        public string IndexInformation
-        {
-            get { return _indexInformation; }
-            set { _indexInformation = value; RaisePropertyChanged(); }
-        }
-#endif
 
         Setting _setting;
 
@@ -75,52 +60,13 @@ namespace NeeLaboratory.RealtimeSearch
         /// TODO: 設定をわたしているが、設定の読込もここでしょ
         /// </summary>
         /// <param name="setting"></param>
-        public MainModel(Setting setting)
+        public Models(Setting setting)
         {
             _setting = setting;
-            //History = new KeywordHistory();
 
-            SearchEngine = new SearchEngine();
-            ////SearchEngine.ResultChanged += (s, e) => SearchEngine_ResultChanged(s);
-            ////SearchEngine.IndexCountChanged += SearchEngine_IndexCountChanged;
-            SearchEngine.SetSearchAreas(_setting.SearchPaths);
-            SearchEngine.Start();
-
-            ////ReIndex();
-        }
-
-
-
-        // 情報通知
-        private void SearchEngine_IndexCountChanged(object sender, string message)
-        {
-#if false
-            if (SearchEngine.State == SearchEngineState.Search)
-            {
-                IndexInformation = message;
-            }
-            else
-            {
-                IndexInformation = "";
-            }
-#endif
-        }
-
-        // 結果変更
-        private void SearchEngine_ResultChanged(object sender)
-        {
-#if false
-            Files = SearchEngine.SearchResult;
-
-            if (SearchEngine.SearchResult.Count <= 0)
-            {
-                Information = "";
-            }
-            else
-            {
-                Information = string.Format("{0:#,0} 個の項目", Files.Count);
-            }
-#endif
+            _searchEngine = new SearchEngine();
+            _searchEngine.SetSearchAreas(_setting.SearchPaths);
+            _searchEngine.Start();
         }
 
 
@@ -129,21 +75,9 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         public void ReIndex()
         {
-            SearchEngine.SetSearchAreas(_setting.SearchPaths);
-            ////SearchEngine.IndexRequest(_setting.SearchPaths.ToArray());
+            _searchEngine.SetSearchAreas(_setting.SearchPaths);
         }
 
-
-#if false
-        /// <summary>
-        /// 検索実行
-        /// </summary>
-        /// <param name="keyword"></param>
-        public void Search(string keyword)
-        {
-            ////SearchEngine.SearchRequest(keyword, _setting.SearchOption);
-        }
-#endif
 
         /// <summary>
         /// SearchResult property.
@@ -174,15 +108,22 @@ namespace NeeLaboratory.RealtimeSearch
                 _searchCancellationTokenSource?.Cancel();
                 _searchCancellationTokenSource = new CancellationTokenSource();
 
-                var searchTask =  SearchEngine.SearchAsync(keyword, _setting.SearchOption, _searchCancellationTokenSource.Token);
+                var searchTask = _searchEngine.SearchAsync(keyword, _setting.SearchOption, _searchCancellationTokenSource.Token);
                 while (true)
                 {
-                    await Task.Run(() =>searchTask.Wait(1000, _searchCancellationTokenSource.Token));
+                    await Task.Run(async () =>
+                    {
+                        await Task.Yield();
+                        searchTask.Wait(1000, _searchCancellationTokenSource.Token);
+                    });
                     if (searchTask.IsCompleted) break;
+                    IsBusy = true;
                     Information = GetSearchEngineProgress();
                 }
                 var result = searchTask.Result;
                 SearchResult = result;
+
+                IsBusy = false;
                 Information = $"{result.Items.Count:#,0} 個の項目";
             }
             catch (OperationCanceledException)
@@ -197,13 +138,17 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         private string GetSearchEngineProgress()
         {
-            if (SearchEngine.State == SearchEngineState.Collect)
+            if (_searchEngine.State == SearchEngineState.Collect)
             {
-                return $"{SearchEngine.NodeCount:#,0} 個のインデックス作成中...";
+                return $"{_searchEngine.NodeCount:#,0} 個のインデックス作成中...";
             }
-            else if (SearchEngine.State == SearchEngineState.Search)
+            else if (_searchEngine.State == SearchEngineState.Search)
             {
                 return $"検索中...";
             }
