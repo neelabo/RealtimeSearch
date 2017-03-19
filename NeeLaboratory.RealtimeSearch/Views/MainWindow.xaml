@@ -31,6 +31,7 @@
         -->
         <local:StringToVisibilityConverter x:Key="StringToVisibility"/>
         <local:NullToVisibilityConverter x:Key="NullToVisibility"/>
+        <local:ReverseBooleanConverter x:Key="ReverseBooleanConverter"/>
 
         <Style TargetType="{x:Type ListViewItem}">
 
@@ -147,6 +148,7 @@
             </DockPanel>
 
             <!-- Debug Info -->
+            <!--
             <StackPanel x:Name="DebugInfo" DockPanel.Dock="Bottom" Visibility="Collapsed">
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Background="#FFF8F8F8">
                     <TextBlock Margin="2" TextWrapping="NoWrap" Text="{Binding Models.SearchEngine.CommandCount, StringFormat={}{0}\, }" />
@@ -154,6 +156,7 @@
                 </StackPanel>
                 <TextBox x:Name="LogTextBox" DockPanel.Dock="Bottom" Height="64" VerticalScrollBarVisibility="Visible" />
             </StackPanel>
+            -->
 
 
             <Grid DockPanel.Dock="Bottom" Margin="0" >
@@ -205,13 +208,16 @@
             </Grid>
 
 
-            <Border DockPanel.Dock="Bottom" BorderBrush="LightGray" BorderThickness="0,1,0,0" Margin="0"
+            <Border DockPanel.Dock="Bottom" BorderBrush="LightGray" BorderThickness="0,1,0,0" Margin="0" Height="100"
                     Visibility="{Binding Setting.IsDetailVisibled, Converter={StaticResource BoolToVisibility}}">
-                <TextBox IsReadOnly="True" BorderThickness="0" Margin="5" Background="Transparent"
-                         Text="{Binding ElementName=listView01, Path=SelectedItem.Detail, Mode=OneWay}">
-                </TextBox>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <TextBox IsReadOnly="True" BorderThickness="0" Margin="5" Background="Transparent"
+                            Text="{Binding ElementName=listView01, Path=SelectedItem.Detail, Mode=OneWay}">
+                    </TextBox>
+                </ScrollViewer>
             </Border>
 
+            
             <Grid>
                 <ListView x:Name="listView01" Foreground="Black" ButtonBase.Click="GridViewColumnHeader_ClickHandler" ItemsSource="{Binding Models.SearchResult.Items}" BorderThickness="0" 
                           FocusVisualStyle="{x:Null}"
@@ -234,7 +240,8 @@
                         -->
 
                         <DataTemplate x:Key="ItemFileNameTemplate">
-                            <DockPanel>
+                            <DockPanel ToolTip="{Binding Detail}" ToolTipService.InitialShowDelay="1000"
+                                       ToolTipService.IsEnabled="{Binding ElementName=listView01, Path=DataContext.Setting.IsDetailVisibled, Converter={StaticResource ReverseBooleanConverter}}">
                                 <CheckBox DockPanel.Dock="Right" Template="{StaticResource PushpinCheckBoxTemplate}" Width="16" Height="16" IsChecked="{Binding IsPushPin}" >
                                     <CheckBox.Style>
                                         <Style TargetType="CheckBox">
@@ -336,6 +343,8 @@
                 </Grid>
 
             </Grid>
+
+
         </DockPanel>
 
         <local:RenameManager x:Name="RenameManager"/>

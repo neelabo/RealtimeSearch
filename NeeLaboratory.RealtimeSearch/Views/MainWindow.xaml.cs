@@ -17,7 +17,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-
+using System.Globalization;
 
 namespace NeeLaboratory.RealtimeSearch
 {
@@ -729,6 +729,7 @@ namespace NeeLaboratory.RealtimeSearch
         #endregion
 
 
+#if false
         // for Debug
         private int _logCount;
 
@@ -739,9 +740,35 @@ namespace NeeLaboratory.RealtimeSearch
             this.LogTextBox.AppendText(string.Format($"\n{++_logCount}>{format}", args));
             this.LogTextBox.ScrollToEnd();
         }
+#endif
+    }
+
+    /// <summary>
+    /// Reverse boolean
+    /// </summary>
+    public class ReverseBooleanConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool boolean)
+            {
+                return !boolean;
+            }
+            else
+            {
+                return value;
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 
+
+#if false
     public partial class App : Application
     {
         [Conditional("DEBUG")]
@@ -751,4 +778,5 @@ namespace NeeLaboratory.RealtimeSearch
             window.Log(format, args);
         }
     }
+#endif
 }

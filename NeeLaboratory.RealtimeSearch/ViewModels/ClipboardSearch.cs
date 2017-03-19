@@ -69,7 +69,7 @@ namespace NeeLaboratory.RealtimeSearch
             IntPtr thisWindow = new WindowInteropHelper(window).Handle;
             if (activeWindow == thisWindow)
             {
-                App.Log("cannot use clipboard: window is active. (WIN32)");
+                Debug.WriteLine("cannot use clipboard: window is active. (WIN32)");
                 return;
             }
 

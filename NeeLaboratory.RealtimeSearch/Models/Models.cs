@@ -92,6 +92,9 @@ namespace NeeLaboratory.RealtimeSearch
             _searchEngine = new SearchEngine();
             _searchEngine.SetSearchAreas(_setting.SearchPaths);
             _searchEngine.Start();
+
+            //SearchEngine.Logger.SetLevel(SourceLevels.All);
+            //_searchEngine.CommandEngineLogger.SetLevel(SourceLevels.All);
         }
 
 
