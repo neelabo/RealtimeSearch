@@ -408,18 +408,36 @@ namespace NeeLaboratory.RealtimeSearch
         //
         private bool Rename(NodeContent file, string newName)
         {
+            //ファイル名に使用できない文字
+            char[] invalidChars = System.IO.Path.GetInvalidFileNameChars();
+            int invalidCharsIndex = newName.IndexOfAny(invalidChars);
+            if (invalidCharsIndex >= 0)
+            {
+                // 確認
+                MessageBox.Show($"ファイル名に使用できない文字が含まれています。( {newName[invalidCharsIndex]} )", "名前の変更の確認", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
             string src = file.Path;
             string dst = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(src), newName);
-
             if (src == dst) return true;
 
-            // 大文字小文字の変換は正常
+            // 拡張子変更警告
+            if (System.IO.Path.GetExtension(src).ToLower() != System.IO.Path.GetExtension(dst).ToLower())
+            {
+                // 確認
+                var resut = MessageBox.Show($"拡張子を変更すると、ファイルが使えなくなる可能性があります。\n\n変更しますか？", "名前の変更の確認", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+                if (resut != MessageBoxResult.OK)
+                {
+                    return false;
+                }
+            }
+
+            // 重複ファイル名回避
             if (string.Compare(src, dst, true) == 0)
             {
                 // nop.
             }
-
-            // 重複ファイル名回避
             else if (System.IO.File.Exists(dst) || System.IO.Directory.Exists(dst))
             {
                 string dstBase = dst;

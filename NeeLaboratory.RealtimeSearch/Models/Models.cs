@@ -10,6 +10,7 @@ using NeeLaboratory.IO.Search;
 using System.Threading;
 using System.Diagnostics;
 using System.Windows.Threading;
+using System.Windows.Data;
 
 namespace NeeLaboratory.RealtimeSearch
 {
@@ -121,6 +122,9 @@ namespace NeeLaboratory.RealtimeSearch
         //
         private CancellationTokenSource _searchCancellationTokenSource;
 
+        //
+        private SearchResultWatcher _watcher;
+
         /// <summary>
         /// 検索(非同期)
         /// </summary>
@@ -139,8 +143,17 @@ namespace NeeLaboratory.RealtimeSearch
                 _searchCancellationTokenSource = new CancellationTokenSource();
                 SearchResult = await _searchEngine.SearchAsync(keyword, _setting.SearchOption, _searchCancellationTokenSource.Token);
 
+                // 複数スレッドからコレクション操作できるようにする
+                BindingOperations.EnableCollectionSynchronization(SearchResult.Items, new object());
+
+
                 IsBusy = false;
                 Information = $"{SearchResult.Items.Count:#,0} 個の項目";
+
+                // 監視開始
+                _watcher?.Dispose();
+                _watcher = new SearchResultWatcher(_searchEngine, SearchResult);
+                _watcher.Start();
             }
             catch (OperationCanceledException)
             {
