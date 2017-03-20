@@ -362,6 +362,7 @@ namespace NeeLaboratory.RealtimeSearch
                 if (textBlock != null)
                 {
                     var rename = new RenameControl();
+                    rename.IsSelectedWithoutExtension = System.IO.File.Exists(item.Path);
                     rename.Target = textBlock;
                     rename.Closing += (s, ev) =>
                     {
@@ -422,8 +423,10 @@ namespace NeeLaboratory.RealtimeSearch
             string dst = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(src), newName);
             if (src == dst) return true;
 
+            bool isFile = System.IO.File.Exists(src);
+
             // 拡張子変更警告
-            if (System.IO.Path.GetExtension(src).ToLower() != System.IO.Path.GetExtension(dst).ToLower())
+            if (isFile && System.IO.Path.GetExtension(src).ToLower() != System.IO.Path.GetExtension(dst).ToLower())
             {
                 // 確認
                 var resut = MessageBox.Show($"拡張子を変更すると、ファイルが使えなくなる可能性があります。\n\n変更しますか？", "名前の変更の確認", MessageBoxButton.OKCancel, MessageBoxImage.Warning);

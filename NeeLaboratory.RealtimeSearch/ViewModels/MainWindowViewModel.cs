@@ -111,8 +111,6 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         public MainWindowViewModel()
         {
-            FileInfo.InitializeDefaultResource();
-
             // title
             _defaultWindowTitle = $"{App.Config.ProductName} {App.Config.ProductVersion}";
 #if DEBUG

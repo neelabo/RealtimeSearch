@@ -142,10 +142,13 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
         //
+        public bool IsSelectedWithoutExtension { get; set; } = true;
+
+        //
         private void RenameTextBox_Loaded(object sender, RoutedEventArgs e)
         {
             // 拡張子以外を選択状態にする
-            string name = System.IO.Path.GetFileNameWithoutExtension(Text);
+            string name = IsSelectedWithoutExtension ? System.IO.Path.GetFileNameWithoutExtension(Text) : Text;
             this.RenameTextBox.Select(0, name.Length);
 
             // 表示とともにフォーカスする

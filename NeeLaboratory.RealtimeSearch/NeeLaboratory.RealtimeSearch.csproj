@@ -121,7 +121,6 @@
     <Compile Include="Views\DirectoryNameBox.xaml.cs">
       <DependentUpon>DirectoryNameBox.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Models\FileInfo.cs" />
     <Compile Include="Models\Setting.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="RelayCommand.cs" />
