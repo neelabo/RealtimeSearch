@@ -113,6 +113,7 @@
                         <ContextMenu>
                             <MenuItem Header="単語一致" IsCheckable="True" IsChecked="{Binding Setting.SearchOption.IsWord}"/>
                             <MenuItem Header="完全一致" IsCheckable="True" IsChecked="{Binding Setting.SearchOption.IsPerfect}"/>
+                            <MenuItem Header="順番一致" IsCheckable="True" IsChecked="{Binding Setting.SearchOption.IsOrder}"/>
                             <MenuItem Header="フォルダーを含める" IsCheckable="True" IsChecked="{Binding Setting.SearchOption.AllowFolder}"/>
                             <Separator />
                             <MenuItem Header="設定を開く..." Click="SettingButton_Click"/>
