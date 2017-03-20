@@ -78,16 +78,32 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 try
                 {
-                    if (Setting.IsMonitorClipboard && Clipboard.ContainsText())
+                    if (Setting.IsMonitorClipboard)
                     {
-                        string text = Clipboard.GetText();
-                        if (_copyText == text) return; // コピーしたファイル名と同じであるなら処理しない
-
-                        // 即時検索
-                        ClipboardChanged?.Invoke(this, new ClipboardChangedEventArgs()
+                        // text
+                        if (Clipboard.ContainsText())
                         {
-                            Keyword = new Regex(@"\s+").Replace(text, " ").Trim()
-                        });
+                            string text = Clipboard.GetText();
+                            if (_copyText == text) return; // コピーしたファイル名と同じであるなら処理しない
+
+                            // 即時検索
+                            ClipboardChanged?.Invoke(this, new ClipboardChangedEventArgs()
+                            {
+                                Keyword = new Regex(@"\s+").Replace(text, " ").Trim()
+                            });
+                        }
+                        // file
+                        else if (Clipboard.ContainsFileDropList())
+                        {
+                            var files = Clipboard.GetFileDropList();
+                            var name = System.IO.Path.GetFileNameWithoutExtension(files[0]);
+
+                            // 即時検索
+                            ClipboardChanged?.Invoke(this, new ClipboardChangedEventArgs()
+                            {
+                                Keyword = name
+                            });
+                        }
                     }
                     return;
                 }
