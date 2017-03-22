@@ -81,6 +81,26 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
+        /// <summary>
+        /// IsRenaming property.
+        /// </summary>
+        private bool _IsRenaming;
+        public bool IsRenaming
+        {
+            get { return _IsRenaming; }
+            set { if (_IsRenaming != value) { _IsRenaming = value; RaisePropertyChanged(); RaisePropertyChanged(nameof(IsTipsVisibled)); } }
+        }
+
+
+        /// <summary>
+        /// IsTipsVisibled property.
+        /// </summary>
+        public bool IsTipsVisibled
+        {
+            get { return !Setting.IsDetailVisibled && !IsRenaming; }
+        }
+
+
 
 
         // 設定 ... これも移動スべきか
@@ -126,23 +146,20 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Models_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void Models_SearchResultChanged(object sender, EventArgs e)
         {
-            if (e.PropertyName == nameof(Models.SearchResult))
+            SearchResultChanged?.Invoke(sender, null);
+
+            if (Models.SearchResult.Items.Count == 0)
             {
-                SearchResultChanged?.Invoke(sender, null);
-
-                if (Models.SearchResult.Items.Count == 0)
-                {
-                    ResultMessage = $"条件に一致する項目はありません。";
-                }
-                else
-                {
-                    ResultMessage = null;
-                }
-
-                History.Add(Models.SearchResult.Keyword);
+                ResultMessage = $"条件に一致する項目はありません。";
             }
+            else
+            {
+                ResultMessage = null;
+            }
+
+            History.Add(Models.SearchResult.Keyword);
         }
 
         /// <summary>
@@ -154,10 +171,11 @@ namespace NeeLaboratory.RealtimeSearch
             // 設定読み込み
             Setting = Setting.LoadOrDefault(_settingFileName);
             Setting.SearchPaths.CollectionChanged += SearchPaths_CollectionChanged;
+            Setting.PropertyChanged += Setting_PropertyChanged;
 
             // 初期化
             Models = new Models(Setting);
-            Models.PropertyChanged += Models_PropertyChanged;
+            Models.SearchResultChanged += Models_SearchResultChanged;
 
             //
             History = new History();
@@ -167,6 +185,14 @@ namespace NeeLaboratory.RealtimeSearch
             ClipboardSearch.Start(window);
 
             // Bindng Events
+        }
+
+        private void Setting_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Setting.IsDetailVisibled))
+            {
+                RaisePropertyChanged(nameof(IsTipsVisibled));
+            }
         }
 
         private void ClipboardSearch_ClipboardChanged(object sender, ClipboardChangedEventArgs e)

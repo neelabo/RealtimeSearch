@@ -26,6 +26,13 @@ namespace NeeLaboratory.RealtimeSearch
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
+
+        /// <summary>
+        /// 結果変更イベント
+        /// </summary>
+        public EventHandler SearchResultChanged;
+
+
         /// <summary>
         /// 検索エンジン
         /// </summary>
@@ -52,12 +59,24 @@ namespace NeeLaboratory.RealtimeSearch
                     else
                     {
                         _timer.Stop();
+                        IsBusyVisibled = false;
                     }
 
                     RaisePropertyChanged();
                 }
             }
         }
+
+        /// <summary>
+        /// IsBusyVisibled property.
+        /// </summary>
+        private bool _IsBusyVisibled;
+        public bool IsBusyVisibled
+        {
+            get { return _IsBusyVisibled; }
+            set { if (_IsBusyVisibled != value) { _IsBusyVisibled = value; RaisePropertyChanged(); } }
+        }
+
 
 
         /// <summary>
@@ -142,13 +161,16 @@ namespace NeeLaboratory.RealtimeSearch
                 _searchCancellationTokenSource?.Cancel();
                 _searchCancellationTokenSource = new CancellationTokenSource();
                 SearchResult = await _searchEngine.SearchAsync(keyword, _setting.SearchOption, _searchCancellationTokenSource.Token);
+                SearchResultChanged?.Invoke(this, null);
 
                 // 複数スレッドからコレクション操作できるようにする
                 BindingOperations.EnableCollectionSynchronization(SearchResult.Items, new object());
-
-
+                
                 IsBusy = false;
                 Information = $"{SearchResult.Items.Count:#,0} 個の項目";
+
+                // 項目変更監視
+                SearchResult.Items.CollectionChanged += (s, e) => SearchResultChanged?.Invoke(s, e);
 
                 // 監視開始
                 _watcher?.Dispose();
@@ -172,6 +194,7 @@ namespace NeeLaboratory.RealtimeSearch
         private void ProgressTimer_Tick(object sender, EventArgs e)
         {
             Information = GetSearchEngineProgress();
+            IsBusyVisibled = true;
         }
 
         /// <summary>

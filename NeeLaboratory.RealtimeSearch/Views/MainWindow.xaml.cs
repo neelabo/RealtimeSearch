@@ -382,9 +382,12 @@ namespace NeeLaboratory.RealtimeSearch
                         {
                             RenameNext(ev.MoveRename);
                         }
+                        _VM.IsRenaming = false;
                     };
 
                     this.RenameManager.Open(rename);
+                    _VM.IsRenaming = true;
+
 
                     return;
 

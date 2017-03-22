@@ -242,7 +242,7 @@
 
                         <DataTemplate x:Key="ItemFileNameTemplate">
                             <DockPanel ToolTip="{Binding Detail}" ToolTipService.InitialShowDelay="1000"
-                                       ToolTipService.IsEnabled="{Binding ElementName=listView01, Path=DataContext.Setting.IsDetailVisibled, Converter={StaticResource ReverseBooleanConverter}}">
+                                       ToolTipService.IsEnabled="{Binding ElementName=listView01, Path=DataContext.IsTipsVisibled}">
                                 <CheckBox DockPanel.Dock="Right" Template="{StaticResource PushpinCheckBoxTemplate}" Width="16" Height="16" IsChecked="{Binding IsPushPin}" >
                                     <CheckBox.Style>
                                         <Style TargetType="CheckBox">
@@ -302,7 +302,7 @@
                         <Style TargetType="Grid">
                             <Setter Property="Visibility" Value="{Binding Path=ResultMessage, Converter={StaticResource StringToVisibility}}"/>
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Models.IsBusy}" Value="True">
+                                <DataTrigger Binding="{Binding Models.IsBusyVisibled}" Value="True">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -317,7 +317,7 @@
                 <!-- Busy Message -->
                 <Grid x:Name="BusyMessage" 
                     HorizontalAlignment="Center" VerticalAlignment="Top" Margin="10,50,10,10"  Background="White"
-                    Visibility="{Binding Models.IsBusy, Converter={StaticResource BoolToVisibility}}">
+                    Visibility="{Binding Models.IsBusyVisibled, Converter={StaticResource BoolToVisibility}}">
                     <StackPanel Orientation="Horizontal" Margin="10">
                         <Grid Width="34"/>
                         <TextBlock x:Name="textBlock_Busy" Text="処理中です" Foreground="Gray"/>
