@@ -382,18 +382,16 @@ namespace NeeLaboratory.RealtimeSearch
                         {
                             RenameNext(ev.MoveRename);
                         }
+                    };
+                    rename.Close += (s, ev) =>
+                    {
                         _VM.IsRenaming = false;
                     };
 
                     this.RenameManager.Open(rename);
                     _VM.IsRenaming = true;
-
-
-                    return;
-
                 }
             }
-
         }
 
         //
