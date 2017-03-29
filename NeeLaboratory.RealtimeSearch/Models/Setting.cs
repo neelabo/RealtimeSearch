@@ -13,6 +13,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Xml;
 
 namespace NeeLaboratory.RealtimeSearch
@@ -89,10 +90,8 @@ namespace NeeLaboratory.RealtimeSearch
             set { if (_isDetailVisibled != value) { _isDetailVisibled = value; RaisePropertyChanged(); } }
         }
 
-
-
         [DataMember]
-        public WINDOWPLACEMENT? WindowPlacement { set; get; }
+        public Rect WindowRect { get; set; }
 
         [DataMember]
         public string WebSearchFormat { set; get; }
@@ -115,6 +114,7 @@ namespace NeeLaboratory.RealtimeSearch
             ExternalPrograms.Add(new ExternalProgram());
             ExternalPrograms.Add(new ExternalProgram());
             WebSearchFormat = "https://www.google.co.jp/search?q=$(query)";
+            WindowRect = Rect.Empty;
         }
 
 
@@ -170,7 +170,7 @@ namespace NeeLaboratory.RealtimeSearch
                 text = sr.ReadToEnd();
             }
 
-            // 置換
+            // namespace置換
             text = text.Replace("http://schemas.datacontract.org/2004/07/RealtimeSearch.Search", "http://schemas.datacontract.org/2004/07/NeeLaboratory.IO.Search");
             text = text.Replace("http://schemas.datacontract.org/2004/07/RealtimeSearch", "http://schemas.datacontract.org/2004/07/NeeLaboratory.RealtimeSearch");
 
@@ -190,13 +190,20 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 try
                 {
-                    return Setting.Load(path);
+                    try
+                    {
+                        return Setting.Load(path);
+                    }
+                    catch (SerializationException)
+                    {
+                        return Setting.LoadEx(path);
+                    }
                 }
-                catch(SerializationException)
+                catch (Exception)
                 {
-                    return Setting.LoadEx(path);
+                    System.Windows.MessageBox.Show("設定が読み込めませんでした。初期設定で起動します。", "読み込み失敗", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                    return new Setting();
                 }
-                //Models.Default.ReIndex(Setting.SearchPaths.ToArray());
             }
             else
             {

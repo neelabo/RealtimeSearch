@@ -45,6 +45,15 @@ namespace NeeLaboratory.RealtimeSearch
             this.Deactivated += (s, e) => this.RenameManager.Stop();
 
             this.listView01.AddHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler(listView01_ScrollChanged));
+
+            // 設定読み込み
+            _VM.LoadSetting();
+
+            // ウィンドウ座標復元
+            _VM.RestoreWindowPlacement(this);
+
+            // ListViewレイアウト復元
+            RestoreListViewMemento(_VM.Setting.ListViewColumnMemento);
         }
 
         private void MainWindowVM_FilesChanged(object sender, EventArgs e)
@@ -58,24 +67,11 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
-        private void Window_SourceInitialized(object sender, EventArgs e)
-        {
-            // 設定読み込み
-            _VM.Open(this);
-
-            // ウィンドウ座標復元
-            _VM.RestoreWindowPlacement(this);
-
-            // ListViewレイアウト復元
-            RestoreListViewMemento(_VM.Setting.ListViewColumnMemento);
-        }
-
-
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            // クリップボード監視開始
-            //_VM.StartClipboardMonitor(this);
-
+            // VM初期化
+            _VM.Open(this);
+            
             // 検索パスが設定されていなければ設定画面を開く
             if (_VM.Setting.SearchPaths.Count <= 0)
             {

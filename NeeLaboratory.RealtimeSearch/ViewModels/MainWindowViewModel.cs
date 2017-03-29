@@ -163,15 +163,23 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
         /// <summary>
-        /// 
+        /// 設定読み込み
         /// </summary>
-        /// <param name="window"></param>
-        public void Open(Window window)
+        public void LoadSetting()
         {
             // 設定読み込み
             Setting = Setting.LoadOrDefault(_settingFileName);
             Setting.SearchPaths.CollectionChanged += SearchPaths_CollectionChanged;
             Setting.PropertyChanged += Setting_PropertyChanged;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="window"></param>
+        public void Open(Window window)
+        {
+            if (Setting == null) throw new InvalidOperationException();
 
             // 初期化
             Models = new Models(Setting);
@@ -214,28 +222,20 @@ namespace NeeLaboratory.RealtimeSearch
             Setting.Save(_settingFileName);
         }
 
-
         public void RestoreWindowPlacement(Window window)
         {
-            if (Setting.WindowPlacement == null) return;
+            if (Setting.WindowRect == Rect.Empty) return;
 
-            var placement = (WINDOWPLACEMENT)Setting.WindowPlacement;
-            placement.length = Marshal.SizeOf(typeof(WINDOWPLACEMENT));
-            placement.flags = 0;
-            placement.showCmd = (placement.showCmd == SW.SHOWMINIMIZED) ? SW.SHOWNORMAL : placement.showCmd;
-
-            var hwnd = new WindowInteropHelper(window).Handle;
-            NativeMethods.SetWindowPlacement(hwnd, ref placement);
+            Rect rect = Setting.WindowRect;
+            window.Left = rect.Left;
+            window.Top = rect.Top;
+            window.Width = rect.Width;
+            window.Height = rect.Height;
         }
-
 
         public void StoreWindowPlacement(Window window)
         {
-            WINDOWPLACEMENT placement;
-            var hwnd = new WindowInteropHelper(window).Handle;
-            NativeMethods.GetWindowPlacement(hwnd, out placement);
-
-            Setting.WindowPlacement = placement;
+            Setting.WindowRect = window.RestoreBounds;
         }
 
 
