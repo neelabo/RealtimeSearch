@@ -144,9 +144,38 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
+        //
         public static Setting Load(string path)
         {
             using (XmlReader xr = XmlReader.Create(path))
+            {
+                DataContractSerializer serializer = new DataContractSerializer(typeof(Setting));
+                Setting setting = (Setting)serializer.ReadObject(xr);
+                return setting;
+            }
+        }
+
+        /// <summary>
+        /// 1.5互換
+        /// namespace変更に伴う読み込みエラー修正
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static Setting LoadEx(string path)
+        {
+            // 全部読み込み
+            string text;
+            using (StreamReader sr = new StreamReader(path))
+            {
+                text = sr.ReadToEnd();
+            }
+
+            // 置換
+            text = text.Replace("http://schemas.datacontract.org/2004/07/RealtimeSearch.Search", "http://schemas.datacontract.org/2004/07/NeeLaboratory.IO.Search");
+            text = text.Replace("http://schemas.datacontract.org/2004/07/RealtimeSearch", "http://schemas.datacontract.org/2004/07/NeeLaboratory.RealtimeSearch");
+
+            using (var reader = new StringReader(text))
+            using (XmlReader xr = XmlReader.Create(reader))
             {
                 DataContractSerializer serializer = new DataContractSerializer(typeof(Setting));
                 Setting setting = (Setting)serializer.ReadObject(xr);
@@ -159,7 +188,14 @@ namespace NeeLaboratory.RealtimeSearch
             // 設定の読み込み
             if (System.IO.File.Exists(path))
             {
-                return Setting.Load(path);
+                try
+                {
+                    return Setting.Load(path);
+                }
+                catch(SerializationException)
+                {
+                    return Setting.LoadEx(path);
+                }
                 //Models.Default.ReIndex(Setting.SearchPaths.ToArray());
             }
             else
