@@ -14,6 +14,22 @@ using System.Threading.Tasks;
 
 namespace NeeLaboratory.RealtimeSearch
 {
+    public enum ExternalProgramType
+    {
+        Normal,
+        Uri,
+    }
+
+    public static class ExternalProgramTypeExtensions
+    {
+        public static Dictionary<ExternalProgramType, string> ExternalProgramTypeNames = new Dictionary<ExternalProgramType, string>
+        {
+            [ExternalProgramType.Normal] = "外部プログラム",
+            [ExternalProgramType.Uri] = "プロトコル起動",
+        };
+    }
+
+
     [DataContract]
     public class ExternalProgram : INotifyPropertyChanged
     {
@@ -39,6 +55,18 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
+        /// <summary>
+        /// ProgramType property.
+        /// </summary>
+        private ExternalProgramType _programType;
+        [DataMember]
+        public ExternalProgramType ProgramType
+        {
+            get { return _programType; }
+            set { if (_programType != value) { _programType = value; RaisePropertyChanged(); } }
+        }
+
+
 
         /// <summary>
         /// Program property.
@@ -55,7 +83,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// Parameter property.
         /// </summary>
-        private string _parameter;
+        private string _parameter = "";
         [DataMember]
         public string Parameter
         {
@@ -73,6 +101,17 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
+
+        /// <summary>
+        /// Protocol property.
+        /// </summary>
+        private string _protocol = "";
+        [DataMember]
+        public string Protocol
+        {
+            get { return _protocol; }
+            set { _protocol = (value ?? "").Trim(); RaisePropertyChanged(); }
+        }
 
         /// <summary>
         /// Extensions property.

@@ -345,7 +345,7 @@
 
         </DockPanel>
 
-        <local:RenameManager x:Name="RenameManager"/>
+        <local:RenameManager x:Name="RenameManager" />
 
     </Grid>
 

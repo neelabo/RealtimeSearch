@@ -14,6 +14,10 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
 
+    <UserControl.Resources>
+        <local:StringNotNullOrWhiteSpaceToBoolean x:Key="StringNotNullOrWhiteSpaceToBoolean"/>
+    </UserControl.Resources>
+
     <StackPanel x:Name="Root" Margin="5">
 
         <StackPanel Orientation="Horizontal">
@@ -24,35 +28,61 @@
         </StackPanel>
 
         <StackPanel Margin="20,0,0,0">
+
             <DockPanel Margin="2" LastChildFill="True">
-                <TextBlock MinWidth="80" Text="プログラム：" VerticalAlignment="Center" Margin="2"/>
-                <local:DirectoryNameBox x:Name="ExAppPath" Margin="2" SelectDirectory="False" Title="プログラムの選択" Filter="EXE|*.exe|すべてのファイル|*.*"
+                <TextBlock MinWidth="80" Text="種類：" VerticalAlignment="Center" Margin="2"/>
+                <ComboBox ItemsSource="{x:Static local:ExternalProgramTypeExtensions.ExternalProgramTypeNames}" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding Program.ProgramType}" />
+            </DockPanel>
+
+            <StackPanel>
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Program.ProgramType}" Value="Normal">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+
+                <DockPanel Margin="2" LastChildFill="True">
+                    <TextBlock MinWidth="80" Text="プログラム：" VerticalAlignment="Center" Margin="2"/>
+                    <local:DirectoryNameBox x:Name="ExAppPath" Margin="2" SelectDirectory="False" Title="プログラムの選択" Filter="EXE|*.exe|すべてのファイル|*.*"
                             ToolTip="プログラムのパスを指定します&#xa;指定がない場合は既定のアプリを起動します"
                             Note="プログラムのパスを入力してください"
                             Text="{Binding Program.Program, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
-            </DockPanel>
-            <DockPanel Margin="2,2,2,5" LastChildFill="True">
+                </DockPanel>
+
+
+                <DockPanel DockPanel.Dock="Top" IsEnabled="{Binding Program.Program, Converter={StaticResource StringNotNullOrWhiteSpaceToBoolean}}">
+                    <TextBlock MinWidth="80" Text="パラメーター：" VerticalAlignment="Center" Margin="2"/>
+                    <TextBox Text="{Binding Program.Parameter}" Margin="2" ToolTip="$(file) がファイルパスに置換されます。&#xa;定義されていない場合 &quot;$(file)&quot; が自動追加されます"/>
+                </DockPanel>
+
+            </StackPanel>
+
+            <DockPanel DockPanel.Dock="Top">
                 <DockPanel.Style>
                     <Style TargetType="DockPanel">
+                        <Setter Property="Visibility" Value="Collapsed"/>
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding ElementName=ExAppPath, Path=Text}" Value="">
-                                <Setter Property="IsEnabled" Value="False"/>
+                            <DataTrigger Binding="{Binding Program.ProgramType}" Value="Uri">
+                                <Setter Property="Visibility" Value="Visible"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </DockPanel.Style>
 
-                <DockPanel DockPanel.Dock="Top">
-                    <TextBlock MinWidth="80" Text="パラメーター：" VerticalAlignment="Center" Margin="2"/>
-                    <TextBox Text="{Binding Program.Parameter}" Margin="2" ToolTip="$(file) がファイルパスに置換されます。&#xa;定義されていない場合 &quot;$(file)&quot; が自動追加されます"/>
-                </DockPanel>
-
-                <DockPanel Margin="0,2">
-                    <TextBlock MinWidth="80" Text="拡張子：" VerticalAlignment="Center" Margin="2"/>
-                    <TextBox Text="{Binding Program.Extensions}" Margin="2" ToolTip="対応拡張子を登録します。例：&quot;bmp png jpg&quot;&#xa;定義されていない場合、全てのファイルが対象となります&#xa;この設定は「開く」で対応する外部アプリを決定するために使用されます"/>
-                </DockPanel>
-
+                <TextBlock MinWidth="80" Text="プロトコル：" VerticalAlignment="Center" Margin="2"/>
+                <TextBox Text="{Binding Program.Protocol}" Margin="2" />
             </DockPanel>
+
+            <DockPanel Margin="0,2">
+                <TextBlock MinWidth="80" Text="拡張子：" VerticalAlignment="Center" Margin="2"/>
+                <TextBox Text="{Binding Program.Extensions}" Margin="2" ToolTip="対応拡張子を登録します。例：&quot;bmp png jpg&quot;&#xa;定義されていない場合、全てのファイルが対象となります&#xa;この設定は「開く」で対応する外部アプリを決定するために使用されます"/>
+            </DockPanel>
+
         </StackPanel>
     </StackPanel>
 </UserControl>

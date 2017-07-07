@@ -71,7 +71,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             // VM初期化
             _VM.Open(this);
-            
+
             // 検索パスが設定されていなければ設定画面を開く
             if (_VM.Setting.SearchPaths.Count <= 0)
             {
@@ -145,17 +145,41 @@ namespace NeeLaboratory.RealtimeSearch
         //
         private void Execute(NodeContent file, ExternalProgram program)
         {
-            if (!string.IsNullOrWhiteSpace(program.Program))
+            if (program.ProgramType == ExternalProgramType.Normal)
             {
-                var commandName = program.Program;
-                var arguments = program.Parameter.Replace("$(file)", file.Path);
-                System.Diagnostics.Process.Start(commandName, arguments);
+                if (!string.IsNullOrWhiteSpace(program.Program))
+                {
+                    var commandName = program.Program;
+                    var arguments = ReplaceKeyword(program.Program, file);
+                    System.Diagnostics.Process.Start(commandName, arguments);
+                    return;
+                }
+                else
+                {
+                    System.Diagnostics.Process.Start(file.Path);
+                    return;
+                }
             }
-            else
+
+            if (program.ProgramType == ExternalProgramType.Uri)
             {
-                System.Diagnostics.Process.Start(file.Path);
+                if (!string.IsNullOrWhiteSpace(program.Protocol))
+                {
+                    var protocol = ReplaceKeyword(program.Protocol, file);
+                    System.Diagnostics.Process.Start(protocol);
+                    return;
+                }
             }
         }
+
+        //
+        private string ReplaceKeyword(string s, NodeContent file)
+        {
+            s = s.Replace("$(file)", file.Path);
+            s = s.Replace("$(fileuri)", Uri.EscapeDataString(file.Path));
+            return s;
+        }
+
 
         //
         private void ExecuteDefault(NodeContent file)
