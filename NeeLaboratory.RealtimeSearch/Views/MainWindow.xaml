@@ -137,7 +137,7 @@
                             </ComboBox.ItemContainerStyle>
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding .}" TextTrimming="CharacterEllipsis" MaxWidth="{Binding ElementName=keyword,Path=ActualWidth}" MinWidth="200"/>
+                                    <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" MaxWidth="{Binding ElementName=keyword,Path=ActualWidth}" MinWidth="200"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
