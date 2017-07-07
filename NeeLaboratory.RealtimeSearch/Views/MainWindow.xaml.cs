@@ -150,7 +150,7 @@ namespace NeeLaboratory.RealtimeSearch
                 if (!string.IsNullOrWhiteSpace(program.Program))
                 {
                     var commandName = program.Program;
-                    var arguments = ReplaceKeyword(program.Program, file);
+                    var arguments = ReplaceKeyword(program.Parameter, file);
                     System.Diagnostics.Process.Start(commandName, arguments);
                     return;
                 }
