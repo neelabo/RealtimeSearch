@@ -175,8 +175,13 @@ namespace NeeLaboratory.RealtimeSearch
         //
         private string ReplaceKeyword(string s, NodeContent file)
         {
-            s = s.Replace("$(file)", file.Path);
-            s = s.Replace("$(fileuri)", Uri.EscapeDataString(file.Path));
+            var uriData = Uri.EscapeDataString(file.Path);
+
+            //Debug.WriteLine($"UriData:{uriData}");
+
+            s = s.Replace(ExternalProgram.KeyUri, uriData);
+            s = s.Replace(ExternalProgram.KeyFile, file.Path);
+
             return s;
         }
 

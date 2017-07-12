@@ -33,6 +33,9 @@ namespace NeeLaboratory.RealtimeSearch
     [DataContract]
     public class ExternalProgram : INotifyPropertyChanged
     {
+        public const string KeyFile = "$(file)";
+        public const string KeyUri = "$(uri)";
+
         /// <summary>
         /// PropertyChanged event. 
         /// </summary>
@@ -164,6 +167,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             Program = "";
             Parameter = "";
+            Protocol = "";
             Extensions = "";
         }
 
@@ -179,6 +183,13 @@ namespace NeeLaboratory.RealtimeSearch
         {
             Constructor();
         }
+
+        //
+        [OnDeserialized]
+        private void Deserializied(StreamingContext c)
+        {
+        }
+
 
 
     }
