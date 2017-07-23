@@ -75,7 +75,7 @@
                 </DockPanel.Style>
 
                 <TextBlock MinWidth="80" Text="プロトコル：" VerticalAlignment="Center" Margin="2"/>
-                <TextBox Text="{Binding Program.Protocol}" Margin="2" />
+                <TextBox Text="{Binding Program.Protocol}" Margin="2" ToolTip="$(file) がファイルパスに置換されます。&#xa;$(uri) がURIエンコードされたファイルパスに置換されます。" />
             </DockPanel>
 
             <DockPanel Margin="0,2">
