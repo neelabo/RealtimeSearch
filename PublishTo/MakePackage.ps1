@@ -116,12 +116,14 @@ function New-Package
 
 	Copy-Item "$solutionDir\*.md" $readmeDir
 	#Copy-Item "$solutionDir\Style.html" $readmeDir
+	Copy-Item "$solutionDir\NeeLaboratory.IO.Search\THIRDPARTY_LICENSES.md" "$readmeDir\NeeLaboratory.IO.Search_THIRDPARTY_LICENSES.md"
+	
 
 	# edit README.md
 	Replace-Content "$readmeDir\README.md" "# $product" "# $product $version"
 
 	# markdown to html by pandoc
-	pandoc -s -t html5 -o "$packageDir\README.html" -H Style.html "$readmeDir\README.md" "$readmeDir\LICENSE.md" "$readmeDir\THIRDPARTY_LICENSES.md"
+	pandoc -s -t html5 -o "$packageDir\README.html" -H Style.html "$readmeDir\README.md" "$readmeDir\LICENSE.md" "$readmeDir\THIRDPARTY_LICENSES.md" "$readmeDir\NeeLaboratory.IO.Search_THIRDPARTY_LICENSES.md"
 
 	Remove-Item $readmeDir -Recurse
 
