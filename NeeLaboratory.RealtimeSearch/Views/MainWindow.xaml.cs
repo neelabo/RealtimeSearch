@@ -319,7 +319,7 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 try
                 {
-                    FileInfo.OpenProperty(this, file.Path);
+                    FileSystem.OpenProperty(this, file.Path);
                 }
                 catch (Exception ex)
                 {

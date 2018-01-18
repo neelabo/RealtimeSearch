@@ -203,11 +203,11 @@ namespace NeeLaboratory.RealtimeSearch
         /// <returns></returns>
         private string GetSearchEngineProgress()
         {
-            if (_searchEngine.State == SearchEngineState.Collect)
+            if (_searchEngine.State == SearchCommandEngineState.Collect)
             {
                 return $"{_searchEngine.NodeCountMaybe:#,0} 個のインデックス作成中...";
             }
-            else if (_searchEngine.State == SearchEngineState.Search)
+            else if (_searchEngine.State == SearchCommandEngineState.Search)
             {
                 return $"検索中...";
             }
