@@ -11,6 +11,7 @@ using System.Threading;
 using System.Diagnostics;
 using System.Windows.Threading;
 using System.Windows.Data;
+using System.IO;
 
 namespace NeeLaboratory.RealtimeSearch
 {
@@ -110,6 +111,7 @@ namespace NeeLaboratory.RealtimeSearch
             _setting = setting;
 
             _searchEngine = new SearchEngine();
+            ////_searchEngine.Context.NodeFilter = SearchFilter;
             _searchEngine.SetSearchAreas(_setting.SearchPaths);
             _searchEngine.Start();
 
@@ -117,6 +119,59 @@ namespace NeeLaboratory.RealtimeSearch
             //_searchEngine.CommandEngineLogger.SetLevel(SourceLevels.All);
         }
 
+#if false // フィルターサンプル
+
+        /// <summary>
+        /// インデックスフィルタ用無効属性
+        /// </summary>
+        private static FileAttributes _ignoreAttributes =  FileAttributes.ReparsePoint | FileAttributes.Hidden | FileAttributes.System | FileAttributes.Temporary;
+
+        /// <summary>
+        /// インデックスフィルタ用無効パス
+        /// </summary>
+        private static List<string> _ignores = new List<string>()
+        {
+            System.Environment.GetFolderPath(System.Environment.SpecialFolder.Windows),
+            System.Environment.GetFolderPath(System.Environment.SpecialFolder.Windows) + ".old",
+        };
+
+        /// <summary>
+        /// インデックスフィルタ
+        /// </summary>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        private static bool SearchFilter(FileSystemInfo info)
+        {
+            // 属性フィルター
+            if ((info.Attributes & _ignoreAttributes) != 0)
+            {
+                return false;
+            }
+
+            // ディレクトリ無効フィルター
+            if ((info.Attributes & FileAttributes.Directory) != 0)
+            {
+                var infoFullName = info.FullName;
+                var infoLen = infoFullName.Length;
+
+                foreach (var ignore in _ignores)
+                {
+                    var ignoreLen = ignore.Length;
+
+                    if (ignoreLen == infoLen || (ignoreLen < infoLen && infoFullName[ignoreLen] == '\\'))
+                    {
+                        if (infoFullName.StartsWith(ignore, true, null))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
+#endif
 
         /// <summary>
         /// インデックス再構築
@@ -175,7 +230,7 @@ namespace NeeLaboratory.RealtimeSearch
 
                 // 複数スレッドからコレクション操作できるようにする
                 BindingOperations.EnableCollectionSynchronization(SearchResult.Items, new object());
-                
+
                 IsBusy = false;
                 Information = $"{SearchResult.Items.Count:#,0} 個の項目";
 
