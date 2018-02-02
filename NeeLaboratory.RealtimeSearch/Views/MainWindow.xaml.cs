@@ -395,9 +395,12 @@ namespace NeeLaboratory.RealtimeSearch
                         if (ev.OldValue != ev.NewValue)
                         {
                             NodeContent file = (target as ListView)?.SelectedItem as NodeContent;
-                            file.Name = ev.NewValue;
-                            bool result = Rename(file, ev.NewValue);
-                            if (!result) file.Reflesh();
+                            var result = Rename(file, ev.NewValue);
+                            if (result != null)
+                            {
+                                file.Name = System.IO.Path.GetFileName(result);
+                                _VM.Rreflesh(result);
+                            }
                         }
                     };
                     rename.Closed += (s, ev) =>
@@ -432,9 +435,16 @@ namespace NeeLaboratory.RealtimeSearch
             Rename_Executed(this.listView01, null);
         }
 
-        //
-        private bool Rename(NodeContent file, string newName)
+        /// <summary>
+        /// 名前変更
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="newName"></param>
+        /// <returns>成功した場合は新しいフルパス。失敗した場合はnull</returns>
+        private string Rename(NodeContent file, string newName)
         {
+            if (file == null || string.IsNullOrWhiteSpace(newName)) return null;
+
             //ファイル名に使用できない文字
             char[] invalidChars = System.IO.Path.GetInvalidFileNameChars();
             int invalidCharsIndex = newName.IndexOfAny(invalidChars);
@@ -442,12 +452,12 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 // 確認
                 MessageBox.Show($"ファイル名に使用できない文字が含まれています。( {newName[invalidCharsIndex]} )", "名前の変更の確認", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return false;
+                return null;
             }
 
             string src = file.Path;
             string dst = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(src), newName);
-            if (src == dst) return true;
+            if (src == dst) return null;
 
             bool isFile = System.IO.File.Exists(src);
 
@@ -458,7 +468,7 @@ namespace NeeLaboratory.RealtimeSearch
                 var resut = MessageBox.Show($"拡張子を変更すると、ファイルが使えなくなる可能性があります。\n\n変更しますか？", "名前の変更の確認", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
                 if (resut != MessageBoxResult.OK)
                 {
-                    return false;
+                    return null;
                 }
             }
 
@@ -485,7 +495,7 @@ namespace NeeLaboratory.RealtimeSearch
                 var resut = MessageBox.Show($"{System.IO.Path.GetFileName(dstBase)} は既に存在します。\n{System.IO.Path.GetFileName(dst)} に名前を変更しますか？", "名前の変更の確認", MessageBoxButton.OKCancel);
                 if (resut != MessageBoxResult.OK)
                 {
-                    return false;
+                    return null;
                 }
             }
 
@@ -504,10 +514,10 @@ namespace NeeLaboratory.RealtimeSearch
             catch (Exception ex)
             {
                 MessageBox.Show("名前の変更に失敗しました。\n\n" + ex.Message, "通知", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return false;
+                return null;
             }
 
-            return true;
+            return dst;
         }
 
 

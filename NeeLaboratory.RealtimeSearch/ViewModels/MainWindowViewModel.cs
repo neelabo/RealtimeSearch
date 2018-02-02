@@ -239,6 +239,14 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
+        /// <summary>
+        /// 情報更新
+        /// </summary>
+        /// <param name="path"></param>
+        public void Rreflesh(string path)
+        {
+            Models.Reflesh(path);
+        }
 
         /// <summary>
         /// 検索

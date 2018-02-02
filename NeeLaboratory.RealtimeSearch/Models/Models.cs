@@ -128,6 +128,16 @@ namespace NeeLaboratory.RealtimeSearch
 
 
         /// <summary>
+        /// 特定パスの情報を更新
+        /// </summary>
+        /// <param name="path"></param>
+        public void Reflesh(string path)
+        {
+            _searchEngine.Reflesh(path);
+        }
+
+
+        /// <summary>
         /// SearchResult property.
         /// </summary>
         private SearchResult _searchResult;
@@ -216,6 +226,7 @@ namespace NeeLaboratory.RealtimeSearch
                 return $"処理中...";
             }
         }
+
     }
 
 
