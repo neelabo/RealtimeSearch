@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Data;
 
 namespace NeeLaboratory.RealtimeSearch
 {
@@ -13,12 +14,13 @@ namespace NeeLaboratory.RealtimeSearch
     /// </summary>
     public class History
     {
-        public ObservableCollection<string> Collection { get; set; }
+        public ObservableCollection<string> Collection { get; private set; }
 
         //
         public History()
         {
             Collection = new ObservableCollection<string>();
+            BindingOperations.EnableCollectionSynchronization(Collection, new object());
         }
 
 

@@ -395,11 +395,11 @@ namespace NeeLaboratory.RealtimeSearch
                         if (ev.OldValue != ev.NewValue)
                         {
                             NodeContent file = (target as ListView)?.SelectedItem as NodeContent;
-                            var result = Rename(file, ev.NewValue);
-                            if (result != null)
+                            var src = file.Path;
+                            var dst = Rename(file, ev.NewValue);
+                            if (dst != null)
                             {
-                                file.Name = System.IO.Path.GetFileName(result);
-                                _VM.Rreflesh(result);
+                                _VM.Rename(src, dst);
                             }
                         }
                     };

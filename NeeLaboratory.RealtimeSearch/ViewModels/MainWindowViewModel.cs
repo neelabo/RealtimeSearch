@@ -237,8 +237,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             Setting.WindowRect = window.RestoreBounds;
         }
-
-
+        
         /// <summary>
         /// 情報更新
         /// </summary>
@@ -246,6 +245,16 @@ namespace NeeLaboratory.RealtimeSearch
         public void Rreflesh(string path)
         {
             Models.Reflesh(path);
+        }
+        
+        /// <summary>
+        /// 名前変更
+        /// </summary>
+        /// <param name="src"></param>
+        /// <param name="dst"></param>
+        public void Rename(string src, string dst)
+        {
+            Models.Rename(src, dst);
         }
 
         /// <summary>
@@ -290,7 +299,6 @@ namespace NeeLaboratory.RealtimeSearch
         {
             Setting.IsDetailVisibled = !Setting.IsDetailVisibled;
         }
-
     }
 
 

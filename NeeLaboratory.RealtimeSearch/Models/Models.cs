@@ -191,6 +191,16 @@ namespace NeeLaboratory.RealtimeSearch
             _searchEngine.Reflesh(path);
         }
 
+        /// <summary>
+        /// 名前変更
+        /// </summary>
+        /// <param name="src"></param>
+        /// <param name="dst"></param>
+        public void Rename(string src, string dst)
+        {
+            _searchEngine.Rename(src, dst);
+        }
+
 
         /// <summary>
         /// SearchResult property.
