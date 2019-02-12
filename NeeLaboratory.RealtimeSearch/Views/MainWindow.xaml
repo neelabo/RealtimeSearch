@@ -11,6 +11,7 @@
     xmlns:local="clr-namespace:NeeLaboratory.RealtimeSearch"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:search="clr-namespace:NeeLaboratory.IO.Search;assembly=NeeLaboratory.IO.Search"
     mc:Ignorable="d"
     x:Class="NeeLaboratory.RealtimeSearch.MainWindow"
     Title="{Binding WindowTitle}"
@@ -29,6 +30,7 @@
         <local:StringToVisibilityConverter x:Key="StringToVisibility"/>
         <local:NullToVisibilityConverter x:Key="NullToVisibility"/>
         <local:ReverseBooleanConverter x:Key="ReverseBooleanConverter"/>
+        <local:SearchModeToBooleanConverter x:Key="SearchModeToBooleanConverter"/>
 
         <Style TargetType="{x:Type ListViewItem}">
 
@@ -108,8 +110,19 @@
                     <Image Width="16" Height="16" Source="{StaticResource ic_settings_24px}"/>
                     <local:DropDownMenuButton.DropDownContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="拡張キーワード" IsCheckable="True" IsChecked="{Binding Setting.SearchOption.IsOptionEnabled}"/>
-                            <MenuItem Header="フォルダーを含める" IsCheckable="True" IsChecked="{Binding Setting.SearchOption.AllowFolder}"/>
+                            <MenuItem Header="シンプルモード" IsCheckable="False"
+                                      IsChecked="{Binding Setting.SearchOption.SearchMode, Converter={StaticResource SearchModeToBooleanConverter}, ConverterParameter={x:Static search:SearchMode.Simple}}"
+                                     Command="{x:Static local:MainWindow.SetSearchModeCommand}" CommandParameter="{x:Static search:SearchMode.Simple}" />
+                            <MenuItem Header="拡張モード" IsCheckable="False"
+                                      IsChecked="{Binding Setting.SearchOption.SearchMode, Converter={StaticResource SearchModeToBooleanConverter}, ConverterParameter={x:Static search:SearchMode.Advanced}}"
+                                      Command="{x:Static local:MainWindow.SetSearchModeCommand}" CommandParameter="{x:Static search:SearchMode.Advanced}" />
+                            <MenuItem Header="正規表現" IsCheckable="False"
+                                      IsChecked="{Binding Setting.SearchOption.SearchMode, Converter={StaticResource SearchModeToBooleanConverter}, ConverterParameter={x:Static search:SearchMode.RegularExpression}}"
+                                      Command="{x:Static local:MainWindow.SetSearchModeCommand}" CommandParameter="{x:Static search:SearchMode.RegularExpression}" />
+                            <Separator />
+                            <MenuItem Header="フォルダーを含める" IsCheckable="False"
+                                      IsChecked="{Binding Setting.SearchOption.AllowFolder}"
+                                      Command="{x:Static local:MainWindow.ToggleAllowFolderCommand}" />
                             <Separator />
                             <MenuItem Header="設定を開く..." Click="SettingButton_Click"/>
                         </ContextMenu>

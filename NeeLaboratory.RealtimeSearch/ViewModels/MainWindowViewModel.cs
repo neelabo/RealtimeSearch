@@ -237,7 +237,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             Setting.WindowRect = window.RestoreBounds;
         }
-        
+
         /// <summary>
         /// 情報更新
         /// </summary>
@@ -246,7 +246,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             Models.Reflesh(path);
         }
-        
+
         /// <summary>
         /// 名前変更
         /// </summary>
@@ -263,9 +263,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <returns></returns>
         public async Task SearchAsync()
         {
-            var keyword = new Regex(@"\s+").Replace(this.Keyword, " ").Trim();
-
-            await Models.SearchAsync(keyword);
+            await Models.SearchAsync(this.Keyword.Trim());
         }
 
 

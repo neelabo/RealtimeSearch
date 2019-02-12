@@ -235,13 +235,18 @@ namespace NeeLaboratory.RealtimeSearch
                 // 同時に実行可能なのは1検索のみ。以前の検索はキャンセルして新しい検索コマンドを発行
                 _searchCancellationTokenSource?.Cancel();
                 _searchCancellationTokenSource = new CancellationTokenSource();
-                SearchResult = await _searchEngine.SearchAsync(keyword, _setting.SearchOption, _searchCancellationTokenSource.Token);
+                var searchResult = await _searchEngine.SearchAsync(keyword, _setting.SearchOption, _searchCancellationTokenSource.Token);
+                if (searchResult.Exception != null)
+                {
+                    throw searchResult.Exception;
+                }
+
+                SearchResult = searchResult;
                 SearchResultChanged?.Invoke(this, null);
 
                 // 複数スレッドからコレクション操作できるようにする
                 BindingOperations.EnableCollectionSynchronization(SearchResult.Items, new object());
 
-                IsBusy = false;
                 Information = $"{SearchResult.Items.Count:#,0} 個の項目";
 
                 // 項目変更監視
@@ -257,11 +262,18 @@ namespace NeeLaboratory.RealtimeSearch
                 Debug.WriteLine($"Search Canceled: {keyword}");
                 //Information = "";
             }
+            catch (SearchKeywordException e)
+            {
+                Information = "正規表現エラー: " + e.Message;
+            }
             catch (Exception e)
             {
-                IsBusy = false;
                 Information = e.Message;
                 throw;
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
 

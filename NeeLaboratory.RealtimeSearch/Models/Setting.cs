@@ -30,17 +30,30 @@ namespace NeeLaboratory.RealtimeSearch
     [DataContract]
     public class Setting : INotifyPropertyChanged
     {
-        #region NotifyPropertyChanged
-        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        #region INotifyPropertyChanged Support
 
-        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = "")
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected bool SetProperty<T>(ref T storage, T value, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
         {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(name));
-            }
+            if (object.Equals(storage, value)) return false;
+            storage = value;
+            this.RaisePropertyChanged(propertyName);
+            return true;
         }
+
+        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        public void AddPropertyChanged(string propertyName, PropertyChangedEventHandler handler)
+        {
+            PropertyChanged += (s, e) => { if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == propertyName) handler?.Invoke(s, e); };
+        }
+
         #endregion
+
 
         [DataMember]
         public ObservableCollection<string> SearchPaths { set; get; }
@@ -68,16 +81,21 @@ namespace NeeLaboratory.RealtimeSearch
 
 
         /// <summary>
+        /// SearchOption property. (Legacy)
+        /// </summary>
+        [Obsolete, DataMember(Name = "SearchOption", EmitDefaultValue = false)]
+        private IO.Search.SearchOptionLegacyV1 _searchOptionLegacyV1;
+
+        /// <summary>
         /// SearchOption property.
         /// </summary>
         private NeeLaboratory.IO.Search.SearchOption _searchOption;
-        [DataMember]
+        [DataMember(Name = "SearchOptionV2")]
         public NeeLaboratory.IO.Search.SearchOption SearchOption
         {
             get { return _searchOption; }
             set { if (_searchOption != value) { _searchOption = value; RaisePropertyChanged(); } }
         }
-
 
         /// <summary>
         /// IsDetailVisibled property.
@@ -128,6 +146,19 @@ namespace NeeLaboratory.RealtimeSearch
         private void Deserializing(StreamingContext c)
         {
             Constructor();
+        }
+
+        [OnDeserialized]
+        private void Deserialized(StreamingContext c)
+        {
+#pragma warning disable CS0612
+            if (_searchOptionLegacyV1 != null)
+            {
+                _searchOption.SearchMode = _searchOptionLegacyV1.IsOptionEnabled ? IO.Search.SearchMode.Advanced : IO.Search.SearchMode.Simple;
+                _searchOption.AllowFolder = _searchOptionLegacyV1.AllowFolder;
+                _searchOptionLegacyV1 = null;
+            }
+#pragma warning restore CS0612
         }
 
 
@@ -209,6 +240,19 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 return new Setting();
             }
+        }
+
+
+        public void SetSearchMode(IO.Search.SearchMode mode)
+        {
+            SearchOption.SearchMode = mode;
+            RaisePropertyChanged("SearchOption.SearchMode");
+        }
+
+        public void ToggleAllowFolder()
+        {
+            SearchOption.AllowFolder = !SearchOption.AllowFolder;
+            RaisePropertyChanged("SearchOption.AllowFolder");
         }
     }
 }
