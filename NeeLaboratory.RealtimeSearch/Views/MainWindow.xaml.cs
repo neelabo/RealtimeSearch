@@ -73,7 +73,7 @@ namespace NeeLaboratory.RealtimeSearch
             _VM.Open(this);
 
             // 検索パスが設定されていなければ設定画面を開く
-            if (_VM.Setting.SearchPaths.Count <= 0)
+            if (_VM.Setting.SearchAreas.Count <= 0)
             {
                 ShowSettingWindow();
             }

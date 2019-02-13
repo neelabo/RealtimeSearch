@@ -112,7 +112,7 @@ namespace NeeLaboratory.RealtimeSearch
 
             _searchEngine = new SearchEngine();
             ////_searchEngine.Context.NodeFilter = SearchFilter;
-            _searchEngine.SetSearchAreas(_setting.SearchPaths);
+            _searchEngine.SetSearchAreas(_setting.SearchAreas);
             _searchEngine.Start();
 
             //SearchEngine.Logger.SetLevel(SourceLevels.All);
@@ -178,7 +178,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         public void ReIndex()
         {
-            _searchEngine.SetSearchAreas(_setting.SearchPaths);
+            _searchEngine.SetSearchAreas(_setting.SearchAreas);
         }
 
 

@@ -3,6 +3,7 @@
 // This software is released under the MIT License.
 // http://opensource.org/licenses/mit-license.php
 
+using NeeLaboratory.IO.Search;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -22,34 +23,45 @@ namespace NeeLaboratory.RealtimeSearch
     /// </summary>
     public partial class SettingWindow : Window, INotifyPropertyChanged
     {
-        #region PropertyChanged
+        #region INotifyPropertyChanged Support
+
         public event PropertyChangedEventHandler PropertyChanged;
-        private void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = "")
+
+        protected bool SetProperty<T>(ref T storage, T value, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
         {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(name));
-            }
+            if (object.Equals(storage, value)) return false;
+            storage = value;
+            this.RaisePropertyChanged(propertyName);
+            return true;
         }
+
+        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        public void AddPropertyChanged(string propertyName, PropertyChangedEventHandler handler)
+        {
+            PropertyChanged += (s, e) => { if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == propertyName) handler?.Invoke(s, e); };
+        }
+
         #endregion
 
-        #region Property: CollectionViewSource
+
         private CollectionViewSource _collectionViewSource;
         public CollectionViewSource CollectionViewSource
         {
             get { return _collectionViewSource; }
-            set { _collectionViewSource = value; OnPropertyChanged(); }
+            set { _collectionViewSource = value; RaisePropertyChanged(); }
         }
-        #endregion
 
-        #region Property: SelectedPath
-        private string _selectedPath;
-        public string SelectedPath
+        private SearchArea _selectedArea;
+        public SearchArea SelectedArea
         {
-            get { return _selectedPath; }
-            set { _selectedPath = value; OnPropertyChanged(); }
+            get { return _selectedArea; }
+            set { SetProperty(ref _selectedArea, value); }
         }
-        #endregion
+
 
 
         public static readonly RoutedCommand CloseCommand = new RoutedCommand("CloseCommand", typeof(SettingWindow));
@@ -101,28 +113,28 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void DelCommand_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            if (SelectedPath != null)
+            if (SelectedArea != null)
             {
-                Setting.SearchPaths.Remove(SelectedPath);
-                SelectedPath = null;
+                Setting.SearchAreas.Remove(SelectedArea);
+                SelectedArea = null;
             }
         }
 
 
         private void DelCommand_CanExecute(object target, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = SelectedPath != null;
+            e.CanExecute = SelectedArea != null;
         }
 
 
         private void UpdateCollectionViewSource()
         {
             var collectionViewSource = new CollectionViewSource();
-            collectionViewSource.Source = Setting.SearchPaths;
-            collectionViewSource.SortDescriptions.Add(new System.ComponentModel.SortDescription(null, System.ComponentModel.ListSortDirection.Ascending));
+            collectionViewSource.Source = Setting.SearchAreas;
+            collectionViewSource.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(SearchArea.Path), System.ComponentModel.ListSortDirection.Ascending));
 
             CollectionViewSource = collectionViewSource;
-            SelectedPath = null;
+            SelectedArea = null;
         }
 
 
@@ -130,16 +142,17 @@ namespace NeeLaboratory.RealtimeSearch
         {
             if (!System.IO.Directory.Exists(path)) return;
 
-            string existPath = Setting.SearchPaths.FirstOrDefault(p => p == path);
+            var area = new SearchArea(path, true);
+            var existArea = Setting.SearchAreas.FirstOrDefault(p => p.Path == area.Path);
 
-            if (existPath != null)
+            if (existArea != null)
             {
-                SelectedPath = existPath;
+                SelectedArea = existArea;
                 return;
             }
 
-            Setting.SearchPaths.Add(path);
-            SelectedPath = path;
+            Setting.SearchAreas.Add(area);
+            SelectedArea = area;
         }
 
 

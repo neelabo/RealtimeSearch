@@ -169,7 +169,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             // 設定読み込み
             Setting = Setting.LoadOrDefault(_settingFileName);
-            Setting.SearchPaths.CollectionChanged += SearchPaths_CollectionChanged;
+            Setting.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
             Setting.PropertyChanged += Setting_PropertyChanged;
         }
 
@@ -208,7 +208,7 @@ namespace NeeLaboratory.RealtimeSearch
             Keyword = e.Keyword;
         }
 
-        private void SearchPaths_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void SearchAreas_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             Models.ReIndex();
         }

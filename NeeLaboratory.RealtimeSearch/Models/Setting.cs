@@ -3,6 +3,7 @@
 // This software is released under the MIT License.
 // http://opensource.org/licenses/mit-license.php
 
+using NeeLaboratory.IO.Search;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -54,42 +55,37 @@ namespace NeeLaboratory.RealtimeSearch
 
         #endregion
 
+        private bool _isMonitorClipboard;
+        private bool _isTopmost;
+        private bool _isDetailVisibled;
+        private NeeLaboratory.IO.Search.SearchOption _searchOption;
+
+
+        // legacy
+        [Obsolete, DataMember(EmitDefaultValue = false)]
+        private ObservableCollection<string> SearchPaths;
 
         [DataMember]
-        public ObservableCollection<string> SearchPaths { set; get; }
+        public ObservableCollection<SearchArea> SearchAreas { get; set; }
 
-        #region Property: IsMonitorClipboard
-        [DataMember(Name = nameof(IsMonitorClipboard))]
-        private bool _isMonitorClipboard;
+        [DataMember]
         public bool IsMonitorClipboard
         {
             get { return _isMonitorClipboard; }
             set { _isMonitorClipboard = value; RaisePropertyChanged(); }
         }
-        #endregion
 
-
-        #region Property: IsTopmost
-        [DataMember(Name = nameof(IsTopmost))]
-        private bool _isTopmost;
+        [DataMember]
         public bool IsTopmost
         {
             get { return _isTopmost; }
             set { _isTopmost = value; RaisePropertyChanged(); }
         }
-        #endregion
 
-
-        /// <summary>
-        /// SearchOption property. (Legacy)
-        /// </summary>
+        // legacy
         [Obsolete, DataMember(Name = "SearchOption", EmitDefaultValue = false)]
-        private IO.Search.SearchOptionLegacyV1 _searchOptionLegacyV1;
+        private SearchOptionLegacyV1 SearchOptionLegacyV1;
 
-        /// <summary>
-        /// SearchOption property.
-        /// </summary>
-        private NeeLaboratory.IO.Search.SearchOption _searchOption;
         [DataMember(Name = "SearchOptionV2")]
         public NeeLaboratory.IO.Search.SearchOption SearchOption
         {
@@ -97,11 +93,7 @@ namespace NeeLaboratory.RealtimeSearch
             set { if (_searchOption != value) { _searchOption = value; RaisePropertyChanged(); } }
         }
 
-        /// <summary>
-        /// IsDetailVisibled property.
-        /// </summary>
-        [DataMember(Name = nameof(IsDetailVisibled))]
-        private bool _isDetailVisibled;
+        [DataMember]
         public bool IsDetailVisibled
         {
             get { return _isDetailVisibled; }
@@ -124,7 +116,7 @@ namespace NeeLaboratory.RealtimeSearch
         //----------------------------------------------------------------------------
         private void Constructor()
         {
-            SearchPaths = new ObservableCollection<string>();
+            SearchAreas = new ObservableCollection<SearchArea>();
             IsMonitorClipboard = true;
             SearchOption = new NeeLaboratory.IO.Search.SearchOption();
             ExternalPrograms = new List<ExternalProgram>();
@@ -152,11 +144,16 @@ namespace NeeLaboratory.RealtimeSearch
         private void Deserialized(StreamingContext c)
         {
 #pragma warning disable CS0612
-            if (_searchOptionLegacyV1 != null)
+            if (SearchPaths != null)
             {
-                _searchOption.SearchMode = _searchOptionLegacyV1.IsOptionEnabled ? IO.Search.SearchMode.Advanced : IO.Search.SearchMode.Simple;
-                _searchOption.AllowFolder = _searchOptionLegacyV1.AllowFolder;
-                _searchOptionLegacyV1 = null;
+                SearchAreas = new ObservableCollection<SearchArea>(SearchPaths.Select(e => new SearchArea(e, true)));
+                SearchPaths = null;
+            }
+            if (SearchOptionLegacyV1 != null)
+            {
+                _searchOption.SearchMode = SearchOptionLegacyV1.IsOptionEnabled ? IO.Search.SearchMode.Advanced : IO.Search.SearchMode.Simple;
+                _searchOption.AllowFolder = SearchOptionLegacyV1.AllowFolder;
+                SearchOptionLegacyV1 = null;
             }
 #pragma warning restore CS0612
         }

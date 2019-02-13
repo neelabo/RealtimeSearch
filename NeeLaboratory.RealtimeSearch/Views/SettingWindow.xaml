@@ -48,20 +48,27 @@
                         </DockPanel>
 
                         <Grid>
-                            <ListBox x:Name="SearchPathList" Margin="0,2,0,4" ItemsSource="{Binding CollectionViewSource.View}"  SelectedItem="{Binding SelectedPath}" AllowDrop="True" PreviewDragOver="ListBox_PreviewDragOver" Drop="ListBox_Drop">
+                            <ListBox x:Name="SearchPathList" Margin="0,2,0,4" ItemsSource="{Binding CollectionViewSource.View}"  SelectedItem="{Binding SelectedArea}" AllowDrop="True" PreviewDragOver="ListBox_PreviewDragOver" Drop="ListBox_Drop">
                                 <ListBox.ContextMenu>
                                     <ContextMenu x:Name="contextMenu01">
                                         <MenuItem Header="追加" Command="{x:Static local:SettingWindow.AddCommand}"/>
                                         <MenuItem Header="削除" Command="{x:Static local:SettingWindow.DelCommand}"/>
                                     </ContextMenu>
                                 </ListBox.ContextMenu>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Path}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
                             </ListBox>
                             <TextBlock Text="検索するフォルダを登録してください" HorizontalAlignment="Center" Margin="0,40" Foreground="Gray">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Setting.SearchPaths.Count}" Value="0">
+                                            <DataTrigger Binding="{Binding Setting.SearchAreas.Count}" Value="0">
                                                 <Setter Property="Visibility" Value="Visible"/>
                                             </DataTrigger>
                                         </Style.Triggers>
