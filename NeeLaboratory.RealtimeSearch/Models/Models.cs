@@ -264,7 +264,18 @@ namespace NeeLaboratory.RealtimeSearch
             }
             catch (SearchKeywordException e)
             {
-                Information = "正規表現エラー: " + e.Message;
+                if (e is SearchKeywordRegularExpressionException ex1)
+                {
+                    Information = "正規表現エラー: " + ex1.InnerException.Message;
+                }
+                else if (e is SearchKeywordOptionException ex2)
+                {
+                    Information = "不正なオプションです: " + ex2.Option;
+                }
+                else
+                {
+                    Information = e.Message;
+                }
             }
             catch (Exception e)
             {

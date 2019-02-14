@@ -151,7 +151,6 @@ namespace NeeLaboratory.RealtimeSearch
             }
             if (SearchOptionLegacyV1 != null)
             {
-                _searchOption.SearchMode = SearchOptionLegacyV1.IsOptionEnabled ? IO.Search.SearchMode.Advanced : IO.Search.SearchMode.Simple;
                 _searchOption.AllowFolder = SearchOptionLegacyV1.AllowFolder;
                 SearchOptionLegacyV1 = null;
             }
@@ -237,13 +236,6 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 return new Setting();
             }
-        }
-
-
-        public void SetSearchMode(IO.Search.SearchMode mode)
-        {
-            SearchOption.SearchMode = mode;
-            RaisePropertyChanged("SearchOption.SearchMode");
         }
 
         public void ToggleAllowFolder()

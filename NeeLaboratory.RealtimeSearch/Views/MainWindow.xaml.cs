@@ -269,7 +269,6 @@ namespace NeeLaboratory.RealtimeSearch
         public static readonly RoutedCommand SearchCommand = new RoutedCommand("SearchCommand", typeof(MainWindow));
         public static readonly RoutedCommand WebSearchCommand = new RoutedCommand("WebSearchCommand", typeof(MainWindow));
         public static readonly RoutedCommand PropertyCommand = new RoutedCommand("PropertyCommand", typeof(MainWindow));
-        public static readonly RoutedCommand SetSearchModeCommand = new RoutedCommand("SetSearchModeCommand", typeof(MainWindow));
         public static readonly RoutedCommand ToggleAllowFolderCommand = new RoutedCommand("ToggleAllowFolderCommand", typeof(MainWindow));
 
 
@@ -313,7 +312,6 @@ namespace NeeLaboratory.RealtimeSearch
 
             listView01.CommandBindings.Add(new CommandBinding(PropertyCommand, Property_Executed));
 
-            this.CommandBindings.Add(new CommandBinding(SetSearchModeCommand, SetSearchMode_Executed));
             this.CommandBindings.Add(new CommandBinding(ToggleAllowFolderCommand, ToggleAllowFolder_Executed));
         }
 
@@ -322,16 +320,6 @@ namespace NeeLaboratory.RealtimeSearch
         {
             _VM.Setting.ToggleAllowFolder();
             await _VM.SearchAsync();
-        }
-
-        //
-        private async void SetSearchMode_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            if (e.Parameter is SearchMode mode)
-            {
-                _VM.Setting.SetSearchMode(mode);
-                await _VM.SearchAsync();
-            }
         }
 
         //
@@ -838,24 +826,6 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 return value;
             }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-
-    public class SearchModeToBooleanConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is SearchMode mode && parameter is SearchMode other)
-            {
-                return mode == other;
-            }
-            return false;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

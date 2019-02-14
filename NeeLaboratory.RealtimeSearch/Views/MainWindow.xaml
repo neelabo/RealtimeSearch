@@ -30,7 +30,6 @@
         <local:StringToVisibilityConverter x:Key="StringToVisibility"/>
         <local:NullToVisibilityConverter x:Key="NullToVisibility"/>
         <local:ReverseBooleanConverter x:Key="ReverseBooleanConverter"/>
-        <local:SearchModeToBooleanConverter x:Key="SearchModeToBooleanConverter"/>
 
         <Style TargetType="{x:Type ListViewItem}">
 
@@ -110,16 +109,6 @@
                     <Image Width="16" Height="16" Source="{StaticResource ic_settings_24px}"/>
                     <local:DropDownMenuButton.DropDownContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="シンプルモード" IsCheckable="False"
-                                      IsChecked="{Binding Setting.SearchOption.SearchMode, Converter={StaticResource SearchModeToBooleanConverter}, ConverterParameter={x:Static search:SearchMode.Simple}}"
-                                     Command="{x:Static local:MainWindow.SetSearchModeCommand}" CommandParameter="{x:Static search:SearchMode.Simple}" />
-                            <MenuItem Header="拡張モード" IsCheckable="False"
-                                      IsChecked="{Binding Setting.SearchOption.SearchMode, Converter={StaticResource SearchModeToBooleanConverter}, ConverterParameter={x:Static search:SearchMode.Advanced}}"
-                                      Command="{x:Static local:MainWindow.SetSearchModeCommand}" CommandParameter="{x:Static search:SearchMode.Advanced}" />
-                            <MenuItem Header="正規表現" IsCheckable="False"
-                                      IsChecked="{Binding Setting.SearchOption.SearchMode, Converter={StaticResource SearchModeToBooleanConverter}, ConverterParameter={x:Static search:SearchMode.RegularExpression}}"
-                                      Command="{x:Static local:MainWindow.SetSearchModeCommand}" CommandParameter="{x:Static search:SearchMode.RegularExpression}" />
-                            <Separator />
                             <MenuItem Header="フォルダーを含める" IsCheckable="False"
                                       IsChecked="{Binding Setting.SearchOption.AllowFolder}"
                                       Command="{x:Static local:MainWindow.ToggleAllowFolderCommand}" />
