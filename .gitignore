@@ -198,5 +198,6 @@ PublishTo/*.zip
 PublishTo/*.xml
 PublishTo/*.msi
 PublishTo/*.wixpdb
+PublishTo/_*
 /RealtimeSearch.png
-_old/
+/_*
