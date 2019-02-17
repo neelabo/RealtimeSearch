@@ -199,3 +199,4 @@ PublishTo/*.xml
 PublishTo/*.msi
 PublishTo/*.wixpdb
 /RealtimeSearch.png
+_old/
