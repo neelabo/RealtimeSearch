@@ -7,7 +7,9 @@ using NeeLaboratory.IO.Search;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -87,7 +89,8 @@ namespace NeeLaboratory.RealtimeSearch
             this.CommandBindings.Add(new CommandBinding(CloseCommand, (t, e) => Close()));
 
             // help command
-            this.CommandBindings.Add(new CommandBinding(HelpCommand, (t, e) => System.Diagnostics.Process.Start("https://bitbucket.org/neelabo/realtimesearch/wiki")));
+            var readmeUri = "file://" + Path.GetDirectoryName(Assembly.GetEntryAssembly().Location).Replace('\\', '/').TrimEnd('/') + $"/README.html";
+            this.CommandBindings.Add(new CommandBinding(HelpCommand, (t, e) => System.Diagnostics.Process.Start(readmeUri)));
 
             // add command
             AddCommand.InputGestures.Clear();

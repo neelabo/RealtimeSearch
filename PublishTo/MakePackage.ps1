@@ -123,7 +123,11 @@ function New-Package
 	Replace-Content "$readmeDir\README.md" "# $product" "# $product $version"
 
 	# markdown to html by pandoc
-	pandoc -s -t html5 -o "$packageDir\README.html" -H Style.html "$readmeDir\README.md" "$readmeDir\LICENSE.md" "$readmeDir\THIRDPARTY_LICENSES.md" "$readmeDir\NeeLaboratory.IO.Search_THIRDPARTY_LICENSES.md"
+	& pandoc -s -t html5 -o "$packageDir\README.html" -H Style.html "$readmeDir\README.md" "$readmeDir\LICENSE.md" "$readmeDir\THIRDPARTY_LICENSES.md" "$readmeDir\NeeLaboratory.IO.Search_THIRDPARTY_LICENSES.md"
+	if ($? -ne $true)
+	{
+		throw "pandoc error" 
+	}
 
 	Remove-Item $readmeDir -Recurse
 
