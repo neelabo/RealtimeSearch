@@ -266,11 +266,15 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 if (e is SearchKeywordRegularExpressionException ex1)
                 {
-                    Information = "正規表現エラー: " + ex1.InnerException.Message;
+                    Information = "正規表現エラー: " + ex1.InnerException?.Message;
                 }
-                else if (e is SearchKeywordOptionException ex2)
+                if (e is SearchKeywordDateTimeException ex2)
                 {
-                    Information = "不正なオプションです: " + ex2.Option;
+                    Information = "日時指定が不正です";
+                }
+                else if (e is SearchKeywordOptionException ex3)
+                {
+                    Information = "不正なオプションです: " + ex3.Option;
                 }
                 else
                 {
