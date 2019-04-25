@@ -103,6 +103,7 @@
     </ApplicationDefinition>
     <Compile Include="Models\ClipboardListner.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="Models\DelayValue.cs" />
     <Compile Include="Models\ExternalProgram.cs" />
     <Compile Include="Models\History.cs" />
     <Compile Include="Models\Models.cs" />

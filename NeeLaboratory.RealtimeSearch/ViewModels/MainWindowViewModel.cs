@@ -22,17 +22,33 @@ namespace NeeLaboratory.RealtimeSearch
 {
     public class MainWindowViewModel : INotifyPropertyChanged
     {
-        #region NotifyPropertyChanged
-        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        #region INotifyPropertyChanged Support
 
-        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = "")
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected bool SetProperty<T>(ref T storage, T value, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
         {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(name));
-            }
+            if (object.Equals(storage, value)) return false;
+            storage = value;
+            this.RaisePropertyChanged(propertyName);
+            return true;
         }
+
+        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        public void AddPropertyChanged(string propertyName, PropertyChangedEventHandler handler)
+        {
+            PropertyChanged += (s, e) => { if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == propertyName) handler?.Invoke(s, e); };
+        }
+
         #endregion
+
+        private DelayValue<string> _keyword;
+
+
 
         public event EventHandler SearchResultChanged;
 
@@ -40,12 +56,27 @@ namespace NeeLaboratory.RealtimeSearch
         public string WindowTitle => _defaultWindowTitle;
 
         // 検索キーワード
-        private string _keyword = "";
         public string Keyword
         {
-            get { return _keyword; }
-            set { _keyword = value; RaisePropertyChanged(); var task = SearchAsync(); }
+            get { return _keyword.Value; }
+            set { _keyword.SetValue(value, 200); }
         }
+
+
+        // 検索キーワード、コンボボックス入力との連携用
+        private string _inputKeyword;
+        public string InputKeyword
+        {
+            get { return _inputKeyword; }
+            set
+            {
+                if (SetProperty(ref _inputKeyword, value))
+                {
+                    Keyword = _inputKeyword;
+                }
+            }
+        }
+
 
 
         /// <summary>
@@ -139,6 +170,9 @@ namespace NeeLaboratory.RealtimeSearch
 
             // setting filename
             _settingFileName = (App.Config.LocalApplicationDataPath) + "\\UserSetting.xml";
+
+            _keyword = new DelayValue<string>("");
+            _keyword.ValueChanged += async (s, e) => await SearchAsync();
         }
 
         /// <summary>
@@ -158,8 +192,16 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 ResultMessage = null;
             }
+        }
 
-            History.Add(Models.SearchResult.Keyword);
+        public void AddHistory()
+        {
+            var keyword = Models.SearchResult?.Keyword;
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                Debug.WriteLine($"AddHistory: {keyword}");
+                History.Add(keyword);
+            }
         }
 
         /// <summary>
@@ -205,7 +247,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void ClipboardSearch_ClipboardChanged(object sender, ClipboardChangedEventArgs e)
         {
-            Keyword = e.Keyword;
+            InputKeyword = e.Keyword;
         }
 
         private void SearchAreas_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)

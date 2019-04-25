@@ -126,7 +126,8 @@
                         <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="25" Height="25" Command="{x:Static local:MainWindow.SearchCommand}" ToolTip="再検索(Ctrl+R)">
                             <Image Width="16" Height="16" Source="{StaticResource ic_reflesh_24px}"/>
                         </Button>
-                        <ComboBox x:Name="keyword" Text="{Binding Keyword, Delay=200, UpdateSourceTrigger=PropertyChanged}"
+                        <ComboBox x:Name="keyword" Text="{Binding InputKeyword, UpdateSourceTrigger=PropertyChanged}"
+                              TextBoxBase.TextChanged="Keyword_TextChanged"
                               VerticalAlignment="Center" KeyDown="keyword_KeyDown" ItemsSource="{Binding History.Collection}" IsTextSearchCaseSensitive="True"
                               IsEditable="True" BorderThickness="0" BorderBrush="red" LostFocus="keyword_LostFocus" LostKeyboardFocus="keyword_LostFocus">
                             <ComboBox.ItemContainerStyle>

@@ -207,11 +207,13 @@ namespace NeeLaboratory.RealtimeSearch
             if (e.Key == Key.Enter)
             {
                 await _VM.SearchAsync();
+                _VM.AddHistory();
             }
         }
 
         private void keyword_LostFocus(object sender, RoutedEventArgs e)
         {
+            _VM.AddHistory();
         }
 
 
@@ -344,6 +346,7 @@ namespace NeeLaboratory.RealtimeSearch
         private async void Search_Executed(object target, ExecutedRoutedEventArgs e)
         {
             await _VM.SearchAsync();
+            _VM.AddHistory();
         }
 
         //
@@ -791,6 +794,15 @@ namespace NeeLaboratory.RealtimeSearch
                     }
                     column.Width = item.Width;
                 }
+            }
+        }
+
+        private void Keyword_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var textBox = e.OriginalSource as TextBox;
+            if (textBox != null)
+            {
+                _VM.Keyword = textBox.Text;
             }
         }
 
