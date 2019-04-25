@@ -17,14 +17,59 @@ namespace NeeLaboratory.RealtimeSearch
 {
     public class Models : INotifyPropertyChanged
     {
-        /// <summary>
-        /// PropertyChanged event. 
-        /// </summary>
+        #region INotifyPropertyChanged Support
+
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = "")
+        protected bool SetProperty<T>(ref T storage, T value, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
+        {
+            if (object.Equals(storage, value)) return false;
+            storage = value;
+            this.RaisePropertyChanged(propertyName);
+            return true;
+        }
+
+        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        public void AddPropertyChanged(string propertyName, PropertyChangedEventHandler handler)
+        {
+            PropertyChanged += (s, e) => { if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == propertyName) handler?.Invoke(s, e); };
+        }
+
+        #endregion
+
+
+        private bool _IsBusy;
+        private bool _IsBusyVisibled;
+        private string _information = "";
+        private Setting _setting;
+        private DispatcherTimer _timer;
+        private SearchEngine _searchEngine;
+        private SearchResult _searchResult;
+        private CancellationTokenSource _searchCancellationTokenSource;
+        private SearchResultWatcher _watcher;
+
+
+        /// <summary>
+        /// コンストラクタ
+        /// TODO: 設定をわたしているが、設定の読込もここでしょ
+        /// </summary>
+        /// <param name="setting"></param>
+        public Models(Setting setting)
+        {
+            _timer = new DispatcherTimer();
+            _timer.Interval = TimeSpan.FromMilliseconds(1000);
+            _timer.Tick += ProgressTimer_Tick;
+
+            _setting = setting;
+
+            _searchEngine = new SearchEngine();
+            ////_searchEngine.Context.NodeFilter = SearchFilter;
+            _searchEngine.SetSearchAreas(_setting.SearchAreas);
+            _searchEngine.Start();
         }
 
 
@@ -34,16 +79,6 @@ namespace NeeLaboratory.RealtimeSearch
         public EventHandler SearchResultChanged;
 
 
-        /// <summary>
-        /// 検索エンジン
-        /// </summary>
-        private SearchEngine _searchEngine;
-
-
-        /// <summary>
-        /// IsBusy property.
-        /// </summary>
-        private bool _IsBusy;
         public bool IsBusy
         {
             get { return _IsBusy; }
@@ -68,110 +103,24 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        /// <summary>
-        /// IsBusyVisibled property.
-        /// </summary>
-        private bool _IsBusyVisibled;
         public bool IsBusyVisibled
         {
             get { return _IsBusyVisibled; }
             set { if (_IsBusyVisibled != value) { _IsBusyVisibled = value; RaisePropertyChanged(); } }
         }
 
-
-
-        /// <summary>
-        /// Information property.
-        /// ステータスバーに表示する情報
-        /// </summary>
-        private string _information = "";
         public string Information
         {
             get { return _information; }
             set { _information = value; RaisePropertyChanged(); }
         }
 
-
-        Setting _setting;
-
-
-        private DispatcherTimer _timer;
-
-        /// <summary>
-        /// コンストラクタ
-        /// TODO: 設定をわたしているが、設定の読込もここでしょ
-        /// </summary>
-        /// <param name="setting"></param>
-        public Models(Setting setting)
+        public SearchResult SearchResult
         {
-            _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromMilliseconds(1000);
-            _timer.Tick += ProgressTimer_Tick;
-
-            _setting = setting;
-
-            _searchEngine = new SearchEngine();
-            ////_searchEngine.Context.NodeFilter = SearchFilter;
-            _searchEngine.SetSearchAreas(_setting.SearchAreas);
-            _searchEngine.Start();
-
-            //SearchEngine.Logger.SetLevel(SourceLevels.All);
-            //_searchEngine.CommandEngineLogger.SetLevel(SourceLevels.All);
+            get { return _searchResult; }
+            set { if (_searchResult != value) { _searchResult = value; RaisePropertyChanged(); } }
         }
 
-#if false // フィルターサンプル
-
-        /// <summary>
-        /// インデックスフィルタ用無効属性
-        /// </summary>
-        private static FileAttributes _ignoreAttributes =  FileAttributes.ReparsePoint | FileAttributes.Hidden | FileAttributes.System | FileAttributes.Temporary;
-
-        /// <summary>
-        /// インデックスフィルタ用無効パス
-        /// </summary>
-        private static List<string> _ignores = new List<string>()
-        {
-            System.Environment.GetFolderPath(System.Environment.SpecialFolder.Windows),
-            System.Environment.GetFolderPath(System.Environment.SpecialFolder.Windows) + ".old",
-        };
-
-        /// <summary>
-        /// インデックスフィルタ
-        /// </summary>
-        /// <param name="info"></param>
-        /// <returns></returns>
-        private static bool SearchFilter(FileSystemInfo info)
-        {
-            // 属性フィルター
-            if ((info.Attributes & _ignoreAttributes) != 0)
-            {
-                return false;
-            }
-
-            // ディレクトリ無効フィルター
-            if ((info.Attributes & FileAttributes.Directory) != 0)
-            {
-                var infoFullName = info.FullName;
-                var infoLen = infoFullName.Length;
-
-                foreach (var ignore in _ignores)
-                {
-                    var ignoreLen = ignore.Length;
-
-                    if (ignoreLen == infoLen || (ignoreLen < infoLen && infoFullName[ignoreLen] == '\\'))
-                    {
-                        if (infoFullName.StartsWith(ignore, true, null))
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            return true;
-        }
-
-#endif
 
         /// <summary>
         /// インデックス再構築
@@ -181,11 +130,9 @@ namespace NeeLaboratory.RealtimeSearch
             _searchEngine.SetSearchAreas(_setting.SearchAreas);
         }
 
-
         /// <summary>
         /// 特定パスの情報を更新
         /// </summary>
-        /// <param name="path"></param>
         public void Reflesh(string path)
         {
             _searchEngine.Reflesh(path);
@@ -194,36 +141,14 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// 名前変更
         /// </summary>
-        /// <param name="src"></param>
-        /// <param name="dst"></param>
         public void Rename(string src, string dst)
         {
             _searchEngine.Rename(src, dst);
         }
 
-
-        /// <summary>
-        /// SearchResult property.
-        /// </summary>
-        private SearchResult _searchResult;
-        public SearchResult SearchResult
-        {
-            get { return _searchResult; }
-            set { if (_searchResult != value) { _searchResult = value; RaisePropertyChanged(); } }
-        }
-
-
-        //
-        private CancellationTokenSource _searchCancellationTokenSource;
-
-        //
-        private SearchResultWatcher _watcher;
-
         /// <summary>
         /// 検索(非同期)
         /// </summary>
-        /// <param name="keyword"></param>
-        /// <returns></returns>
         public async Task SearchAsync(string keyword)
         {
             if (string.IsNullOrWhiteSpace(keyword)) return;
@@ -292,17 +217,12 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        //
         private void ProgressTimer_Tick(object sender, EventArgs e)
         {
             Information = GetSearchEngineProgress();
             IsBusyVisibled = true;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
         private string GetSearchEngineProgress()
         {
             if (_searchEngine.State == SearchCommandEngineState.Collect)
@@ -319,7 +239,60 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
+
+
+#if false // フィルターサンプル
+
+        /// <summary>
+        /// インデックスフィルタ用無効属性
+        /// </summary>
+        private static FileAttributes _ignoreAttributes =  FileAttributes.ReparsePoint | FileAttributes.Hidden | FileAttributes.System | FileAttributes.Temporary;
+
+        /// <summary>
+        /// インデックスフィルタ用無効パス
+        /// </summary>
+        private static List<string> _ignores = new List<string>()
+        {
+            System.Environment.GetFolderPath(System.Environment.SpecialFolder.Windows),
+            System.Environment.GetFolderPath(System.Environment.SpecialFolder.Windows) + ".old",
+        };
+
+        /// <summary>
+        /// インデックスフィルタ
+        /// </summary>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        private static bool SearchFilter(FileSystemInfo info)
+        {
+            // 属性フィルター
+            if ((info.Attributes & _ignoreAttributes) != 0)
+            {
+                return false;
+            }
+
+            // ディレクトリ無効フィルター
+            if ((info.Attributes & FileAttributes.Directory) != 0)
+            {
+                var infoFullName = info.FullName;
+                var infoLen = infoFullName.Length;
+
+                foreach (var ignore in _ignores)
+                {
+                    var ignoreLen = ignore.Length;
+
+                    if (ignoreLen == infoLen || (ignoreLen < infoLen && infoFullName[ignoreLen] == '\\'))
+                    {
+                        if (infoFullName.StartsWith(ignore, true, null))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
+#endif
     }
-
-
 }

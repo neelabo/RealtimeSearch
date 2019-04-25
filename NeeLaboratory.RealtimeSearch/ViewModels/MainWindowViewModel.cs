@@ -1,9 +1,4 @@
-﻿// Copyright (c) 2015-2016 Mitsuhiro Ito (nee)
-//
-// This software is released under the MIT License.
-// http://opensource.org/licenses/mit-license.php
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -46,13 +41,42 @@ namespace NeeLaboratory.RealtimeSearch
 
         #endregion
 
+        private Models _models;
+        private string _inputKeyword;
         private DelayValue<string> _keyword;
+        private string _defaultWindowTitle;
+        private History _history;
+        private string _resultMessage;
+        private bool _isRenaming;
+        private Setting _setting;
+        private string _settingFileName;
+        private ClipboardSearch _clipboardSearch;
 
+
+        public MainWindowViewModel()
+        {
+            _defaultWindowTitle = $"{App.Config.ProductName} {App.Config.ProductVersion}";
+#if DEBUG
+            _defaultWindowTitle += " [Debug]";
+#endif
+
+            _settingFileName = (App.Config.LocalApplicationDataPath) + "\\UserSetting.xml";
+
+            _keyword = new DelayValue<string>("");
+            _keyword.ValueChanged += async (s, e) => await SearchAsync();
+        }
 
 
         public event EventHandler SearchResultChanged;
 
-        private string _defaultWindowTitle;
+
+
+        public Models Models
+        {
+            get { return _models; }
+            set { if (_models != value) { _models = value; RaisePropertyChanged(); } }
+        }
+
         public string WindowTitle => _defaultWindowTitle;
 
         // 検索キーワード
@@ -62,9 +86,7 @@ namespace NeeLaboratory.RealtimeSearch
             set { _keyword.SetValue(value, 200); }
         }
 
-
         // 検索キーワード、コンボボックス入力との連携用
-        private string _inputKeyword;
         public string InputKeyword
         {
             get { return _inputKeyword; }
@@ -77,78 +99,36 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-
-
-        /// <summary>
-        /// Models property.
-        /// </summary>
-        private Models _models;
-        public Models Models
-        {
-            get { return _models; }
-            set { if (_models != value) { _models = value; RaisePropertyChanged(); } }
-        }
-
-
-        /// <summary>
-        /// History property.
-        /// </summary>
-        private History _history;
         public History History
         {
             get { return _history; }
             set { if (_history != value) { _history = value; RaisePropertyChanged(); } }
         }
 
-
-        /// <summary>
-        /// ResultMessage property.
-        /// </summary>
-        private string _ResultMessage;
         public string ResultMessage
         {
-            get { return _ResultMessage; }
-            set { if (_ResultMessage != value) { _ResultMessage = value; RaisePropertyChanged(); } }
+            get { return _resultMessage; }
+            set { if (_resultMessage != value) { _resultMessage = value; RaisePropertyChanged(); } }
         }
 
-
-        /// <summary>
-        /// IsRenaming property.
-        /// </summary>
-        private bool _IsRenaming;
         public bool IsRenaming
         {
-            get { return _IsRenaming; }
-            set { if (_IsRenaming != value) { _IsRenaming = value; RaisePropertyChanged(); RaisePropertyChanged(nameof(IsTipsVisibled)); } }
+            get { return _isRenaming; }
+            set { if (_isRenaming != value) { _isRenaming = value; RaisePropertyChanged(); RaisePropertyChanged(nameof(IsTipsVisibled)); } }
         }
 
-
-        /// <summary>
-        /// IsTipsVisibled property.
-        /// </summary>
         public bool IsTipsVisibled
         {
             get { return !Setting.IsDetailVisibled && !IsRenaming; }
         }
 
 
-
-
-        // 設定 ... これも移動スべきか
-        #region Property: Setting
-        private Setting _setting;
         public Setting Setting
         {
             get { return _setting; }
             set { _setting = value; RaisePropertyChanged(); }
         }
-        #endregion
 
-        // 設定ファイル名
-        private string _settingFileName;
-
-
-        public ClipboardSearch ClipboardSearch;
 
 
         [System.Diagnostics.Conditional("DEBUG")]
@@ -157,29 +137,35 @@ namespace NeeLaboratory.RealtimeSearch
             System.Threading.Thread.Sleep(ms);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public MainWindowViewModel()
+
+        public void LoadSetting()
         {
-            // title
-            _defaultWindowTitle = $"{App.Config.ProductName} {App.Config.ProductVersion}";
-#if DEBUG
-            _defaultWindowTitle += " [Debug]";
-#endif
-
-            // setting filename
-            _settingFileName = (App.Config.LocalApplicationDataPath) + "\\UserSetting.xml";
-
-            _keyword = new DelayValue<string>("");
-            _keyword.ValueChanged += async (s, e) => await SearchAsync();
+            Setting = Setting.LoadOrDefault(_settingFileName);
+            Setting.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
+            Setting.PropertyChanged += Setting_PropertyChanged;
         }
 
-        /// <summary>
-        /// Model PropertyChanged
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        public void Open(Window window)
+        {
+            if (Setting == null) throw new InvalidOperationException();
+
+            Models = new Models(Setting);
+            Models.SearchResultChanged += Models_SearchResultChanged;
+
+            History = new History();
+
+            _clipboardSearch = new ClipboardSearch(Setting);
+            _clipboardSearch.ClipboardChanged += ClipboardSearch_ClipboardChanged;
+            _clipboardSearch.Start(window);
+        }
+
+        public void Close()
+        {
+            _clipboardSearch.Stop();
+            Setting.Save(_settingFileName);
+        }
+
+
         private void Models_SearchResultChanged(object sender, EventArgs e)
         {
             SearchResultChanged?.Invoke(sender, null);
@@ -192,49 +178,6 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 ResultMessage = null;
             }
-        }
-
-        public void AddHistory()
-        {
-            var keyword = Models.SearchResult?.Keyword;
-            if (!string.IsNullOrWhiteSpace(keyword))
-            {
-                Debug.WriteLine($"AddHistory: {keyword}");
-                History.Add(keyword);
-            }
-        }
-
-        /// <summary>
-        /// 設定読み込み
-        /// </summary>
-        public void LoadSetting()
-        {
-            // 設定読み込み
-            Setting = Setting.LoadOrDefault(_settingFileName);
-            Setting.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
-            Setting.PropertyChanged += Setting_PropertyChanged;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="window"></param>
-        public void Open(Window window)
-        {
-            if (Setting == null) throw new InvalidOperationException();
-
-            // 初期化
-            Models = new Models(Setting);
-            Models.SearchResultChanged += Models_SearchResultChanged;
-
-            //
-            History = new History();
-
-            ClipboardSearch = new ClipboardSearch(Setting);
-            ClipboardSearch.ClipboardChanged += ClipboardSearch_ClipboardChanged;
-            ClipboardSearch.Start(window);
-
-            // Bindng Events
         }
 
         private void Setting_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -255,14 +198,6 @@ namespace NeeLaboratory.RealtimeSearch
             Models.ReIndex();
         }
 
-        public void Close()
-        {
-            // クリップボード監視終了
-            ClipboardSearch.Stop();
-
-            // 設定の保存
-            Setting.Save(_settingFileName);
-        }
 
         public void RestoreWindowPlacement(Window window)
         {
@@ -280,36 +215,37 @@ namespace NeeLaboratory.RealtimeSearch
             Setting.WindowRect = window.RestoreBounds;
         }
 
-        /// <summary>
-        /// 情報更新
-        /// </summary>
-        /// <param name="path"></param>
+
+        public void SetClipboard(string text)
+        {
+            _clipboardSearch.SetClipboard(text);
+        }
+
+        public void AddHistory()
+        {
+            var keyword = Models.SearchResult?.Keyword;
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                Debug.WriteLine($"AddHistory: {keyword}");
+                History.Add(keyword);
+            }
+        }
+
         public void Rreflesh(string path)
         {
             Models.Reflesh(path);
         }
 
-        /// <summary>
-        /// 名前変更
-        /// </summary>
-        /// <param name="src"></param>
-        /// <param name="dst"></param>
         public void Rename(string src, string dst)
         {
             Models.Rename(src, dst);
         }
 
-        /// <summary>
-        /// 検索
-        /// </summary>
-        /// <returns></returns>
         public async Task SearchAsync()
         {
             await Models.SearchAsync(this.Keyword.Trim());
         }
 
-
-        //
         public void WebSearch()
         {
             //URLで使えない特殊文字。ひとまず変換なしで渡してみる
@@ -329,10 +265,10 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// ToggleDetailVisibleCommand command.
         /// </summary>
-        private RelayCommand _ToggleDetailVisibleCommand;
+        private RelayCommand _toggleDetailVisibleCommand;
         public RelayCommand ToggleDetailVisibleCommand
         {
-            get { return _ToggleDetailVisibleCommand = _ToggleDetailVisibleCommand ?? new RelayCommand(ToggleDetailVisibleCommand_Executed); }
+            get { return _toggleDetailVisibleCommand = _toggleDetailVisibleCommand ?? new RelayCommand(ToggleDetailVisibleCommand_Executed); }
         }
 
         private void ToggleDetailVisibleCommand_Executed()
@@ -350,39 +286,6 @@ namespace NeeLaboratory.RealtimeSearch
         {
             long size = (long)value;
             return (size >= 0) ? string.Format("{0:#,0} KB", (size + 1024 - 1) / 1024) : null;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-
-    // 文字列状態を処理中表示に変換する
-    [ValueConversion(typeof(string), typeof(Visibility))]
-    internal class StringToVisibilityConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            var s = (string)value;
-            return string.IsNullOrEmpty(s) ? Visibility.Hidden : Visibility.Visible;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-
-    // NULLの場合、非表示にする
-    [ValueConversion(typeof(object), typeof(Visibility))]
-    internal class NullToVisibilityConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return value == null ? Visibility.Collapsed : Visibility.Visible;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

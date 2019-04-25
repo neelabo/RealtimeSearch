@@ -1,11 +1,4 @@
-﻿<!--
-    Copyright (c) 2015-2016 Mitsuhiro Ito (nee)
-
-    This software is released under the MIT License.
-    http://opensource.org/licenses/mit-license.php
--->
-
-<Window
+﻿<Window
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:NeeLaboratory.RealtimeSearch"
@@ -24,9 +17,6 @@
     <Window.Resources>
 
         <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
-        <!--
-        <local:CommandToVisibilityConverter x:Key="CommandToVisibility"/>
-        -->
         <local:StringToVisibilityConverter x:Key="StringToVisibility"/>
         <local:NullToVisibilityConverter x:Key="NullToVisibility"/>
         <local:ReverseBooleanConverter x:Key="ReverseBooleanConverter"/>
@@ -128,8 +118,8 @@
                         </Button>
                         <ComboBox x:Name="keyword" Text="{Binding InputKeyword, UpdateSourceTrigger=PropertyChanged}"
                               TextBoxBase.TextChanged="Keyword_TextChanged"
-                              VerticalAlignment="Center" KeyDown="keyword_KeyDown" ItemsSource="{Binding History.Collection}" IsTextSearchCaseSensitive="True"
-                              IsEditable="True" BorderThickness="0" BorderBrush="red" LostFocus="keyword_LostFocus" LostKeyboardFocus="keyword_LostFocus">
+                              VerticalAlignment="Center" KeyDown="Keyword_KeyDown" ItemsSource="{Binding History.Collection}" IsTextSearchCaseSensitive="True"
+                              IsEditable="True" BorderThickness="0" BorderBrush="red" LostFocus="Keyword_LostFocus" LostKeyboardFocus="Keyword_LostFocus">
                             <ComboBox.ItemContainerStyle>
                                 <Style TargetType="ComboBoxItem">
                                     <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -157,7 +147,6 @@
             </StackPanel>
             -->
 
-
             <Grid DockPanel.Dock="Bottom" Margin="0" >
 
                 <DockPanel>
@@ -183,25 +172,8 @@
 
                     </Button>
 
-
                     <Grid>
-                        <TextBlock TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Models.Information}" TextDecorations="{x:Null}" >
-                            <!--
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ElementName=indexInformation, Path=Text}" Value="">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                            -->
-                        </TextBlock>
-                        <!--
-                        <TextBlock x:Name="indexInformation" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Models.IndexInformation}" TextDecorations="{x:Null}" />
-                        -->
+                        <TextBlock TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Models.Information}" TextDecorations="{x:Null}" />
                     </Grid>
                 </DockPanel>
             </Grid>
@@ -211,14 +183,14 @@
                     Visibility="{Binding Setting.IsDetailVisibled, Converter={StaticResource BoolToVisibility}}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <TextBox IsReadOnly="True" BorderThickness="0" Margin="5" Background="Transparent"
-                            Text="{Binding ElementName=listView01, Path=SelectedItem.Detail, Mode=OneWay}">
+                            Text="{Binding ElementName=ResultListView, Path=SelectedItem.Detail, Mode=OneWay}">
                     </TextBox>
                 </ScrollViewer>
             </Border>
 
             
             <Grid>
-                <ListView x:Name="listView01" Foreground="Black" ButtonBase.Click="GridViewColumnHeader_ClickHandler" ItemsSource="{Binding Models.SearchResult.Items}" BorderThickness="0" 
+                <ListView x:Name="ResultListView" Foreground="Black" ButtonBase.Click="GridViewColumnHeader_ClickHandler" ItemsSource="{Binding Models.SearchResult.Items}" BorderThickness="0" 
                           FocusVisualStyle="{x:Null}"
                           HorizontalAlignment="Stretch"
                           ScrollViewer.CanContentScroll="True"
@@ -234,13 +206,9 @@
                             <Label Content="{Binding Header, RelativeSource={RelativeSource AncestorType={x:Type GridViewColumn}}}"/>
                         </DataTemplate>
 
-                        <!--
-                            <DockPanel ToolTip="{Binding Detail}">
-                        -->
-
                         <DataTemplate x:Key="ItemFileNameTemplate">
                             <DockPanel ToolTip="{Binding Detail}" ToolTipService.InitialShowDelay="1000"
-                                       ToolTipService.IsEnabled="{Binding ElementName=listView01, Path=DataContext.IsTipsVisibled}">
+                                       ToolTipService.IsEnabled="{Binding ElementName=ResultListView, Path=DataContext.IsTipsVisibled}">
                                 <CheckBox DockPanel.Dock="Right" Template="{StaticResource PushpinCheckBoxTemplate}" Width="16" Height="16" IsChecked="{Binding IsPushPin}" >
                                     <CheckBox.Style>
                                         <Style TargetType="CheckBox">
@@ -342,7 +310,6 @@
                 </Grid>
 
             </Grid>
-
 
         </DockPanel>
 

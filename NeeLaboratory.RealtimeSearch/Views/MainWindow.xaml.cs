@@ -1,9 +1,4 @@
-﻿// Copyright (c) 2015-2016 Mitsuhiro Ito (nee)
-//
-// This software is released under the MIT License.
-// http://opensource.org/licenses/mit-license.php
-
-using NeeLaboratory.IO.Search;
+﻿using NeeLaboratory.IO.Search;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,7 +12,6 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Globalization;
 
 namespace NeeLaboratory.RealtimeSearch
 {
@@ -26,237 +20,7 @@ namespace NeeLaboratory.RealtimeSearch
     /// </summary>
     public partial class MainWindow : Window
     {
-        private MainWindowViewModel _VM;
-
-        public MainWindow()
-        {
-            InitializeComponent();
-
-            _VM = new MainWindowViewModel();
-            this.DataContext = _VM;
-
-            RegistRoutedCommand();
-
-            _VM.SearchResultChanged += MainWindowVM_FilesChanged;
-
-            // cancel rename triggers
-            this.MouseLeftButtonDown += (s, e) => this.RenameManager.Stop();
-            this.MouseRightButtonDown += (s, e) => this.RenameManager.Stop();
-            this.Deactivated += (s, e) => this.RenameManager.Stop();
-
-            this.listView01.AddHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler(listView01_ScrollChanged));
-
-            // 設定読み込み
-            _VM.LoadSetting();
-
-            // ウィンドウ座標復元
-            _VM.RestoreWindowPlacement(this);
-
-            // ListViewレイアウト復元
-            RestoreListViewMemento(_VM.Setting.ListViewColumnMemento);
-        }
-
-        private void MainWindowVM_FilesChanged(object sender, EventArgs e)
-        {
-            this.Dispatcher.BeginInvoke(new Action(GridViewColumnHeader_Reset), null);
-        }
-
-        void listView01_ScrollChanged(object sender, ScrollChangedEventArgs e)
-        {
-            this.RenameManager.Stop();
-        }
-
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            // VM初期化
-            _VM.Open(this);
-
-            // 検索パスが設定されていなければ設定画面を開く
-            if (_VM.Setting.SearchAreas.Count <= 0)
-            {
-                ShowSettingWindow();
-            }
-        }
-
-
-        private void Window_Closing(object sender, EventArgs e)
-        {
-            // ListViewレイアウト保存
-            _VM.Setting.ListViewColumnMemento = CreateListViewMemento();
-
-            // ウィンドウ座標保存
-            _VM.StoreWindowPlacement(this);
-        }
-
-
-        private void Window_Closed(object sender, EventArgs e)
-        {
-            // 設定保存
-            _VM.Close();
-        }
-
-        //
-        private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            NodeContent file = ((ListViewItem)sender).Content as NodeContent;
-            if (file == null) return;
-
-            // 外部アプリ起動
-            Execute(file);
-        }
-
-        //
-        private void Execute(NodeContent file)
-        {
-            try
-            {
-                foreach (var program in _VM.Setting.ExternalPrograms)
-                {
-                    if (program.CheckExtensions(file.Path))
-                    {
-                        Execute(file, program);
-                        return;
-                    }
-                }
-                System.Diagnostics.Process.Start(file.Path); // terminator
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e.Message);
-                MessageBox.Show(e.Message, "実行失敗", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        //
-        private void Execute(NodeContent file, int programId)
-        {
-            try
-            {
-                Execute(file, _VM.Setting.ExternalPrograms[programId - 1]);
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e.Message);
-                MessageBox.Show(e.Message, "実行失敗", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        //
-        private void Execute(NodeContent file, ExternalProgram program)
-        {
-            if (program.ProgramType == ExternalProgramType.Normal)
-            {
-                if (!string.IsNullOrWhiteSpace(program.Program))
-                {
-                    var commandName = program.Program;
-                    var arguments = ReplaceKeyword(program.Parameter, file);
-                    System.Diagnostics.Process.Start(commandName, arguments);
-                    return;
-                }
-                else
-                {
-                    System.Diagnostics.Process.Start(file.Path);
-                    return;
-                }
-            }
-
-            if (program.ProgramType == ExternalProgramType.Uri)
-            {
-                if (!string.IsNullOrWhiteSpace(program.Protocol))
-                {
-                    var protocol = ReplaceKeyword(program.Protocol, file);
-                    System.Diagnostics.Process.Start(protocol);
-                    return;
-                }
-            }
-        }
-
-        //
-        private string ReplaceKeyword(string s, NodeContent file)
-        {
-            var uriData = Uri.EscapeDataString(file.Path);
-
-            //Debug.WriteLine($"UriData:{uriData}");
-
-            s = s.Replace(ExternalProgram.KeyUri, uriData);
-            s = s.Replace(ExternalProgram.KeyFile, file.Path);
-
-            return s;
-        }
-
-
-        //
-        private void ExecuteDefault(NodeContent file)
-        {
-            try
-            {
-                System.Diagnostics.Process.Start(file.Path);
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e.Message);
-                MessageBox.Show(e.Message, "実行失敗", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-
-        //
-        private async void keyword_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                await _VM.SearchAsync();
-                _VM.AddHistory();
-            }
-        }
-
-        private void keyword_LostFocus(object sender, RoutedEventArgs e)
-        {
-            _VM.AddHistory();
-        }
-
-
-        // ドラッグ用
-        private Point _dragStart;
-        private ListViewItem _dragDowned;
-
-        // ファイルのドラッグ判定開始
-        private void PreviewMouseDown_Event(object sender, MouseButtonEventArgs e)
-        {
-            _dragDowned = sender as ListViewItem;
-            _dragStart = e.GetPosition(_dragDowned);
-        }
-
-        // ファイルのドラッグ開始
-        private void PreviewMouseMove_Event(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            var s = sender as ListViewItem;
-            var pn = s.Content as NodeContent;
-
-            if (_dragDowned != null && _dragDowned == s && e.LeftButton == MouseButtonState.Pressed)
-            {
-                var current = e.GetPosition(s);
-                if (Math.Abs(current.X - _dragStart.X) > SystemParameters.MinimumHorizontalDragDistance ||
-                    Math.Abs(current.Y - _dragStart.Y) > SystemParameters.MinimumVerticalDragDistance)
-                {
-                    _dragDowned = null;
-
-                    if (listView01.SelectedItems.Count > 0)
-                    {
-                        string[] paths = new string[listView01.SelectedItems.Count];
-                        for (int i = 0; i < listView01.SelectedItems.Count; ++i)
-                        {
-                            paths[i] = ((NodeContent)listView01.SelectedItems[i]).Path;
-                        }
-
-                        DataObject data = new DataObject();
-                        data.SetData(DataFormats.FileDrop, paths);
-                        DragDrop.DoDragDrop(s, data, DragDropEffects.Copy);
-                    }
-                }
-            }
-        }
+        #region Fieds
 
         public static readonly RoutedCommand OpenCommand = new RoutedCommand("OpenCommand", typeof(MainWindow));
         public static readonly RoutedCommand OpenCommand1 = new RoutedCommand("OpenCommand1", typeof(MainWindow));
@@ -273,180 +37,179 @@ namespace NeeLaboratory.RealtimeSearch
         public static readonly RoutedCommand PropertyCommand = new RoutedCommand("PropertyCommand", typeof(MainWindow));
         public static readonly RoutedCommand ToggleAllowFolderCommand = new RoutedCommand("ToggleAllowFolderCommand", typeof(MainWindow));
 
+        private MainWindowViewModel _vm;
 
-        private void RegistRoutedCommand()
+        private Point _dragStart;
+        private ListViewItem _dragDowned;
+
+        private GridViewColumnHeader _lastHeaderClicked = null;
+        private ListSortDirection _lastDirection = ListSortDirection.Ascending;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public MainWindow()
         {
-            OpenCommand.InputGestures.Add(new KeyGesture(Key.Enter));
-            listView01.CommandBindings.Add(new CommandBinding(OpenCommand, Open_Executed));
+            InitializeComponent();
 
-            OpenCommand1.InputGestures.Add(new KeyGesture(Key.D1, ModifierKeys.Control));
-            listView01.CommandBindings.Add(new CommandBinding(OpenCommand1, OpenEx1_Executed));
+            _vm = new MainWindowViewModel();
+            this.DataContext = _vm;
 
-            OpenCommand2.InputGestures.Add(new KeyGesture(Key.D2, ModifierKeys.Control));
-            listView01.CommandBindings.Add(new CommandBinding(OpenCommand2, OpenEx2_Executed));
+            RegistRoutedCommand();
 
-            OpenCommand3.InputGestures.Add(new KeyGesture(Key.D3, ModifierKeys.Control));
-            listView01.CommandBindings.Add(new CommandBinding(OpenCommand3, OpenEx3_Executed));
+            _vm.SearchResultChanged += ViewModel_FilesChanged;
 
-            OpenCommandDefault.InputGestures.Add(new KeyGesture(Key.Enter, ModifierKeys.Control));
-            listView01.CommandBindings.Add(new CommandBinding(OpenCommandDefault, OpenDefault_Executed));
+            this.MouseLeftButtonDown += (s, e) => this.RenameManager.Stop();
+            this.MouseRightButtonDown += (s, e) => this.RenameManager.Stop();
+            this.Deactivated += (s, e) => this.RenameManager.Stop();
 
-            CopyCommand.InputGestures.Add(new KeyGesture(Key.C, ModifierKeys.Control));
-            listView01.CommandBindings.Add(new CommandBinding(CopyCommand, Copy_Executed));
+            this.ResultListView.AddHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler(ResultListView_ScrollChanged));
 
-            listView01.CommandBindings.Add(new CommandBinding(OpenPlaceCommand, OpenPlace_Executed));
-
-            CopyNameCommand.InputGestures.Add(new KeyGesture(Key.C, ModifierKeys.Control | ModifierKeys.Shift));
-            listView01.CommandBindings.Add(new CommandBinding(CopyNameCommand, CopyName_Executed));
-
-            RenameCommand.InputGestures.Add(new KeyGesture(Key.F2));
-            listView01.CommandBindings.Add(new CommandBinding(RenameCommand, Rename_Executed));
-
-            DeleteCommand.InputGestures.Add(new KeyGesture(Key.Delete));
-            listView01.CommandBindings.Add(new CommandBinding(DeleteCommand, Delete_Executed));
-
-            SearchCommand.InputGestures.Add(new KeyGesture(Key.F5));
-            SearchCommand.InputGestures.Add(new KeyGesture(Key.R, ModifierKeys.Control));
-            this.CommandBindings.Add(new CommandBinding(SearchCommand, Search_Executed));
-
-            WebSearchCommand.InputGestures.Add(new KeyGesture(Key.F, ModifierKeys.Control));
-            this.CommandBindings.Add(new CommandBinding(WebSearchCommand, WebSearch_Executed));
-
-            listView01.CommandBindings.Add(new CommandBinding(PropertyCommand, Property_Executed));
-
-            this.CommandBindings.Add(new CommandBinding(ToggleAllowFolderCommand, ToggleAllowFolder_Executed));
+            _vm.LoadSetting();
+            _vm.RestoreWindowPlacement(this);
+            RestoreListViewMemento(_vm.Setting.ListViewColumnMemento);
         }
 
-        //
-        private async void ToggleAllowFolder_Executed(object sender, ExecutedRoutedEventArgs e)
+        #endregion Constructors
+
+        #region Methods
+
+        private void ViewModel_FilesChanged(object sender, EventArgs e)
         {
-            _VM.Setting.ToggleAllowFolder();
-            await _VM.SearchAsync();
+            this.Dispatcher.BeginInvoke(new Action(GridViewColumnHeader_Reset), null);
         }
 
-        //
-        private void Property_Executed(object target, ExecutedRoutedEventArgs e)
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            NodeContent file = (target as ListView)?.SelectedItem as NodeContent;
-            if (file != null)
+            _vm.Open(this);
+
+            // 検索パスが設定されていなければ設定画面を開く
+            if (_vm.Setting.SearchAreas.Count <= 0)
             {
-                try
-                {
-                    FileSystem.OpenProperty(this, file.Path);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                ShowSettingWindow();
             }
         }
 
-
-        // 
-        private async void Search_Executed(object target, ExecutedRoutedEventArgs e)
+        private void Window_Closing(object sender, EventArgs e)
         {
-            await _VM.SearchAsync();
-            _VM.AddHistory();
+            _vm.Setting.ListViewColumnMemento = CreateListViewMemento();
+            _vm.StoreWindowPlacement(this);
         }
 
-        //
-        private void WebSearch_Executed(object target, ExecutedRoutedEventArgs e)
+        private void Window_Closed(object sender, EventArgs e)
         {
-            _VM.WebSearch();
+            _vm.Close();
         }
 
-        // ファイル削除
-        private void Delete_Executed(object target, ExecutedRoutedEventArgs e)
+        void ResultListView_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            var items = (target as ListView)?.SelectedItems;
-            if (items != null && items.Count >= 1)
+            this.RenameManager.Stop();
+        }
+
+        private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            NodeContent file = ((ListViewItem)sender).Content as NodeContent;
+            if (file == null) return;
+
+            Execute(file);
+        }
+
+        private async void Keyword_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
             {
-                var message = (items.Count == 1)
-                    ? $"このファイルをごみ箱に移動しますか？\n\n{((NodeContent)items[0]).Path}"
-                    : $"これらの {items.Count} 個の項目をごみ箱に移しますか？";
+                await _vm.SearchAsync();
+                _vm.AddHistory();
+            }
+        }
 
-                var result = MessageBox.Show(message, "削除確認", MessageBoxButton.OKCancel, MessageBoxImage.Question);
+        private void Keyword_LostFocus(object sender, RoutedEventArgs e)
+        {
+            _vm.AddHistory();
+        }
 
+        private void Keyword_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var textBox = e.OriginalSource as TextBox;
+            if (textBox != null)
+            {
+                _vm.Keyword = textBox.Text;
+            }
+        }
 
-                if (result == MessageBoxResult.OK)
+        private void SettingButton_Click(object sender, RoutedEventArgs e)
+        {
+            ShowSettingWindow();
+        }
+
+        private void ShowSettingWindow()
+        {
+            var window = new SettingWindow(_vm.Setting);
+            window.Owner = this;
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            window.ShowDialog();
+        }
+
+        #endregion Methods
+
+        #region Rename
+
+        private void PopupRenameTextBox(NodeContent item)
+        {
+            if (item == null) return;
+
+            var listViewItem = VisualTreeTools.GetListViewItemFromItem(this.ResultListView, item);
+            var textBlock = VisualTreeTools.FindVisualChild<TextBlock>(listViewItem, "FileNameTextBlock");
+
+            if (textBlock != null)
+            {
+                var rename = new RenameControl();
+                rename.IsSelectedWithoutExtension = System.IO.File.Exists(item.Path);
+                rename.Target = textBlock;
+                rename.Closing += (s, ev) =>
                 {
-                    try
+                    //Debug.WriteLine($"{ev.OldValue} => {ev.NewValue}");
+                    if (ev.OldValue != ev.NewValue)
                     {
-                        // ゴミ箱に捨てる
-                        foreach (var item in items)
+                        NodeContent file = this.ResultListView.SelectedItem as NodeContent;
+                        var src = file.Path;
+                        var dst = Rename(file, ev.NewValue);
+                        if (dst != null)
                         {
-                            Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(((NodeContent)item).Path, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+                            _vm.Rename(src, dst);
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"ファイル削除に失敗しました\n\n原因: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
-            }
-        }
-
-        // 名前の変更
-        private void Rename_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            var listView = target as ListView;
-            var item = listView?.SelectedItem as NodeContent;
-
-            if (item != null)
-            {
-                var listViewItem = VisualTreeTools.GetListViewItemFromItem(listView, item);
-                var textBlock = VisualTreeTools.FindVisualChild<TextBlock>(listViewItem, "FileNameTextBlock");
-
-                // 
-                if (textBlock != null)
+                };
+                rename.Closed += (s, ev) =>
                 {
-                    var rename = new RenameControl();
-                    rename.IsSelectedWithoutExtension = System.IO.File.Exists(item.Path);
-                    rename.Target = textBlock;
-                    rename.Closing += (s, ev) =>
+                    listViewItem.Focus();
+                    if (ev.MoveRename != 0)
                     {
-                        //Debug.WriteLine($"{ev.OldValue} => {ev.NewValue}");
-                        if (ev.OldValue != ev.NewValue)
-                        {
-                            NodeContent file = (target as ListView)?.SelectedItem as NodeContent;
-                            var src = file.Path;
-                            var dst = Rename(file, ev.NewValue);
-                            if (dst != null)
-                            {
-                                _VM.Rename(src, dst);
-                            }
-                        }
-                    };
-                    rename.Closed += (s, ev) =>
-                    {
-                        listViewItem.Focus();
-                        if (ev.MoveRename != 0)
-                        {
-                            RenameNext(ev.MoveRename);
-                        }
-                    };
-                    rename.Close += (s, ev) =>
-                    {
-                        _VM.IsRenaming = false;
-                    };
+                        RenameNext(ev.MoveRename);
+                    }
+                };
+                rename.Close += (s, ev) =>
+                {
+                    _vm.IsRenaming = false;
+                };
 
-                    this.RenameManager.Open(rename);
-                    _VM.IsRenaming = true;
-                }
+                this.RenameManager.Open(rename);
+                _vm.IsRenaming = true;
             }
         }
 
-        //
         private void RenameNext(int delta)
         {
-            if (this.listView01.SelectedIndex < 0) return;
+            if (this.ResultListView.SelectedIndex < 0) return;
 
             // 選択項目を1つ移動
-            this.listView01.SelectedIndex = (this.listView01.SelectedIndex + this.listView01.Items.Count + delta) % this.listView01.Items.Count;
-            this.listView01.UpdateLayout();
+            this.ResultListView.SelectedIndex = (this.ResultListView.SelectedIndex + this.ResultListView.Items.Count + delta) % this.ResultListView.Items.Count;
+            this.ResultListView.UpdateLayout();
 
             // リネーム発動
-            Rename_Executed(this.listView01, null);
+            Rename_Executed(this.ResultListView, null);
         }
 
         /// <summary>
@@ -534,7 +297,261 @@ namespace NeeLaboratory.RealtimeSearch
             return dst;
         }
 
+        #endregion Rename
 
+        #region Execute file
+
+        private void Execute(NodeContent file)
+        {
+            try
+            {
+                foreach (var program in _vm.Setting.ExternalPrograms)
+                {
+                    if (program.CheckExtensions(file.Path))
+                    {
+                        Execute(file, program);
+                        return;
+                    }
+                }
+                System.Diagnostics.Process.Start(file.Path); // terminator
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+                MessageBox.Show(e.Message, "実行失敗", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void Execute(NodeContent file, int programId)
+        {
+            try
+            {
+                Execute(file, _vm.Setting.ExternalPrograms[programId - 1]);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+                MessageBox.Show(e.Message, "実行失敗", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void Execute(NodeContent file, ExternalProgram program)
+        {
+            if (program.ProgramType == ExternalProgramType.Normal)
+            {
+                if (!string.IsNullOrWhiteSpace(program.Program))
+                {
+                    var commandName = program.Program;
+                    var arguments = ReplaceKeyword(program.Parameter, file);
+                    System.Diagnostics.Process.Start(commandName, arguments);
+                    return;
+                }
+                else
+                {
+                    System.Diagnostics.Process.Start(file.Path);
+                    return;
+                }
+            }
+
+            if (program.ProgramType == ExternalProgramType.Uri)
+            {
+                if (!string.IsNullOrWhiteSpace(program.Protocol))
+                {
+                    var protocol = ReplaceKeyword(program.Protocol, file);
+                    System.Diagnostics.Process.Start(protocol);
+                    return;
+                }
+            }
+        }
+
+        private string ReplaceKeyword(string s, NodeContent file)
+        {
+            var uriData = Uri.EscapeDataString(file.Path);
+
+            s = s.Replace(ExternalProgram.KeyUri, uriData);
+            s = s.Replace(ExternalProgram.KeyFile, file.Path);
+
+            return s;
+        }
+
+        private void ExecuteDefault(NodeContent file)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(file.Path);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+                MessageBox.Show(e.Message, "実行失敗", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        #endregion Execute file
+
+        #region DragDrop
+
+        // ファイルのドラッグ判定開始
+        private void PreviewMouseDown_Event(object sender, MouseButtonEventArgs e)
+        {
+            _dragDowned = sender as ListViewItem;
+            _dragStart = e.GetPosition(_dragDowned);
+        }
+
+        // ファイルのドラッグ開始
+        private void PreviewMouseMove_Event(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            var s = sender as ListViewItem;
+            var pn = s.Content as NodeContent;
+
+            if (_dragDowned != null && _dragDowned == s && e.LeftButton == MouseButtonState.Pressed)
+            {
+                var current = e.GetPosition(s);
+                if (Math.Abs(current.X - _dragStart.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                    Math.Abs(current.Y - _dragStart.Y) > SystemParameters.MinimumVerticalDragDistance)
+                {
+                    _dragDowned = null;
+
+                    if (this.ResultListView.SelectedItems.Count > 0)
+                    {
+                        string[] paths = new string[this.ResultListView.SelectedItems.Count];
+                        for (int i = 0; i < this.ResultListView.SelectedItems.Count; ++i)
+                        {
+                            paths[i] = ((NodeContent)this.ResultListView.SelectedItems[i]).Path;
+                        }
+
+                        DataObject data = new DataObject();
+                        data.SetData(DataFormats.FileDrop, paths);
+                        DragDrop.DoDragDrop(s, data, DragDropEffects.Copy);
+                    }
+                }
+            }
+        }
+
+        #endregion DragDrop
+
+        #region Routed Commands
+
+        private void RegistRoutedCommand()
+        {
+            OpenCommand.InputGestures.Add(new KeyGesture(Key.Enter));
+            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand, Open_Executed));
+
+            OpenCommand1.InputGestures.Add(new KeyGesture(Key.D1, ModifierKeys.Control));
+            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand1, OpenEx1_Executed));
+
+            OpenCommand2.InputGestures.Add(new KeyGesture(Key.D2, ModifierKeys.Control));
+            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand2, OpenEx2_Executed));
+
+            OpenCommand3.InputGestures.Add(new KeyGesture(Key.D3, ModifierKeys.Control));
+            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand3, OpenEx3_Executed));
+
+            OpenCommandDefault.InputGestures.Add(new KeyGesture(Key.Enter, ModifierKeys.Control));
+            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommandDefault, OpenDefault_Executed));
+
+            CopyCommand.InputGestures.Add(new KeyGesture(Key.C, ModifierKeys.Control));
+            this.ResultListView.CommandBindings.Add(new CommandBinding(CopyCommand, Copy_Executed));
+
+            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenPlaceCommand, OpenPlace_Executed));
+
+            CopyNameCommand.InputGestures.Add(new KeyGesture(Key.C, ModifierKeys.Control | ModifierKeys.Shift));
+            this.ResultListView.CommandBindings.Add(new CommandBinding(CopyNameCommand, CopyName_Executed));
+
+            RenameCommand.InputGestures.Add(new KeyGesture(Key.F2));
+            this.ResultListView.CommandBindings.Add(new CommandBinding(RenameCommand, Rename_Executed));
+
+            DeleteCommand.InputGestures.Add(new KeyGesture(Key.Delete));
+            this.ResultListView.CommandBindings.Add(new CommandBinding(DeleteCommand, Delete_Executed));
+
+            SearchCommand.InputGestures.Add(new KeyGesture(Key.F5));
+            SearchCommand.InputGestures.Add(new KeyGesture(Key.R, ModifierKeys.Control));
+            this.CommandBindings.Add(new CommandBinding(SearchCommand, Search_Executed));
+
+            WebSearchCommand.InputGestures.Add(new KeyGesture(Key.F, ModifierKeys.Control));
+            this.CommandBindings.Add(new CommandBinding(WebSearchCommand, WebSearch_Executed));
+
+            this.ResultListView.CommandBindings.Add(new CommandBinding(PropertyCommand, Property_Executed));
+
+            this.CommandBindings.Add(new CommandBinding(ToggleAllowFolderCommand, ToggleAllowFolder_Executed));
+        }
+
+        private async void ToggleAllowFolder_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            _vm.Setting.ToggleAllowFolder();
+            await _vm.SearchAsync();
+        }
+
+        private void Property_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            NodeContent file = (target as ListView)?.SelectedItem as NodeContent;
+            if (file != null)
+            {
+                try
+                {
+                    FileSystem.OpenProperty(this, file.Path);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private async void Search_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            await _vm.SearchAsync();
+            _vm.AddHistory();
+        }
+
+        private void WebSearch_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            _vm.WebSearch();
+        }
+
+        // ファイル削除
+        private void Delete_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            var items = (target as ListView)?.SelectedItems;
+            if (items != null && items.Count >= 1)
+            {
+                var message = (items.Count == 1)
+                    ? $"このファイルをごみ箱に移動しますか？\n\n{((NodeContent)items[0]).Path}"
+                    : $"これらの {items.Count} 個の項目をごみ箱に移しますか？";
+
+                var result = MessageBox.Show(message, "削除確認", MessageBoxButton.OKCancel, MessageBoxImage.Question);
+
+
+                if (result == MessageBoxResult.OK)
+                {
+                    try
+                    {
+                        // ゴミ箱に捨てる
+                        foreach (var item in items)
+                        {
+                            Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(((NodeContent)item).Path, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"ファイル削除に失敗しました\n\n原因: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+        }
+        
+        // 名前変更
+        private void Rename_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            var listView = target as ListView;
+            var item = listView?.SelectedItem as NodeContent;
+
+            if (item != null)
+            {
+                PopupRenameTextBox(item);
+            }
+        }
+
+        // 外部アプリ実行タイプ
         private enum ExecuteType
         {
             Default,
@@ -542,7 +559,7 @@ namespace NeeLaboratory.RealtimeSearch
             SelectedExternalProgram,
         }
 
-        //
+        // ファイルを開く
         private void Open_Executed(object target, ExecutedRoutedEventArgs e, ExecuteType executeType, int programId = 0)
         {
             var items = (target as ListView)?.SelectedItems;
@@ -571,8 +588,6 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-
-        // ファイルを開く(Ex1)
         private void OpenEx1_Executed(object target, ExecutedRoutedEventArgs e)
         {
             Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 1);
@@ -588,7 +603,6 @@ namespace NeeLaboratory.RealtimeSearch
             Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 3);
         }
 
-        // ファイルを開く
         private void Open_Executed(object target, ExecutedRoutedEventArgs e)
         {
             Open_Executed(target, e, ExecuteType.ExternalPrograms);
@@ -599,7 +613,6 @@ namespace NeeLaboratory.RealtimeSearch
         {
             Open_Executed(target, e, ExecuteType.Default);
         }
-
 
         // ファイルの場所を開く
         private void OpenPlace_Executed(object target, ExecutedRoutedEventArgs e)
@@ -618,7 +631,6 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-
         // ファイルのコピー
         private void Copy_Executed(object target, ExecutedRoutedEventArgs e)
         {
@@ -633,7 +645,6 @@ namespace NeeLaboratory.RealtimeSearch
             if (files.Count > 0) Clipboard.SetFileDropList(files);
         }
 
-
         // ファイル名のコピー
         private void CopyName_Executed(object target, ExecutedRoutedEventArgs e)
         {
@@ -641,17 +652,13 @@ namespace NeeLaboratory.RealtimeSearch
             if (file != null)
             {
                 string text = System.IO.Path.GetFileNameWithoutExtension(file.Path);
-                _VM.ClipboardSearch.SetClipboard(text);
-                //System.Windows.Clipboard.SetDataObject(text);
+                _vm.SetClipboard(text);
             }
         }
 
+        #endregion Routed Commands
 
-        #region リストのソート
-
-        // リストのソート用
-        private GridViewColumnHeader _lastHeaderClicked = null;
-        private ListSortDirection _lastDirection = ListSortDirection.Ascending;
+        #region Sort ListView
 
         private void GridViewColumnHeader_Reset()
         {
@@ -665,7 +672,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void GridViewColumnHeader_ClickHandler(object sender, RoutedEventArgs e)
         {
-            if (listView01.ItemsSource == null) return;
+            if (this.ResultListView.ItemsSource == null) return;
 
             GridViewColumnHeader headerClicked = e.OriginalSource as GridViewColumnHeader;
             ListSortDirection direction;
@@ -721,7 +728,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void GridViewColumnHeader_Sort(string sortBy, ListSortDirection direction)
         {
-            ListCollectionView dataView = CollectionViewSource.GetDefaultView(listView01.ItemsSource) as ListCollectionView;
+            ListCollectionView dataView = CollectionViewSource.GetDefaultView(this.ResultListView.ItemsSource) as ListCollectionView;
 
             dataView.SortDescriptions.Clear();
             SortDescription sd = new SortDescription(sortBy, direction);
@@ -730,21 +737,6 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
         #endregion
-
-
-        private void SettingButton_Click(object sender, RoutedEventArgs e)
-        {
-            ShowSettingWindow();
-        }
-
-        private void ShowSettingWindow()
-        {
-            var window = new SettingWindow(_VM.Setting);
-            window.Owner = this;
-            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            window.ShowDialog();
-        }
-
 
         #region ListViewColumnMemento
 
@@ -757,7 +749,7 @@ namespace NeeLaboratory.RealtimeSearch
         // リストビューカラム状態保存
         private List<ListViewColumnMemento> CreateListViewMemento()
         {
-            var columns = (this.listView01.View as GridView)?.Columns;
+            var columns = (this.ResultListView.View as GridView)?.Columns;
             if (columns == null) return null;
 
             var memento = new List<ListViewColumnMemento>();
@@ -777,7 +769,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             if (memento == null) return;
 
-            var columns = (this.listView01.View as GridView)?.Columns;
+            var columns = (this.ResultListView.View as GridView)?.Columns;
             if (columns == null) return;
 
             for (int index = 0; index < memento.Count; ++index)
@@ -797,65 +789,8 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        private void Keyword_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            var textBox = e.OriginalSource as TextBox;
-            if (textBox != null)
-            {
-                _VM.Keyword = textBox.Text;
-            }
-        }
-
         #endregion
-
-
-#if false
-        // for Debug
-        private int _logCount;
-
-        [Conditional("DEBUG")]
-        public void Log(string format, params object[] args)
-        {
-            if (this.DebugInfo.Visibility != Visibility.Visible) return;
-            this.LogTextBox.AppendText(string.Format($"\n{++_logCount}>{format}", args));
-            this.LogTextBox.ScrollToEnd();
-        }
-#endif
-    }
-
-    /// <summary>
-    /// Reverse boolean
-    /// </summary>
-    public class ReverseBooleanConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is bool boolean)
-            {
-                return !boolean;
-            }
-            else
-            {
-                return value;
-            }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
     }
 
 
-#if false
-    public partial class App : Application
-    {
-        [Conditional("DEBUG")]
-        public static void Log(string format, params object[] args)
-        {
-            var window = (MainWindow)Application.Current.MainWindow;
-            window.Log(format, args);
-        }
-    }
-#endif
 }

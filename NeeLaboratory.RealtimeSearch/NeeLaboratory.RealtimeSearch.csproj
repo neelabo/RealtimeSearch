@@ -103,11 +103,13 @@
     </ApplicationDefinition>
     <Compile Include="Models\ClipboardListner.cs" />
     <Compile Include="Config.cs" />
-    <Compile Include="Models\DelayValue.cs" />
+    <Compile Include="DelayValue.cs" />
     <Compile Include="Models\ExternalProgram.cs" />
     <Compile Include="Models\History.cs" />
     <Compile Include="Models\Models.cs" />
     <Compile Include="ViewModels\ClipboardSearch.cs" />
+    <Compile Include="Converters\NullToVisibilityConverter.cs" />
+    <Compile Include="Converters\StringToVisibilityConverter.cs" />
     <Compile Include="Views\DropDownMenuButton.cs" />
     <Compile Include="Views\ExternalProgramSettingControl.xaml.cs">
       <DependentUpon>ExternalProgramSettingControl.xaml</DependentUpon>
@@ -118,6 +120,7 @@
     <Compile Include="Views\RenameManager.xaml.cs">
       <DependentUpon>RenameManager.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\ReverseBooleanConverter.cs" />
     <Compile Include="VisualTreeTools.cs" />
     <Compile Include="Views\DirectoryNameBox.xaml.cs">
       <DependentUpon>DirectoryNameBox.xaml</DependentUpon>

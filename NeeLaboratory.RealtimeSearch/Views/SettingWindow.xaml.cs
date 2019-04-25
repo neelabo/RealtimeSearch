@@ -1,9 +1,4 @@
-﻿// Copyright (c) 2015-2016 Mitsuhiro Ito (nee)
-//
-// This software is released under the MIT License.
-// http://opensource.org/licenses/mit-license.php
-
-using NeeLaboratory.IO.Search;
+﻿using NeeLaboratory.IO.Search;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
