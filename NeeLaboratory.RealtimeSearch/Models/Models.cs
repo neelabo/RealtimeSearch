@@ -51,6 +51,7 @@ namespace NeeLaboratory.RealtimeSearch
         private SearchResult _searchResult;
         private CancellationTokenSource _searchCancellationTokenSource;
         private SearchResultWatcher _watcher;
+        private string _lastSearchKeyword;
 
 
         /// <summary>
@@ -149,9 +150,20 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// 検索(非同期)
         /// </summary>
-        public async Task SearchAsync(string keyword)
+        public async Task SearchAsync(string keyword, bool isForce)
         {
-            if (string.IsNullOrWhiteSpace(keyword)) return;
+            if (string.IsNullOrWhiteSpace(keyword))
+            {
+                _lastSearchKeyword = keyword;
+                return;
+            }
+
+            if (!isForce && keyword == _lastSearchKeyword )
+            {
+                return;
+            }
+
+            _lastSearchKeyword = keyword;
 
             try
             {

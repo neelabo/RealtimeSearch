@@ -123,7 +123,7 @@ namespace NeeLaboratory.RealtimeSearch
                 if (e.Key == Key.Enter)
                 {
                     _vm.SetKeyword(comboBox.Text);
-                    await _vm.SearchAsync();
+                    await _vm.SearchAsync(false);
                     _vm.AddHistory();
                 }
             }
@@ -482,7 +482,7 @@ namespace NeeLaboratory.RealtimeSearch
         private async void ToggleAllowFolder_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             _vm.Setting.ToggleAllowFolder();
-            await _vm.SearchAsync();
+            await _vm.SearchAsync(true);
         }
 
         private void Property_Executed(object target, ExecutedRoutedEventArgs e)
@@ -503,7 +503,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private async void Search_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            await _vm.SearchAsync();
+            await _vm.SearchAsync(true);
             _vm.AddHistory();
         }
 

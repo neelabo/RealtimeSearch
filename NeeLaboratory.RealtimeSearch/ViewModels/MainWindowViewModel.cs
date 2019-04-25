@@ -63,7 +63,7 @@ namespace NeeLaboratory.RealtimeSearch
             _settingFileName = (App.Config.LocalApplicationDataPath) + "\\UserSetting.xml";
 
             _keyword = new DelayValue<string>("");
-            _keyword.ValueChanged += async (s, e) => await SearchAsync();
+            _keyword.ValueChanged += async (s, e) => await SearchAsync(false);
         }
 
 
@@ -244,9 +244,9 @@ namespace NeeLaboratory.RealtimeSearch
             Models.Rename(src, dst);
         }
 
-        public async Task SearchAsync()
+        public async Task SearchAsync(bool isForce)
         {
-            await Models.SearchAsync(_keyword.Value?.Trim());
+            await Models.SearchAsync(_keyword.Value?.Trim(), isForce);
         }
 
         public void WebSearch()
