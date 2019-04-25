@@ -79,14 +79,6 @@ namespace NeeLaboratory.RealtimeSearch
 
         public string WindowTitle => _defaultWindowTitle;
 
-        // 検索キーワード
-        public string Keyword
-        {
-            get { return _keyword.Value; }
-            set { _keyword.SetValue(value, 200); }
-        }
-
-        // 検索キーワード、コンボボックス入力との連携用
         public string InputKeyword
         {
             get { return _inputKeyword; }
@@ -94,7 +86,7 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 if (SetProperty(ref _inputKeyword, value))
                 {
-                    Keyword = _inputKeyword;
+                    SetKeywordDelay(_inputKeyword);
                 }
             }
         }
@@ -215,6 +207,17 @@ namespace NeeLaboratory.RealtimeSearch
             Setting.WindowRect = window.RestoreBounds;
         }
 
+        // キーワード即時設定
+        public void SetKeyword(string keyword)
+        {
+            _keyword.SetValue(keyword, 0, true);
+        }
+
+        // キーワード遅延設定
+        public void SetKeywordDelay(string keyword)
+        {
+            _keyword.SetValue(keyword, 200);
+        }
 
         public void SetClipboard(string text)
         {
@@ -243,7 +246,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         public async Task SearchAsync()
         {
-            await Models.SearchAsync(this.Keyword.Trim());
+            await Models.SearchAsync(_keyword.Value?.Trim());
         }
 
         public void WebSearch()
@@ -252,7 +255,7 @@ namespace NeeLaboratory.RealtimeSearch
             //\　　'　　|　　`　　^　　"　　<　　>　　)　　(　　}　　{　　]　　[
 
             // キーワード整形。空白を"+"にする
-            string query = Keyword?.Trim();
+            string query = _keyword.Value?.Trim();
             if (string.IsNullOrEmpty(query)) return;
             query = query.Replace("+", "%2B");
             query = Regex.Replace(query, @"\s+", "+");

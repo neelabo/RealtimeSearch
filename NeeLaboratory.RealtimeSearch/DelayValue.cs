@@ -78,7 +78,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <param name="isForce">同じ値でも実行する</param>
         public void SetValue(T value, double ms = 0.0, bool isForce = false)
         {
-            if (!isForce && _delayValue.Equals(value)) return;
+            if (!isForce && EqualityComparer<T>.Default.Equals(_delayValue, value)) return;
 
             _delayValue = value;
 
@@ -100,7 +100,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             _timer.Stop();
 
-            if (!_delayValue.Equals(_value))
+            if (!EqualityComparer<T>.Default.Equals(_delayValue, _value))
             {
                 _value = _delayValue;
                 ValueChanged?.Invoke(this, null);

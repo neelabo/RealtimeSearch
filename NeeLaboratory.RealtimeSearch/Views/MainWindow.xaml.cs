@@ -118,10 +118,14 @@ namespace NeeLaboratory.RealtimeSearch
 
         private async void Keyword_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
+            if (sender is ComboBox comboBox)
             {
-                await _vm.SearchAsync();
-                _vm.AddHistory();
+                if (e.Key == Key.Enter)
+                {
+                    _vm.SetKeyword(comboBox.Text);
+                    await _vm.SearchAsync();
+                    _vm.AddHistory();
+                }
             }
         }
 
@@ -135,7 +139,7 @@ namespace NeeLaboratory.RealtimeSearch
             var textBox = e.OriginalSource as TextBox;
             if (textBox != null)
             {
-                _vm.Keyword = textBox.Text;
+                _vm.SetKeywordDelay(textBox.Text);
             }
         }
 
