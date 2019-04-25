@@ -58,7 +58,9 @@ $productDir = "$projectDir\bin\$config"
 
 #----------------------
 # build
-$msbuild = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe'
+$vswhere = "$solutionDir\Tools\vswhere.exe"
+$vspath = & $vswhere -property installationPath -latest
+$msbuild = "$vspath\MSBuild\Current\Bin\MSBuild.exe"
 & $msbuild $solution /p:Configuration=$config /t:Clean,Build
 if ($? -ne $true)
 {
