@@ -93,6 +93,17 @@
 /m1, /word|単語一致| 文字の種類で単語を識別しているので精度はあまりよくありません。この検索ではひらがなとカタカナを区別します。
 /m2|標準 (デフォルト)|
 /re|正規表現| [.NETの正規表現](https://docs.microsoft.com/ja-jp/dotnet/standard/base-types/regular-expression-language-quick-reference)
+/ire|正規表現・大文字小文字無効|大文字と小文字を区別しない正規表現検索を行う
+/since|日時指定・以後|指定日時以後
+/until|日時指定・以前|指定日時以前
+
+### 日時指定フォーマット
+
+通常は "2019-04-01" といった形式で指定します。 [.NETの日時変換](https://docs.microsoft.com/ja-jp/dotnet/standard/base-types/parsing-datetime)を使用しているため、それ以外の形式でも指定可能です。  
+注意点として、"2019-04-01" という日にちの指定は "2019-04-01 00:00:00" と解釈されるため、"/until 2019-04-01" では4月1日は含まれません。
+
+また、"-12day", "-6month" "-1year" といった形式で相対日時を指定可能です。  
+"/since -5day" は「過去5日以内」という意味になります。 
 
 ### 使用例
 
@@ -112,6 +123,9 @@
 
     ABC /not /word DEF
 
+2019年4月に更新されたファイルの検索
+
+    /since 2019-04-01 /until 2019-05-01
 
 ## 連絡先
 
