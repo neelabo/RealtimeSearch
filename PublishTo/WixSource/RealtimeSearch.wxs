@@ -23,7 +23,7 @@
     <Property Id="DISABLEADVTSHORTCUTS" Value="1" />
 
     <!-- コントロールパネルに表示されるアプリアイコン -->
-    <Property Id='ARPPRODUCTICON'>MyIcon.exe</Property>
+    <Property Id='ARPPRODUCTICON'>App.ico</Property>
 
     <!-- 条件: .Net version -->
     <!--
@@ -54,7 +54,7 @@
       <Component Guid="*">
         <File Source="$(var.ContentDir)RealtimeSearch.exe" KeyPath="yes" Checksum="yes" >
           <netfx:NativeImage Id="ngen_RealtimeSearch.exe" Platform="32bit" Priority="0"/>
-          <Shortcut Id="MyMenuShortcut" Directory="ProgramMenuFolder" Name="RealtimeSearch" WorkingDirectory="INSTALLDIR" Icon="MyIcon.exe" Advertise="yes"/>
+          <Shortcut Id="MyMenuShortcut" Directory="ProgramMenuFolder" Name="RealtimeSearch" WorkingDirectory="INSTALLDIR" Advertise="yes"/>
         </File>
       </Component>
 
@@ -70,8 +70,8 @@
 
     </ComponentGroup>
 
-    <!-- アイコン -->
-    <Icon Id="MyIcon.exe" SourceFile="$(var.ContentDir)RealtimeSearch.exe" />
+    <!-- icon -->
+    <Icon Id="App.ico" SourceFile="$(var.AppendDir)App.ico" />
 
   </Fragment>
 </Wix>

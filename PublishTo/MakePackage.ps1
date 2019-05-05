@@ -180,6 +180,9 @@ function New-Msi
 	$xml.Save( $sw )
 	$sw.Close()
 
+	# icons
+	Copy-Item "$projectDir\App.ico" $packageAppendDir
+
 	# make DllComponents.wxs
 	#& $heat dir "$packageDir\Libraries" -cg DllComponents -ag -pog:Binaries -sfrag -var var.LibrariesDir -dr INSTALLFOLDER -out WixSource\DllComponents.wxs
 	#if ($? -ne $true)
