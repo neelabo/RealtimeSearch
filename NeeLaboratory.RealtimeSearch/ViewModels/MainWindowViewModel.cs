@@ -183,6 +183,9 @@ namespace NeeLaboratory.RealtimeSearch
         private void ClipboardSearch_ClipboardChanged(object sender, ClipboardChangedEventArgs e)
         {
             InputKeyword = e.Keyword;
+
+            SetKeyword(e.Keyword);
+            AddHistory();
         }
 
         private void SearchAreas_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
