@@ -7,7 +7,7 @@ trap { break }
 
 $product = 'RealtimeSearch'
 $assembly = 'NeeLaboratory.RealtimeSearch'
-
+$framework = "netcoreapp3.1"
 $config = 'Release'
 
 
@@ -15,7 +15,12 @@ $config = 'Release'
 # get fileversion
 function Get-FileVersion($fileName)
 {
-	$versionInfo =  [System.Diagnostics.FileVersionInfo]::GetVersionInfo($fileName)
+	$exist = Test-Path $filename
+	Write-Host "`n[Test-Path] $file => $exist`n"
+
+	$fullpath = Convert-Path $filename
+	
+	$versionInfo = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($fullpath)
 	$major = $versionInfo.FileMajorPart
 	$minor = $versionInfo.FileMinorPart
 
@@ -54,7 +59,7 @@ if ($Target -eq "Clean")
 $solutionDir = ".."
 $solution = "$solutionDir\$product.sln"
 $projectDir = "$solutionDir\$assembly"
-$productDir = "$projectDir\bin\$config"
+$productDir = "$projectDir\bin\$config\$framework"
 
 #----------------------
 # build
@@ -106,8 +111,9 @@ function New-Package
 
 	# copy
 	Copy-Item "$productDir\$product.exe" $packageDir
-	Copy-Item "$productDir\$product.exe.config" $packageDir
+	Copy-Item "$productDir\$product.runtimeconfig.json" $packageDir
 	Copy-Item "$productDir\*.dll" $packageDir
+	Copy-Item "$productDir\*.dll.config" $packageDir
 
 
 	#------------------------
@@ -153,7 +159,7 @@ function New-Msi
 	$heat = 'C:\Program Files (x86)\WiX Toolset v3.11\bin\heat.exe'
 
 
-	$config = "$product.exe.config"
+	$config = "$product.dll.config"
 	$packageAppendDir = $packageDir + ".append"
 
 	# remove append folder
@@ -222,12 +228,12 @@ if ($Target -eq "All")
 	Write-Host "`nExport $packageZip successed.`n" -fore Green
 }
 
-if ($Target -eq "All") 
-{
-	Write-Host "`[Installer] ...`n" -fore Cyan
-	New-Msi
-	Write-Host "`nExport $packageMsi successed.`n" -fore Green
-}
+#if ($Target -eq "All") 
+#{
+#	Write-Host "`[Installer] ...`n" -fore Cyan
+#	New-Msi
+#	Write-Host "`nExport $packageMsi successed.`n" -fore Green
+#}
 
 
 # current
