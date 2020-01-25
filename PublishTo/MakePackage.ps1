@@ -112,6 +112,7 @@ function New-Package
 	# copy
 	Copy-Item "$productDir\$product.exe" $packageDir
 	Copy-Item "$productDir\$product.runtimeconfig.json" $packageDir
+	Copy-Item "$productDir\$product.deps.json" $packageDir
 	Copy-Item "$productDir\*.dll" $packageDir
 	Copy-Item "$productDir\*.dll.config" $packageDir
 
