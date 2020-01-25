@@ -69,6 +69,8 @@ namespace NeeLaboratory.RealtimeSearch
             _vm.LoadSetting();
             _vm.RestoreWindowPlacement(this);
             RestoreListViewMemento(_vm.Setting.ListViewColumnMemento);
+
+            FileSystem.InitializeDefaultResource();
         }
 
         #endregion Constructors
@@ -542,7 +544,7 @@ namespace NeeLaboratory.RealtimeSearch
                 }
             }
         }
-        
+
         // 名前変更
         private void Rename_Executed(object target, ExecutedRoutedEventArgs e)
         {
@@ -795,6 +797,4 @@ namespace NeeLaboratory.RealtimeSearch
 
         #endregion
     }
-
-
 }

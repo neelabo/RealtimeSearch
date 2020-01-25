@@ -138,50 +138,6 @@ namespace NeeLaboratory.RealtimeSearch
             return path;
         }
 
-
-        /// <summary>
-        /// ライブラリーパス
-        /// </summary>
-        private string _librariesPath;
-        public string LibrariesPath
-        {
-            get
-            {
-                if (_librariesPath == null)
-                {
-                    _librariesPath = Path.Combine(AssemblyLocation, GetProbingPath());
-                }
-                return _librariesPath;
-            }
-        }
-
-
-        // http://stackoverflow.com/questions/33353420/appdomain-currentdomain-setupinformation-privatebinpath-is-null
-        private static string GetProbingPath()
-        {
-            try
-            {
-                var configFile = XElement.Load(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
-                var probingElement = (
-                    from runtime
-                        in configFile.Descendants("runtime")
-                    from assemblyBinding
-                        in runtime.Elements(XName.Get("assemblyBinding", "urn:schemas-microsoft-com:asm.v1"))
-                    from probing
-                        in assemblyBinding.Elements(XName.Get("probing", "urn:schemas-microsoft-com:asm.v1"))
-                    select probing)
-                    .FirstOrDefault();
-
-                return probingElement?.Attribute("privatePath").Value;
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e);
-                return null;
-            }
-        }
-
-
         // データ保存にアプリケーションデータフォルダを使用するか
         private bool? _isUseLocalApplicationDataFolder;
         public bool IsUseLocalApplicationDataFolder

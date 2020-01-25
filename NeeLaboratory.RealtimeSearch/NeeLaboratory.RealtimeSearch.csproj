@@ -101,6 +101,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="FileSystem.cs" />
     <Compile Include="Models\ClipboardListner.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="DelayValue.cs" />
@@ -114,6 +115,8 @@
     <Compile Include="Views\ExternalProgramSettingControl.xaml.cs">
       <DependentUpon>ExternalProgramSettingControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\FileInfoToIconConverter.cs" />
+    <Compile Include="Views\FileInfoToTypeNameConverter.cs" />
     <Compile Include="Views\RenameControl.xaml.cs">
       <DependentUpon>RenameControl.xaml</DependentUpon>
     </Compile>
