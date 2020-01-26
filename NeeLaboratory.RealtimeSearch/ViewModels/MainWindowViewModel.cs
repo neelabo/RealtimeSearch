@@ -265,7 +265,9 @@ namespace NeeLaboratory.RealtimeSearch
 
             string url = this.Setting.WebSearchFormat.Replace("$(query)", query);
             Debug.WriteLine(url);
-            System.Diagnostics.Process.Start(url);
+
+            var startInfo = new ProcessStartInfo(url) { UseShellExecute = true };
+            Process.Start(startInfo);
         }
 
         /// <summary>

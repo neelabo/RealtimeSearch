@@ -85,7 +85,11 @@ namespace NeeLaboratory.RealtimeSearch
 
             // help command
             var readmeUri = "file://" + Path.GetDirectoryName(Assembly.GetEntryAssembly().Location).Replace('\\', '/').TrimEnd('/') + $"/README.html";
-            this.CommandBindings.Add(new CommandBinding(HelpCommand, (t, e) => System.Diagnostics.Process.Start(readmeUri)));
+            this.CommandBindings.Add(new CommandBinding(HelpCommand, (t, e) =>
+            {
+                var startInfo = new System.Diagnostics.ProcessStartInfo(readmeUri) { UseShellExecute = true };
+                System.Diagnostics.Process.Start(startInfo);
+            }));
 
             // add command
             AddCommand.InputGestures.Clear();
