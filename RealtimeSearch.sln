@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.202
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeeLaboratory.RealtimeSearch", "NeeLaboratory.RealtimeSearch\NeeLaboratory.RealtimeSearch.csproj", "{488DD86A-CA8C-4CEC-9FB1-ECD8CD77EFED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RealtimeSearch", "RealtimeSearch\RealtimeSearch.csproj", "{488DD86A-CA8C-4CEC-9FB1-ECD8CD77EFED}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B8DBFF8D-3CC0-46A5-BF85-191DC09AF068}"
 	ProjectSection(SolutionItems) = preProject
@@ -12,7 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		THIRDPARTY_LICENSES.md = THIRDPARTY_LICENSES.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeeLaboratory.IO.Search", "NeeLaboratory.IO.Search\NeeLaboratory.IO.Search\NeeLaboratory.IO.Search.csproj", "{F8053574-48A7-4D8D-A55E-63C26D01E519}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NeeLaboratory.IO.Search", "NeeLaboratory.IO.Search\NeeLaboratory.IO.Search\NeeLaboratory.IO.Search.csproj", "{F8053574-48A7-4D8D-A55E-63C26D01E519}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

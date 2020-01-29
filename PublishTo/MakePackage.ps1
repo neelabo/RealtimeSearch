@@ -6,7 +6,7 @@ Param(
 trap { break }
 
 $product = 'RealtimeSearch'
-$assembly = 'NeeLaboratory.RealtimeSearch'
+$assembly = 'RealtimeSearch'
 $framework = "netcoreapp3.1"
 $config = 'Release'
 

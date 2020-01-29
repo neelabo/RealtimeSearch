@@ -6,7 +6,6 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>App.ico</ApplicationIcon>
-    <AssemblyName>RealtimeSearch</AssemblyName>
     <Version>4.0.0</Version>
     <Authors>NeeLaboratory</Authors>
     <Copyright>Copyright © 2015-2020 Ito Mitsuhiro (nee)</Copyright>
