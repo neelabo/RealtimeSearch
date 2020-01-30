@@ -319,7 +319,8 @@ namespace NeeLaboratory.RealtimeSearch
                         return;
                     }
                 }
-                System.Diagnostics.Process.Start(file.Path); // terminator
+                var startInfo = new System.Diagnostics.ProcessStartInfo(file.Path) { UseShellExecute = true };
+                System.Diagnostics.Process.Start(startInfo); // terminator
             }
             catch (Exception e)
             {
@@ -349,12 +350,14 @@ namespace NeeLaboratory.RealtimeSearch
                 {
                     var commandName = program.Program;
                     var arguments = ReplaceKeyword(program.Parameter, file);
-                    System.Diagnostics.Process.Start(commandName, arguments);
+                    var startInfo = new System.Diagnostics.ProcessStartInfo(commandName, arguments) { UseShellExecute = false };
+                    System.Diagnostics.Process.Start(startInfo);
                     return;
                 }
                 else
                 {
-                    System.Diagnostics.Process.Start(file.Path);
+                    var startInfo = new System.Diagnostics.ProcessStartInfo(file.Path) { UseShellExecute = true };
+                    System.Diagnostics.Process.Start(startInfo);
                     return;
                 }
             }
@@ -364,7 +367,8 @@ namespace NeeLaboratory.RealtimeSearch
                 if (!string.IsNullOrWhiteSpace(program.Protocol))
                 {
                     var protocol = ReplaceKeyword(program.Protocol, file);
-                    System.Diagnostics.Process.Start(protocol);
+                    var startInfo = new System.Diagnostics.ProcessStartInfo(protocol) { UseShellExecute = true };
+                    System.Diagnostics.Process.Start(startInfo);
                     return;
                 }
             }
@@ -384,7 +388,8 @@ namespace NeeLaboratory.RealtimeSearch
         {
             try
             {
-                System.Diagnostics.Process.Start(file.Path);
+                var startInfo = new System.Diagnostics.ProcessStartInfo(file.Path) { UseShellExecute = true };
+                System.Diagnostics.Process.Start(startInfo);
             }
             catch (Exception e)
             {
@@ -632,7 +637,8 @@ namespace NeeLaboratory.RealtimeSearch
                 NodeContent file = item as NodeContent;
                 if (file != null && (System.IO.File.Exists((string)file.Path) || System.IO.Directory.Exists((string)file.Path)))
                 {
-                    Process.Start("explorer.exe", (string)("/select,\"" + file.Path + "\""));
+                    var startInfo = new System.Diagnostics.ProcessStartInfo("explorer.exe", (string)("/select,\"" + file.Path + "\"")) { UseShellExecute = false };
+                    System.Diagnostics.Process.Start(startInfo);
                 }
             }
         }
