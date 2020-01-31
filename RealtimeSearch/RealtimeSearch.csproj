@@ -9,6 +9,7 @@
     <Version>4.0.0</Version>
     <Authors>NeeLaboratory</Authors>
     <Copyright>Copyright © 2015-2020 Ito Mitsuhiro (nee)</Copyright>
+    <ApplicationManifest>App.manifest</ApplicationManifest>
   </PropertyGroup>
   
   <ItemGroup>
