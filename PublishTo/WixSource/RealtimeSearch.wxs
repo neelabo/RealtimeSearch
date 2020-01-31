@@ -57,9 +57,17 @@
           <Shortcut Id="MyMenuShortcut" Directory="ProgramMenuFolder" Name="RealtimeSearch" WorkingDirectory="INSTALLDIR" Advertise="yes"/>
         </File>
       </Component>
-
       <Component>
-        <File Source="$(var.AppendDir)RealtimeSearch.exe.config" KeyPath="yes" />
+        <File Source="$(var.ContentDir)RealtimeSearch.deps.json" KeyPath="yes" />
+      </Component>
+      <Component>
+        <File Source="$(var.ContentDir)RealtimeSearch.runtimeconfig.json" KeyPath="yes" />
+      </Component>
+      <Component>
+        <File Source="$(var.ContentDir)RealtimeSearch.dll" KeyPath="yes" />
+      </Component>
+      <Component>
+        <File Source="$(var.AppendDir)RealtimeSearch.dll.config" KeyPath="yes" />
       </Component>
       <Component>
         <File Source="$(var.ContentDir)NeeLaboratory.IO.Search.dll" KeyPath="yes" />

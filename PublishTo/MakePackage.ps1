@@ -229,12 +229,12 @@ if ($Target -eq "All")
 	Write-Host "`nExport $packageZip successed.`n" -fore Green
 }
 
-#if ($Target -eq "All") 
-#{
-#	Write-Host "`[Installer] ...`n" -fore Cyan
-#	New-Msi
-#	Write-Host "`nExport $packageMsi successed.`n" -fore Green
-#}
+if ($Target -eq "All") 
+{
+	Write-Host "`[Installer] ...`n" -fore Cyan
+	New-Msi
+	Write-Host "`nExport $packageMsi successed.`n" -fore Green
+}
 
 
 # current

@@ -55,12 +55,8 @@ namespace NeeLaboratory.RealtimeSearch
 
         public MainWindowViewModel()
         {
-            _defaultWindowTitle = $"{App.Config.ProductName} {App.Config.ProductVersion}";
-#if DEBUG
-            _defaultWindowTitle += " [Debug]";
-#endif
-
-            _settingFileName = (App.Config.LocalApplicationDataPath) + "\\UserSetting.xml";
+            _defaultWindowTitle = App.Config.ProductName;
+            _settingFileName = System.IO.Path.Combine(App.Config.LocalApplicationDataPath, "UserSetting.xml");
 
             _keyword = new DelayValue<string>("");
             _keyword.ValueChanged += async (s, e) => await SearchAsync(false);
