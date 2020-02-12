@@ -8,8 +8,8 @@
     mc:Ignorable="d"
     x:Class="NeeLaboratory.RealtimeSearch.MainWindow"
     Title="{Binding WindowTitle}"
-    Height="600"
-    Width="800"
+    d:DesignHeight="600"
+    d:DesignWidth="800"
     UseLayoutRounding="True"
     Topmost="{Binding Setting.IsTopmost}"
     Loaded="Window_Loaded" Closing="Window_Closing" Closed="Window_Closed">
@@ -96,9 +96,9 @@
 
         <DockPanel>
 
-            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4" >
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4" KeyboardNavigation.TabNavigation="Local">
 
-                <local:DropDownMenuButton DockPanel.Dock="Right" Width="25" Height="25" Style="{StaticResource IconTogglrButton}" Margin="2,0,0,0">
+                <local:DropDownMenuButton DockPanel.Dock="Right" Width="25" Height="25" Style="{StaticResource IconTogglrButton}" Margin="2,0,0,0" TabIndex="4">
                     <Image Width="16" Height="16" Source="{StaticResource ic_settings_24px}"/>
                     <local:DropDownMenuButton.DropDownContextMenu>
                         <ContextMenu>
@@ -112,14 +112,14 @@
                 </local:DropDownMenuButton>
 
                 <Border BorderBrush="#FFDDDDDD" BorderThickness="1" UseLayoutRounding="True" SnapsToDevicePixels="True">
-                    <DockPanel >
-                        <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="25" Height="25" Command="{x:Static local:MainWindow.WebSearchCommand}" ToolTip="Web検索(Ctrl+F)">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="25" Height="25" Command="{x:Static local:MainWindow.WebSearchCommand}" ToolTip="Web検索(Ctrl+F)" TabIndex="3">
                             <Image Width="16" Height="16" Source="{StaticResource ic_public_24px}"/>
                         </Button>
-                        <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="25" Height="25" Command="{x:Static local:MainWindow.SearchCommand}" ToolTip="再検索(Ctrl+R)">
+                        <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="25" Height="25" Command="{x:Static local:MainWindow.SearchCommand}" ToolTip="再検索(Ctrl+R)" TabIndex="2">
                             <Image Width="16" Height="16" Source="{StaticResource ic_reflesh_24px}"/>
                         </Button>
-                        <ComboBox x:Name="keyword" Text="{Binding InputKeyword, UpdateSourceTrigger=PropertyChanged}"
+                        <ComboBox x:Name="keyword" Text="{Binding InputKeyword, UpdateSourceTrigger=PropertyChanged}" TabIndex="1"
                               TextBoxBase.TextChanged="Keyword_TextChanged"
                               VerticalAlignment="Center" KeyDown="Keyword_KeyDown" ItemsSource="{Binding History.Collection}" IsTextSearchCaseSensitive="True"
                               IsEditable="True" BorderThickness="0" BorderBrush="red" LostFocus="Keyword_LostFocus" LostKeyboardFocus="Keyword_LostFocus">
@@ -154,7 +154,7 @@
 
                 <DockPanel>
 
-                    <Button x:Name="ToggleInforPanel" DockPanel.Dock="Right" Margin="0" Width="20" Height="20" VerticalAlignment="Center"
+                    <Button x:Name="ToggleInforPanel" DockPanel.Dock="Right" Margin="0" Width="20" Height="20" VerticalAlignment="Center" TabIndex="3"
                             Command="{Binding ToggleDetailVisibleCommand}"
                             ToolTip="ファイル詳細"
                             Style="{StaticResource IconButton}" >
@@ -185,7 +185,7 @@
             <Border DockPanel.Dock="Bottom" BorderBrush="LightGray" BorderThickness="0,1,0,0" Margin="0" Height="100"
                     Visibility="{Binding Setting.IsDetailVisibled, Converter={StaticResource BoolToVisibility}}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <TextBox IsReadOnly="True" BorderThickness="0" Margin="5" Background="Transparent"
+                    <TextBox IsReadOnly="True" BorderThickness="0" Margin="5" Background="Transparent" IsTabStop="False"
                             Text="{Binding ElementName=ResultListView, Path=SelectedItem.Detail, Mode=OneWay}">
                     </TextBox>
                 </ScrollViewer>
@@ -193,7 +193,7 @@
 
             
             <Grid>
-                <ListView x:Name="ResultListView" Foreground="Black" ButtonBase.Click="GridViewColumnHeader_ClickHandler" ItemsSource="{Binding Models.SearchResult.Items}" BorderThickness="0" 
+                <ListView x:Name="ResultListView" Foreground="Black" ButtonBase.Click="GridViewColumnHeader_ClickHandler" ItemsSource="{Binding Models.SearchResult.Items}" BorderThickness="0" TabIndex="2"
                           FocusVisualStyle="{x:Null}"
                           HorizontalAlignment="Stretch"
                           ScrollViewer.CanContentScroll="True"
