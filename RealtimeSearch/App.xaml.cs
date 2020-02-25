@@ -23,15 +23,6 @@ namespace NeeLaboratory.RealtimeSearch
     {
         public static Config Config { get; private set; }
 
-        public void Application_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
-        {
-            string message = string.Format(
-                "システムエラーが発生しました。\n ({0} {1})\n\n{2}",
-                e.Exception.GetType(), e.Exception.Message, e.Exception.StackTrace);
-            MessageBox.Show(message);
-            e.Handled = true;
-        }
-
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             Config = new Config();
