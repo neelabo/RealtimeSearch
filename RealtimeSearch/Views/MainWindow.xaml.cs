@@ -60,6 +60,8 @@ namespace NeeLaboratory.RealtimeSearch
 
             _vm.SearchResultChanged += ViewModel_FilesChanged;
 
+            this.SourceInitialized += MainWindow_SourceInitialized;
+            this.KeyDown += MainWindow_KeyDown;
             this.MouseLeftButtonDown += (s, e) => this.RenameManager.Stop();
             this.MouseRightButtonDown += (s, e) => this.RenameManager.Stop();
             this.Deactivated += (s, e) => this.RenameManager.Stop();
@@ -70,8 +72,6 @@ namespace NeeLaboratory.RealtimeSearch
             RestoreListViewMemento(_vm.Setting.ListViewColumnMemento);
 
             FileSystem.InitializeDefaultResource();
-
-            this.SourceInitialized += MainWindow_SourceInitialized;
         }
 
         #endregion Constructors
@@ -108,6 +108,15 @@ namespace NeeLaboratory.RealtimeSearch
         private void Window_Closed(object sender, EventArgs e)
         {
             _vm.Close();
+        }
+
+        private void MainWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                this.keyword.Focus();
+                e.Handled = true;
+            }
         }
 
         void ResultListView_ScrollChanged(object sender, ScrollChangedEventArgs e)
