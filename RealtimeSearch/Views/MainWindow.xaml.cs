@@ -67,10 +67,11 @@ namespace NeeLaboratory.RealtimeSearch
             this.ResultListView.AddHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler(ResultListView_ScrollChanged));
 
             _vm.LoadSetting();
-            _vm.RestoreWindowPlacement(this);
             RestoreListViewMemento(_vm.Setting.ListViewColumnMemento);
 
             FileSystem.InitializeDefaultResource();
+
+            this.SourceInitialized += MainWindow_SourceInitialized;
         }
 
         #endregion Constructors
@@ -82,6 +83,10 @@ namespace NeeLaboratory.RealtimeSearch
             this.Dispatcher.BeginInvoke(new Action(GridViewColumnHeader_Reset), null);
         }
 
+        private void MainWindow_SourceInitialized(object sender, EventArgs e)
+        {
+            _vm.RestoreWindowPlacement(this);
+        }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {

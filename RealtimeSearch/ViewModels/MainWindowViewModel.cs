@@ -189,21 +189,17 @@ namespace NeeLaboratory.RealtimeSearch
             Models.ReIndex();
         }
 
-
         public void RestoreWindowPlacement(Window window)
         {
-            if (Setting.WindowRect == Rect.Empty) return;
-
-            Rect rect = Setting.WindowRect;
-            window.Left = rect.Left;
-            window.Top = rect.Top;
-            window.Width = rect.Width;
-            window.Height = rect.Height;
+            if (Setting.WindowPlacement.HasValue)
+            {
+                WindowPlacement.SetPlacement(window, Setting.WindowPlacement.Value);
+            }
         }
 
         public void StoreWindowPlacement(Window window)
         {
-            Setting.WindowRect = window.RestoreBounds;
+            Setting.WindowPlacement = WindowPlacement.GetPlacement(window);
         }
 
         // キーワード即時設定

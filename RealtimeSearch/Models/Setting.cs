@@ -96,9 +96,6 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
         [DataMember]
-        public Rect WindowRect { get; set; }
-
-        [DataMember]
         public string WebSearchFormat { set; get; }
 
         [DataMember]
@@ -106,6 +103,9 @@ namespace NeeLaboratory.RealtimeSearch
 
         [DataMember]
         public List<ListViewColumnMemento> ListViewColumnMemento { get; set; }
+
+        [DataMember]
+        public WindowPlacement.WINDOWPLACEMENT? WindowPlacement { get; internal set; }
 
 
         //----------------------------------------------------------------------------
@@ -119,7 +119,6 @@ namespace NeeLaboratory.RealtimeSearch
             ExternalPrograms.Add(new ExternalProgram());
             ExternalPrograms.Add(new ExternalProgram());
             WebSearchFormat = "https://www.google.co.jp/search?q=$(query)";
-            WindowRect = Rect.Empty;
         }
 
 
