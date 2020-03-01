@@ -3,10 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
@@ -105,7 +109,7 @@ namespace NeeLaboratory.RealtimeSearch
         public List<ListViewColumnMemento> ListViewColumnMemento { get; set; }
 
         [DataMember]
-        public WindowPlacement.WINDOWPLACEMENT? WindowPlacement { get; internal set; }
+        public WindowPlacement.WINDOWPLACEMENT WindowPlacement { get; set; }
 
 
         //----------------------------------------------------------------------------
@@ -151,8 +155,32 @@ namespace NeeLaboratory.RealtimeSearch
 #pragma warning restore CS0612
         }
 
+        private static JsonSerializerOptions CreateJsonSerializerOptions()
+        {
+            var options = new JsonSerializerOptions();
+            options.WriteIndented = true;
+            options.IgnoreReadOnlyProperties = true;
+            options.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+            options.Converters.Add(new JsonStringEnumConverter());
+            return options;
+        }
 
         public void Save(string path)
+        {
+            var json = JsonSerializer.SerializeToUtf8Bytes(this, CreateJsonSerializerOptions());
+            File.WriteAllBytes(path, json);
+        }
+
+        public static Setting Load(string path)
+        {
+            var json = File.ReadAllBytes(path);
+            var readOnlySpan = new ReadOnlySpan<byte>(json);
+            var setting = JsonSerializer.Deserialize<Setting>(readOnlySpan, CreateJsonSerializerOptions());
+            return setting;
+        }
+
+        [Obsolete]
+        public void SaveLegacy(string path)
         {
             XmlWriterSettings settings = new XmlWriterSettings();
             settings.Encoding = new System.Text.UTF8Encoding(false);
@@ -164,70 +192,70 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-
-        //
-        public static Setting Load(string path)
+        public static Setting LoadLegacy(string path)
         {
-            using (XmlReader xr = XmlReader.Create(path))
+            try
             {
-                DataContractSerializer serializer = new DataContractSerializer(typeof(Setting));
-                Setting setting = (Setting)serializer.ReadObject(xr);
-                return setting;
-            }
-        }
-
-        /// <summary>
-        /// 1.5互換
-        /// namespace変更に伴う読み込みエラー修正
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public static Setting LoadEx(string path)
-        {
-            // 全部読み込み
-            string text;
-            using (StreamReader sr = new StreamReader(path))
-            {
-                text = sr.ReadToEnd();
-            }
-
-            // namespace置換
-            text = text.Replace("http://schemas.datacontract.org/2004/07/RealtimeSearch.Search", "http://schemas.datacontract.org/2004/07/NeeLaboratory.IO.Search");
-            text = text.Replace("http://schemas.datacontract.org/2004/07/RealtimeSearch", "http://schemas.datacontract.org/2004/07/NeeLaboratory.RealtimeSearch");
-
-            using (var reader = new StringReader(text))
-            using (XmlReader xr = XmlReader.Create(reader))
-            {
-                DataContractSerializer serializer = new DataContractSerializer(typeof(Setting));
-                Setting setting = (Setting)serializer.ReadObject(xr);
-                return setting;
-            }
-        }
-
-        public static Setting LoadOrDefault(string path)
-        {
-            // 設定の読み込み
-            if (System.IO.File.Exists(path))
-            {
-                try
+                using (XmlReader xr = XmlReader.Create(path))
                 {
-                    try
-                    {
-                        return Setting.Load(path);
-                    }
-                    catch (SerializationException)
-                    {
-                        return Setting.LoadEx(path);
-                    }
+                    DataContractSerializer serializer = new DataContractSerializer(typeof(Setting));
+                    Setting setting = (Setting)serializer.ReadObject(xr);
+                    return setting;
                 }
-                catch (Exception)
+            }
+            catch
+            {
+                // NOTE: 1.5互換：namespace変更に伴う読み込みエラー修正
+
+                // 全部読み込み
+                string text;
+                using (StreamReader sr = new StreamReader(path))
                 {
-                    System.Windows.MessageBox.Show("設定が読み込めませんでした。初期設定で起動します。", "読み込み失敗", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                    text = sr.ReadToEnd();
+                }
+
+                // namespace置換
+                text = text.Replace("http://schemas.datacontract.org/2004/07/RealtimeSearch.Search", "http://schemas.datacontract.org/2004/07/NeeLaboratory.IO.Search");
+                text = text.Replace("http://schemas.datacontract.org/2004/07/RealtimeSearch", "http://schemas.datacontract.org/2004/07/NeeLaboratory.RealtimeSearch");
+
+                using (var reader = new StringReader(text))
+                using (XmlReader xr = XmlReader.Create(reader))
+                {
+                    DataContractSerializer serializer = new DataContractSerializer(typeof(Setting));
+                    Setting setting = (Setting)serializer.ReadObject(xr);
+                    return setting;
+                }
+            }
+        }
+
+
+        // 設定の読み込み
+        public static Setting LoadOrDefault(string path, string legacyPath)
+        {
+            try
+            {
+                if (System.IO.File.Exists(path))
+                {
+                    return Setting.Load(path);
+                }
+                // NOTE: 互換処理
+                else if (System.IO.File.Exists(legacyPath))
+                {
+                    var setting = Setting.LoadLegacy(legacyPath);
+
+                    setting.Save(path);
+                    File.Delete(legacyPath);
+                    return setting;
+                }
+                else
+                {
                     return new Setting();
                 }
             }
-            else
+            catch (Exception ex)
             {
+                Debug.WriteLine(ex);
+                System.Windows.MessageBox.Show("設定が読み込めませんでした。初期設定で起動します。", "読み込み失敗", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return new Setting();
             }
         }

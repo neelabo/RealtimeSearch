@@ -43,17 +43,6 @@ namespace NeeLaboratory.RealtimeSearch
 
 
         /// <summary>
-        /// IsEnabled property.
-        /// </summary>
-        private bool _isEnabled;
-        public bool IsEnabled
-        {
-            get { return _isEnabled; }
-            set { if (_isEnabled != value) { _isEnabled = value; RaisePropertyChanged(); } }
-        }
-
-
-        /// <summary>
         /// ProgramType property.
         /// </summary>
         private ExternalProgramType _programType;

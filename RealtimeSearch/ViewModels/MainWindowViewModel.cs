@@ -50,13 +50,15 @@ namespace NeeLaboratory.RealtimeSearch
         private bool _isRenaming;
         private Setting _setting;
         private string _settingFileName;
+        private string _settingLegacyFileName;
         private ClipboardSearch _clipboardSearch;
 
 
         public MainWindowViewModel()
         {
             _defaultWindowTitle = App.Config.ProductName;
-            _settingFileName = System.IO.Path.Combine(App.Config.LocalApplicationDataPath, "UserSetting.xml");
+            _settingFileName = System.IO.Path.Combine(App.Config.LocalApplicationDataPath, _defaultWindowTitle + ".app.json");
+            _settingLegacyFileName = System.IO.Path.Combine(App.Config.LocalApplicationDataPath, "UserSetting.xml");
 
             _keyword = new DelayValue<string>("");
             _keyword.ValueChanged += async (s, e) => await SearchAsync(false);
@@ -128,7 +130,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         public void LoadSetting()
         {
-            Setting = Setting.LoadOrDefault(_settingFileName);
+            Setting = Setting.LoadOrDefault(_settingFileName, _settingLegacyFileName);
             Setting.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
             Setting.PropertyChanged += Setting_PropertyChanged;
         }
@@ -193,7 +195,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             if (Setting.WindowPlacement.HasValue)
             {
-                WindowPlacement.SetPlacement(window, Setting.WindowPlacement.Value);
+                WindowPlacement.SetPlacement(window, Setting.WindowPlacement);
             }
         }
 
