@@ -129,7 +129,7 @@ namespace NeeLaboratory.RealtimeSearch
             NodeContent file = ((ListViewItem)sender).Content as NodeContent;
             if (file == null) return;
 
-            Execute(file);
+            Execute(new List<NodeContent>() { file });
         }
 
         private async void Keyword_KeyDown(object sender, KeyEventArgs e)
@@ -321,20 +321,33 @@ namespace NeeLaboratory.RealtimeSearch
 
         #region Execute file
 
-        private void Execute(NodeContent file)
+        private ExternalProgram FindExternalProgram(string path)
+        {
+            foreach (var program in _vm.Setting.ExternalPrograms)
+            {
+                if (program.CheckExtensions(path))
+                {
+                    return program;
+                }
+            }
+            return null;
+        }
+
+        private void Execute(IEnumerable<NodeContent> files)
         {
             try
             {
-                foreach (var program in _vm.Setting.ExternalPrograms)
+                foreach (var group in files.GroupBy(e => FindExternalProgram(e.Path)))
                 {
-                    if (program.CheckExtensions(file.Path))
+                    if (group.Key == null)
                     {
-                        Execute(file, program);
-                        return;
+                        ExecuteDefault(group);
+                    }
+                    else
+                    {
+                        Execute(group.AsEnumerable(), group.Key);
                     }
                 }
-                var startInfo = new System.Diagnostics.ProcessStartInfo(file.Path) { UseShellExecute = true };
-                System.Diagnostics.Process.Start(startInfo); // terminator
             }
             catch (Exception e)
             {
@@ -343,11 +356,11 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        private void Execute(NodeContent file, int programId)
+        private void Execute(IEnumerable<NodeContent> files, int programId)
         {
             try
             {
-                Execute(file, _vm.Setting.ExternalPrograms[programId - 1]);
+                Execute(files, _vm.Setting.ExternalPrograms[programId - 1]);
             }
             catch (Exception e)
             {
@@ -356,54 +369,85 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        private void Execute(NodeContent file, ExternalProgram program)
+        private void Execute(IEnumerable<NodeContent> files, ExternalProgram program)
+        {
+            if (program.IsMultiArgumentEnabled)
+            {
+                ExecuteProgram(files, program);
+            }
+            else
+            {
+                foreach(var file in files)
+                {
+                    ExecuteProgram(new List<NodeContent>() { file }, program);
+                }
+            }
+        }
+
+        void ExecuteProgram(IEnumerable<NodeContent> files, ExternalProgram program)
         {
             if (program.ProgramType == ExternalProgramType.Normal)
             {
-                if (!string.IsNullOrWhiteSpace(program.Program))
+                if (string.IsNullOrWhiteSpace(program.Program))
                 {
-                    var commandName = program.Program;
-                    var arguments = ReplaceKeyword(program.Parameter, file);
-                    var startInfo = new System.Diagnostics.ProcessStartInfo(commandName, arguments) { UseShellExecute = false };
-                    System.Diagnostics.Process.Start(startInfo);
-                    return;
+                    ExecuteDefault(files);
                 }
                 else
                 {
-                    var startInfo = new System.Diagnostics.ProcessStartInfo(file.Path) { UseShellExecute = true };
+                    var commandName = program.Program;
+                    var arguments = ReplaceKeyword(program.Parameter, files);
+                    var startInfo = new System.Diagnostics.ProcessStartInfo(commandName, arguments) { UseShellExecute = false };
                     System.Diagnostics.Process.Start(startInfo);
-                    return;
                 }
             }
 
-            if (program.ProgramType == ExternalProgramType.Uri)
+            else if (program.ProgramType == ExternalProgramType.Uri)
             {
-                if (!string.IsNullOrWhiteSpace(program.Protocol))
-                {
-                    var protocol = ReplaceKeyword(program.Protocol, file);
-                    var startInfo = new System.Diagnostics.ProcessStartInfo(protocol) { UseShellExecute = true };
-                    System.Diagnostics.Process.Start(startInfo);
-                    return;
-                }
+                if (string.IsNullOrWhiteSpace(program.Protocol)) throw new InvalidOperationException("プロトコルが指定されていません。設定を見直してください。");
+
+                var protocol = ReplaceKeyword(program.Protocol, files);
+                var startInfo = new System.Diagnostics.ProcessStartInfo(protocol) { UseShellExecute = true };
+                System.Diagnostics.Process.Start(startInfo);
             }
         }
 
-        private string ReplaceKeyword(string s, NodeContent file)
+        private string ReplaceKeyword(string s, IEnumerable<NodeContent> files)
         {
-            var uriData = Uri.EscapeDataString(file.Path);
+            if (files.Count() == 1)
+            {
+                var file = files.First();
 
-            s = s.Replace(ExternalProgram.KeyUri, uriData);
-            s = s.Replace(ExternalProgram.KeyFile, file.Path);
+                var uriData = Uri.EscapeDataString(file.Path);
+
+                s = s.Replace(ExternalProgram.KeyUri, uriData);
+                s = s.Replace(ExternalProgram.KeyFile, file.Path);
+            }
+            else
+            {
+                var uriData = string.Join(" ", files.Select(e => Uri.EscapeDataString(e.Path)));
+                var uriDataQuat = string.Join(" ", files.Select(e => "\"" + Uri.EscapeDataString(e.Path) + "\""));
+
+                var pathData = string.Join(" ", files.Select(e => e.Path));
+                var pathDataQuat = string.Join(" ", files.Select(e => "\"" + e.Path + "\""));
+
+                s = s.Replace(ExternalProgram.KeyUriQuat, uriDataQuat);
+                s = s.Replace(ExternalProgram.KeyUri, uriData);
+                s = s.Replace(ExternalProgram.KeyFileQuat, pathDataQuat);
+                s = s.Replace(ExternalProgram.KeyFile, pathData);
+            }
 
             return s;
         }
 
-        private void ExecuteDefault(NodeContent file)
+        private void ExecuteDefault(IEnumerable<NodeContent> files)
         {
             try
             {
-                var startInfo = new System.Diagnostics.ProcessStartInfo(file.Path) { UseShellExecute = true };
-                System.Diagnostics.Process.Start(startInfo);
+                foreach (var file in files)
+                {
+                    var startInfo = new System.Diagnostics.ProcessStartInfo(file.Path) { UseShellExecute = true };
+                    System.Diagnostics.Process.Start(startInfo);
+                }
             }
             catch (Exception e)
             {
@@ -591,6 +635,24 @@ namespace NeeLaboratory.RealtimeSearch
 
             if (items == null) return;
 
+            var nodes = items.OfType<NodeContent>();
+            if (!nodes.Any()) return;
+
+            switch (executeType)
+            {
+                default:
+                case ExecuteType.Default:
+                    ExecuteDefault(nodes);
+                    break;
+                case ExecuteType.ExternalPrograms:
+                    Execute(nodes);
+                    break;
+                case ExecuteType.SelectedExternalProgram:
+                    Execute(nodes, programId);
+                    break;
+            }
+
+#if false
             foreach (var item in items)
             {
                 NodeContent file = item as NodeContent;
@@ -611,6 +673,7 @@ namespace NeeLaboratory.RealtimeSearch
                     }
                 }
             }
+#endif
         }
 
         private void OpenEx1_Executed(object target, ExecutedRoutedEventArgs e)

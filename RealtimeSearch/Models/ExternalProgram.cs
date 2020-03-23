@@ -30,6 +30,8 @@ namespace NeeLaboratory.RealtimeSearch
     {
         public const string KeyFile = "$(file)";
         public const string KeyUri = "$(uri)";
+        public const string KeyFileQuat = "\"$(file)\"";
+        public const string KeyUriQuat = "\"$(uri)\"";
 
         /// <summary>
         /// PropertyChanged event. 
@@ -112,6 +114,16 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
         private List<string> _extensionsList { get; set; }
+
+
+        private bool _isMultiArgumentEnabled;
+        [DataMember]
+        public bool IsMultiArgumentEnabled
+        {
+            get { return _isMultiArgumentEnabled; }
+            set { if (_isMultiArgumentEnabled != value) { _isMultiArgumentEnabled = value; RaisePropertyChanged(); } }
+        }
+
 
         //
         private void CreateExtensionsList(string exts)
