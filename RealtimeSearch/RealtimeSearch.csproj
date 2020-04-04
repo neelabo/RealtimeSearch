@@ -10,6 +10,7 @@
     <Authors>NeeLaboratory</Authors>
     <Copyright>Copyright © 2015-2020 Ito Mitsuhiro (nee)</Copyright>
     <ApplicationManifest>App.manifest</ApplicationManifest>
+    <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
   
   <ItemGroup>
