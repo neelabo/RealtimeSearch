@@ -121,7 +121,7 @@ DocProject/Help/Html2
 DocProject/Help/html
 
 # Click-Once directory
-publish/
+[Pp]ublish/
 
 # Publish Web Output
 *.[Pp]ublish.xml
@@ -193,11 +193,12 @@ ModelManifest.xml
 
 # UserLocal
 *.improj
-PublishTo/RealtimeSearch*/
-PublishTo/*.zip
-PublishTo/*.xml
-PublishTo/*.msi
-PublishTo/*.wixpdb
-PublishTo/_*
+Thumbs.db
+MakePackage/RealtimeSearch*/
+MakePackage/*.zip
+MakePackage/*.xml
+PublMakePackageishTo/*.msi
+MakePackage/*.wixpdb
+MakePackage/_*
 /RealtimeSearch.png
 /_*
