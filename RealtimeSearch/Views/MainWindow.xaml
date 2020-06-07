@@ -253,9 +253,18 @@
                             </GridViewColumn>
 
                             <GridViewColumn Header="更新日時" Width="96" DisplayMemberBinding="{Binding FileInfo.LastWriteTime, StringFormat=yyyy/MM/dd HH:mm}" />
-                            <GridViewColumn Header="種類" Width="96" DisplayMemberBinding="{Binding FileInfo, Converter={StaticResource FileInfoToTypeNameConverter}}"/>
+                            
+                            <GridViewColumn Width="96" >
+                                <GridViewColumnHeader Content="種類" Tag="FileInfo.Extension" />
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                            <TextBlock Text="{Binding FileInfo, Converter={StaticResource FileInfoToTypeNameConverter}}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
                             <GridViewColumn Width="96" CellTemplate="{StaticResource ItemSizeTemplate}" >
-                                <GridViewColumnHeader Content="サイズ" Tag="FileInfo.Size"/>
+                                <GridViewColumnHeader Content="サイズ" Tag="FileInfo.Size" />
                             </GridViewColumn>
 
                             <GridViewColumn Header="フォルダー" Width="96" DisplayMemberBinding="{Binding DirectoryName}" />
