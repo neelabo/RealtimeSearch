@@ -12,13 +12,17 @@
 ## 動作環境
 
   * Windows 7 SP1, Windows 8.1, Windows 10
-  * .NET Framework 4.7.2 以降が必要です。起動しない場合は [Microsoft .NET](https://dotnet.microsoft.com/download/dotnet-framework-runtime) から入手してインストールしてください。
+  * .NET 5 以降が必要です。起動しない場合は [Download .NET](https://dotnet.microsoft.com/download/dotnet/current/runtime) から入手してインストールしてください。
 
-## インストール・アンインストール方法
+## インストール・アンインストール方法：ZIP版
 
-  インストール不要です。そのまま `RealtimeSearh.exe` を起動してください。  
+  インストール不要です。ZIPを展開し、そのまま `RealtimeSearh.exe` を起動してください。  
   アンインストールはファイルを削除するだけです。
 
+## インストール・アンインストール方法：MSI版
+
+  MSIインストーラーを実行し、その指示に従ってインストールしてください。
+  アンインストールもOSの標準方法で行います。
 
 ## クイックスタート
 

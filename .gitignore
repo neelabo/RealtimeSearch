@@ -197,7 +197,7 @@ Thumbs.db
 MakePackage/RealtimeSearch*/
 MakePackage/*.zip
 MakePackage/*.xml
-PublMakePackageishTo/*.msi
+MakePackage/*.msi
 MakePackage/*.wixpdb
 MakePackage/_*
 /RealtimeSearch.png

@@ -56,24 +56,38 @@ if ($Target -eq "Clean")
 
 #-----------------------
 # variables
-$solutionDir = ".."
+$solutionDir = Resolve-Path ".."
 $solution = "$solutionDir\$product.sln"
 $projectDir = "$solutionDir\$assembly"
-$productDir = "$projectDir\bin\$config\$framework"
+$project = "$projectDir\$product.csproj"
+#$productDir = "$projectDir\bin\$config\$framework"
+$productDir = "Publish"
+
 
 #----------------------
 # build
-$vswhere = "$solutionDir\Tools\vswhere.exe"
-$vspath = & $vswhere -property installationPath -latest
-$msbuild = "$vspath\MSBuild\Current\Bin\MSBuild.exe"
-& $msbuild $solution /p:Configuration=$config /t:Clean,Build
-if ($? -ne $true)
+#$vswhere = "$solutionDir\Tools\vswhere.exe"
+#$vspath = & $vswhere -property installationPath -latest
+#$msbuild = "$vspath\MSBuild\Current\Bin\MSBuild.exe"
+#& $msbuild $solution /p:Configuration=$config /t:Clean,Build
+#if ($? -ne $true)
+#{
+#	throw "build error"
+#}
+
+if (Test-Path $productDir)
 {
-	throw "build error"
+	Remove-Item $productDir -Recurse -Force
 }
+
+#& dotnet publish $project -c Release -r win-x64 -p:PublishReadyToRun=true --no-self-contained -o publish/x64
+#& dotnet publish $project -c Release -r win-x86 -p:PublishReadyToRun=true --no-self-contained -o publish/x86
+& dotnet publish $project -c Release -o $productDir
+
 
 # get assembly version
 $version = Get-FileVersion "$productDir\$product.exe"
+
 
 # auto increment build version
 $xml = [xml](Get-Content "BuildCount.xml")

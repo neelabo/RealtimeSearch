@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-         xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Product Id="*" Name="RealtimeSearch $(var.ProductVersion)" Version="$(var.BuildVersion)" Language="1041" Codepage="932" Manufacturer="NeeLaboratory" UpgradeCode="{C2084D9A-11E0-4287-B4BD-B99968ECD1CD}">
     <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" SummaryCodepage="932" Comments="product version $(var.BuildVersion)"/>
 
@@ -25,14 +24,6 @@
     <!-- コントロールパネルに表示されるアプリアイコン -->
     <Property Id='ARPPRODUCTICON'>App.ico</Property>
 
-    <!-- 条件: .Net version -->
-    <!--
-    <PropertyRef Id="WIX_IS_NETFRAMEWORK_46_OR_LATER_INSTALLED"/>
-    <Condition Message='このセットアップを実行するためには、.NET Framework 4.6以降 がインストールされている必要があります。'>
-      <![CDATA[Installed OR WIX_IS_NETFRAMEWORK_46_OR_LATER_INSTALLED]]>
-    </Condition>
-    -->
-
   </Product>
 
   <Fragment>
@@ -53,7 +44,6 @@
 
       <Component Guid="*">
         <File Source="$(var.ContentDir)RealtimeSearch.exe" KeyPath="yes" Checksum="yes" >
-          <netfx:NativeImage Id="ngen_RealtimeSearch.exe" Platform="32bit" Priority="0"/>
           <Shortcut Id="MyMenuShortcut" Directory="ProgramMenuFolder" Name="RealtimeSearch" WorkingDirectory="INSTALLDIR" Advertise="yes"/>
         </File>
       </Component>
