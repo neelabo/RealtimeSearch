@@ -3,20 +3,28 @@ Param(
 )
 
 # error to break
+$ErrorActionPreference = "Stop"
 trap { break }
 
+#-----------------------
+# variables
 $product = 'RealtimeSearch'
 $assembly = 'RealtimeSearch'
-$framework = "netcoreapp3.1"
-$config = 'Release'
+$solutionDir = Resolve-Path ".."
+$projectDir = "$solutionDir\$assembly"
+$project = "$projectDir\$product.csproj"
+$productDir = "Publish"
 
 
 #---------------------
 # get fileversion
 function Get-FileVersion($fileName)
 {
-	$exist = Test-Path $filename
-	Write-Host "`n[Test-Path] $file => $exist`n"
+	if (-Not (Test-Path $filename))
+	{
+		Write-Error "File not found: $filename"
+		return
+	}
 
 	$fullpath = Convert-Path $filename
 	
@@ -33,87 +41,44 @@ function Get-FileVersion($fileName)
 function Replace-Content
 {
 	Param([string]$filepath, [string]$rep1, [string]$rep2)
-	if ( $(Test-Path $filepath) -ne $True )
+	if (-Not (Test-Path $filepath))
 	{
-		Write-Error "file not found"
+		Write-Error "file not found: $filename"
 		return
 	}
+
 	# input UTF8, output UTF8
 	$file_contents = $(Get-Content -Encoding UTF8 $filepath) -replace $rep1, $rep2
 	$file_contents | Out-File -Encoding UTF8 $filepath
 }
 
 
-#--------------------
-if ($Target -eq "Clean")
+#----------------------
+# clear
+function Remove-Files
 {
-	Remove-Item "$product*" -Recurse -Force
+	$files = $args
+	foreach ($file in $files.Where({-Not [string]::IsNullOrEmpty($_)}))
+	{
+		Write-Host "Remove $file" -fore DarkYellow
 
-	return
+		if (Test-Path $file)
+		{
+			Remove-Item $file -Recurse -Force
+		}
+	}
+
+	Start-Sleep -m 100
 }
-
-
 
 #-----------------------
-# variables
-$solutionDir = Resolve-Path ".."
-$solution = "$solutionDir\$product.sln"
-$projectDir = "$solutionDir\$assembly"
-$project = "$projectDir\$product.csproj"
-#$productDir = "$projectDir\bin\$config\$framework"
-$productDir = "Publish"
-
-
-#----------------------
 # build
-#$vswhere = "$solutionDir\Tools\vswhere.exe"
-#$vspath = & $vswhere -property installationPath -latest
-#$msbuild = "$vspath\MSBuild\Current\Bin\MSBuild.exe"
-#& $msbuild $solution /p:Configuration=$config /t:Clean,Build
-#if ($? -ne $true)
-#{
-#	throw "build error"
-#}
-
-if (Test-Path $productDir)
+function Publish-Product($project, $output)
 {
-	Remove-Item $productDir -Recurse -Force
+	#& dotnet publish $project -c Release -r win-x64 -p:PublishReadyToRun=true --no-self-contained -o publish/x64
+	#& dotnet publish $project -c Release -r win-x86 -p:PublishReadyToRun=true --no-self-contained -o publish/x86
+	& dotnet publish $project -c Release -o $output
 }
-
-#& dotnet publish $project -c Release -r win-x64 -p:PublishReadyToRun=true --no-self-contained -o publish/x64
-#& dotnet publish $project -c Release -r win-x86 -p:PublishReadyToRun=true --no-self-contained -o publish/x86
-& dotnet publish $project -c Release -o $productDir
-
-
-# get assembly version
-$version = Get-FileVersion "$productDir\$product.exe"
-
-
-# auto increment build version
-$xml = [xml](Get-Content "BuildCount.xml")
-$buildCount = [int]$xml.build + 1
-
-$buildVersion = (Get-FileVersion "$productDir\$product.exe") + ".$buildCount"
-
-$packageDir = $product + $version
-$packageZip = $packageDir + ".zip"
-$packageMsi = $packageDir + ".msi"
-
-# remove packageDir
-if (Test-Path $packageDir)
-{
-	Remove-Item $packageDir -Recurse -Force
-}
-if (Test-Path $packageZip)
-{
-	Remove-Item $packageZip
-}
-if (Test-Path $packageMsi)
-{
-	Remove-Item $packageMsi
-}
-
-Start-Sleep -m 100
 
 
 #----------------------
@@ -230,8 +195,33 @@ function New-Msi
 	}
 }
 
+
 #--------------------------
 # main
+
+# clean product
+Remove-Files $productDir
+
+# build
+Write-Host "`n[Build] ...`n" -fore Cyan
+Publish-Product $project $productDir
+
+# get assembly version
+$version = Get-FileVersion "$productDir\$product.exe"
+
+# auto increment build version
+$xml = [xml](Get-Content "BuildCount.xml")
+$buildCount = [int]$xml.build + 1
+
+$buildVersion = (Get-FileVersion "$productDir\$product.exe") + ".$buildCount"
+
+$packageDir = $product + $version
+$packageZip = $packageDir + ".zip"
+$packageMsi = $packageDir + ".msi"
+$wixpdb = $packageDir + ".wixpdb"
+
+# Clean
+Remove-Files $packageDir $packageZip $packageMsi $wixpdb
 
 Write-Host "`n[Package] ...`n" -fore Cyan
 New-Package
