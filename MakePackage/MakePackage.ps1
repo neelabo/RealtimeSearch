@@ -6,6 +6,9 @@ Param(
 $ErrorActionPreference = "Stop"
 trap { break }
 
+# sync .NET current directory
+[System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).Path)
+
 #-----------------------
 # variables
 $product = 'RealtimeSearch'
