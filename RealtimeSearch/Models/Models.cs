@@ -15,6 +15,7 @@ using System.IO;
 
 namespace NeeLaboratory.RealtimeSearch
 {
+    // this commen is test.
     public class Models : INotifyPropertyChanged
     {
         #region INotifyPropertyChanged Support
