@@ -595,9 +595,16 @@ namespace NeeLaboratory.RealtimeSearch
                     try
                     {
                         // ゴミ箱に捨てる
-                        foreach (var item in items)
+                        foreach (var item in items.OfType<NodeContent>())
                         {
-                            Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(((NodeContent)item).Path, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+                            if (item.IsDirectory)
+                            {
+                                Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(item.Path, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+                            }
+                            else
+                            {
+                                Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(item.Path, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+                            }
                         }
                     }
                     catch (Exception ex)
