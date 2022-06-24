@@ -96,7 +96,11 @@ namespace NeeLaboratory.RealtimeSearch
                         else if (Clipboard.ContainsFileDropList())
                         {
                             var files = Clipboard.GetFileDropList();
-                            var name = System.IO.Path.GetFileNameWithoutExtension(files[0]);
+                            var file = files[0];
+
+                            var name = System.IO.Directory.Exists(file)
+                                ? System.IO.Path.GetFileName(file)
+                                : System.IO.Path.GetFileNameWithoutExtension(file);
 
                             // 即時検索
                             ClipboardChanged?.Invoke(this, new ClipboardChangedEventArgs()
