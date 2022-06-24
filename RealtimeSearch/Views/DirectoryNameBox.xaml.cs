@@ -227,7 +227,7 @@ namespace NeeLaboratory.RealtimeSearch
                 }
                 else
                 {
-                    Text = Path.GetDirectoryName(dropFiles[0]);
+                    Text = Path.GetDirectoryName(dropFiles[0]) ?? "";
                 }
             }
             else

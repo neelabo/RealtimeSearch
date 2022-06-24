@@ -23,7 +23,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <param name="item"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static FrameworkElement GetListBoxItemElement(ListBox listBox, object item, string name)
+        public static FrameworkElement? GetListBoxItemElement(ListBox listBox, object item, string name)
         {
             return GetListBoxItemElement(GetListBoxItemFromItem(listBox, item), name);
         }
@@ -36,7 +36,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <returns></returns>
         public static ListBoxItem GetListBoxItemFromItem(ListBox listBox, object item)
         {
-            return (ListBoxItem)(listBox.ItemContainerGenerator.ContainerFromItem(item));
+            return (ListBoxItem)listBox.ItemContainerGenerator.ContainerFromItem(item);
         }
 
 
@@ -60,7 +60,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <returns></returns>
         public static ListBoxItem GetListBoxItemFromIndex(ListBox listBox, int index)
         {
-            return (ListBoxItem)(listBox.ItemContainerGenerator.ContainerFromIndex(index));
+            return (ListBoxItem)listBox.ItemContainerGenerator.ContainerFromIndex(index);
         }
 
 
@@ -70,15 +70,15 @@ namespace NeeLaboratory.RealtimeSearch
         /// <param name="item"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static FrameworkElement GetListBoxItemElement(ListBoxItem item, string name)
+        public static FrameworkElement? GetListBoxItemElement(ListBoxItem item, string name)
         {
             if (item == null) return null;
 
             // Getting the ContentPresenter of myListBoxItem
-            ContentPresenter myContentPresenter = FindVisualChild<ContentPresenter>(item);
+            ContentPresenter? myContentPresenter = FindVisualChild<ContentPresenter>(item);
 
             // Finding textBlock from the DataTemplate that is set on that ContentPresenter
-            DataTemplate myDataTemplate = myContentPresenter.ContentTemplate;
+            DataTemplate? myDataTemplate = myContentPresenter?.ContentTemplate;
             if (myDataTemplate == null) throw new InvalidOperationException("DataTempate not exist.");
             return (FrameworkElement)myDataTemplate.FindName(name, myContentPresenter);
         }
@@ -90,16 +90,16 @@ namespace NeeLaboratory.RealtimeSearch
         /// <param name="item"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static T GetListBoxItemElement<T>(ListBoxItem item, string name = null)
+        public static T? GetListBoxItemElement<T>(ListBoxItem item, string? name = null)
             where T : FrameworkElement
         {
             if (item == null) return null;
 
             // Getting the ContentPresenter of myListBoxItem
-            ContentPresenter myContentPresenter = FindVisualChild<ContentPresenter>(item);
+            ContentPresenter? myContentPresenter = FindVisualChild<ContentPresenter>(item);
 
             // Finding textBlock from the DataTemplate that is set on that ContentPresenter
-            DataTemplate myDataTemplate = myContentPresenter.ContentTemplate ?? (myContentPresenter.Content as ContentPresenter)?.ContentTemplate;
+            DataTemplate? myDataTemplate = myContentPresenter?.ContentTemplate ?? (myContentPresenter?.Content as ContentPresenter)?.ContentTemplate;
 
             if (myDataTemplate != null)
             {
@@ -119,16 +119,16 @@ namespace NeeLaboratory.RealtimeSearch
         /// <param name="item"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static T GetChildElement<T>(DependencyObject item, string name = null)
+        public static T? GetChildElement<T>(DependencyObject item, string? name = null)
             where T : FrameworkElement
         {
             if (item == null) return null;
 
             // Getting the ContentPresenter of myListBoxItem
-            ContentPresenter myContentPresenter = FindVisualChild<ContentPresenter>(item);
+            ContentPresenter? myContentPresenter = FindVisualChild<ContentPresenter>(item);
 
             // Finding textBlock from the DataTemplate that is set on that ContentPresenter
-            DataTemplate myDataTemplate = myContentPresenter.ContentTemplate ?? (myContentPresenter.Content as ContentPresenter)?.ContentTemplate;
+            DataTemplate? myDataTemplate = myContentPresenter?.ContentTemplate ?? (myContentPresenter?.Content as ContentPresenter)?.ContentTemplate;
 
             if (myDataTemplate != null)
             {
@@ -149,9 +149,15 @@ namespace NeeLaboratory.RealtimeSearch
         /// <param name="item">指定項目</param>
         /// <param name="name">コントロール名</param>
         /// <returns></returns>
-        public static FrameworkElement GetTreeViewItemElement(TreeView treeView, object item, string name)
+        public static FrameworkElement? GetTreeViewItemElement(TreeView treeView, object item, string name)
         {
-            return GetTreeViewItemElement(FindContainer<TreeViewItem>(treeView, item), name);
+            var container = FindContainer<TreeViewItem>(treeView, item);
+            if (container is null)
+            {
+                return null;
+            }
+
+            return GetTreeViewItemElement(container, name);
         }
 
         /// <summary>
@@ -160,7 +166,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <param name="parent">親ノード。TreeViewまたはTreeViewItem</param>
         /// <param name="childItem">TreeViewItemを取得したいitem</param>
         /// <returns></returns>
-        public static T FindContainer<T>(ItemsControl parent, object childItem) where T : DependencyObject
+        public static T? FindContainer<T>(ItemsControl parent, object childItem) where T : DependencyObject
         {
             if (parent.ItemContainerGenerator.Status != GeneratorStatus.ContainersGenerated)
             {
@@ -195,16 +201,16 @@ namespace NeeLaboratory.RealtimeSearch
         /// <param name="item"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static FrameworkElement GetTreeViewItemElement(TreeViewItem item, string name)
+        public static FrameworkElement? GetTreeViewItemElement(TreeViewItem item, string name)
         {
             if (item == null) return null;
 
             // Getting the ContentPresenter of myListBoxItem
-            ContentPresenter myContentPresenter = FindVisualChild<ContentPresenter>(item);
+            ContentPresenter? myContentPresenter = FindVisualChild<ContentPresenter>(item);
 
             // Finding textBlock from the DataTemplate that is set on that ContentPresenter
-            DataTemplate myDataTemplate = myContentPresenter.ContentTemplate;
-            return (FrameworkElement)myDataTemplate.FindName(name, myContentPresenter);
+            DataTemplate? myDataTemplate = myContentPresenter?.ContentTemplate;
+            return (FrameworkElement?)myDataTemplate?.FindName(name, myContentPresenter);
         }
 
         #endregion
@@ -217,7 +223,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <typeparam name="T">型</typeparam>
         /// <param name="root">探索対象のビジュアル要素</param>
         /// <returns>見つかった場合はその要素</returns>
-        public static T FindVisualChild<T>(DependencyObject root, string name = null) where T : FrameworkElement
+        public static T? FindVisualChild<T>(DependencyObject root, string? name = null) where T : FrameworkElement
         {
             if (root == null)
             {

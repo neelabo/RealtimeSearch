@@ -20,9 +20,9 @@ namespace NeeLaboratory.RealtimeSearch
     {
         #region INotifyPropertyChanged Support
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected bool SetProperty<T>(ref T storage, T value, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
+        protected bool SetProperty<T>(ref T storage, T value, [System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
         {
             if (object.Equals(storage, value)) return false;
             storage = value;
@@ -30,7 +30,7 @@ namespace NeeLaboratory.RealtimeSearch
             return true;
         }
 
-        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = null)
+        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
@@ -49,10 +49,10 @@ namespace NeeLaboratory.RealtimeSearch
         private Setting _setting;
         private DispatcherTimer _timer;
         private SearchEngine _searchEngine;
-        private SearchResult _searchResult;
-        private CancellationTokenSource _searchCancellationTokenSource;
-        private SearchResultWatcher _watcher;
-        private string _lastSearchKeyword;
+        private SearchResult? _searchResult;
+        private CancellationTokenSource _searchCancellationTokenSource = new CancellationTokenSource();
+        private SearchResultWatcher? _watcher;
+        private string _lastSearchKeyword = "";
 
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// 結果変更イベント
         /// </summary>
-        public EventHandler SearchResultChanged;
+        public EventHandler? SearchResultChanged;
 
 
         public bool IsBusy
@@ -117,7 +117,7 @@ namespace NeeLaboratory.RealtimeSearch
             set { _information = value; RaisePropertyChanged(); }
         }
 
-        public SearchResult SearchResult
+        public SearchResult? SearchResult
         {
             get { return _searchResult; }
             set { if (_searchResult != value) { _searchResult = value; RaisePropertyChanged(); } }
@@ -171,7 +171,7 @@ namespace NeeLaboratory.RealtimeSearch
                 IsBusy = true;
 
                 // 同時に実行可能なのは1検索のみ。以前の検索はキャンセルして新しい検索コマンドを発行
-                _searchCancellationTokenSource?.Cancel();
+                _searchCancellationTokenSource.Cancel();
                 _searchCancellationTokenSource = new CancellationTokenSource();
                 var searchResult = await _searchEngine.SearchAsync(keyword, _setting.SearchOption, _searchCancellationTokenSource.Token);
                 if (searchResult.Exception != null)
@@ -180,7 +180,7 @@ namespace NeeLaboratory.RealtimeSearch
                 }
 
                 SearchResult = searchResult;
-                SearchResultChanged?.Invoke(this, null);
+                SearchResultChanged?.Invoke(this, EventArgs.Empty);
 
                 // 複数スレッドからコレクション操作できるようにする
                 BindingOperations.EnableCollectionSynchronization(SearchResult.Items, new object());
@@ -230,7 +230,7 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        private void ProgressTimer_Tick(object sender, EventArgs e)
+        private void ProgressTimer_Tick(object? sender, EventArgs e)
         {
             Information = GetSearchEngineProgress();
             IsBusyVisibled = true;

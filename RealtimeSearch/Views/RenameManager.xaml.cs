@@ -30,6 +30,8 @@ namespace NeeLaboratory.RealtimeSearch
         {
             rename.Close += Rename_Close;
 
+            if (rename.Target is null) return;
+
             var pos = rename.Target.TranslatePoint(new Point(0, 0), this);
             Canvas.SetLeft(rename, pos.X - 3);
             Canvas.SetTop(rename, pos.Y - 2);
@@ -39,12 +41,17 @@ namespace NeeLaboratory.RealtimeSearch
             rename.Target.Visibility = Visibility.Hidden;
         }
 
-        private void Rename_Close(object sender, EventArgs e)
+        private void Rename_Close(object? sender, EventArgs e)
         {
-            var rename = (RenameControl)sender;
-            rename.Target.Visibility = Visibility.Visible;
+            var rename = sender as RenameControl;
+            if (rename is null) return;
+            
+            if (rename.Target != null)
+            {
+                rename.Target.Visibility = Visibility.Visible;
+            }
 
-            this.Root.Children.Remove(sender as RenameControl);
+            this.Root.Children.Remove(rename);
         }
 
         public void Stop()

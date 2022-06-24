@@ -36,7 +36,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// PropertyChanged event. 
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = "")
         {
@@ -60,7 +60,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// Program property.
         /// </summary>
-        private string _program;
+        private string _program = "";
         [DataMember]
         public string Program
         {
@@ -105,15 +105,15 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// Extensions property.
         /// </summary>
-        private string _extensions;
+        private string? _extensions;
         [DataMember]
-        public string Extensions
+        public string? Extensions
         {
             get { return _extensions; }
             set { if (_extensions != value) { _extensions = value; RaisePropertyChanged(); CreateExtensionsList(_extensions); } }
         }
 
-        private List<string> _extensionsList { get; set; }
+        private List<string>? _extensionsList { get; set; }
 
 
         private bool _isMultiArgumentEnabled;
@@ -126,7 +126,7 @@ namespace NeeLaboratory.RealtimeSearch
 
 
         //
-        private void CreateExtensionsList(string exts)
+        private void CreateExtensionsList(string? exts)
         {
             if (exts == null) return;
 

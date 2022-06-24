@@ -19,9 +19,9 @@ namespace NeeLaboratory.RealtimeSearch
     {
         #region INotifyPropertyChanged Support
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected bool SetProperty<T>(ref T storage, T value, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
+        protected bool SetProperty<T>(ref T storage, T value, [System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
         {
             if (object.Equals(storage, value)) return false;
             storage = value;
@@ -29,7 +29,7 @@ namespace NeeLaboratory.RealtimeSearch
             return true;
         }
 
-        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = null)
+        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
@@ -41,17 +41,17 @@ namespace NeeLaboratory.RealtimeSearch
 
         #endregion
 
-        private Models _models;
-        private string _inputKeyword;
+        private Models? _models;
+        private string _inputKeyword = "";
         private DelayValue<string> _keyword;
         private string _defaultWindowTitle;
-        private History _history;
-        private string _resultMessage;
+        private History _history = new History();
+        private string _resultMessage = "";
         private bool _isRenaming;
-        private Setting _setting;
+        private Setting _setting = new Setting();
         private string _settingFileName;
         private string _settingLegacyFileName;
-        private ClipboardSearch _clipboardSearch;
+        private ClipboardSearch? _clipboardSearch;
 
 
         public MainWindowViewModel()
@@ -65,11 +65,11 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
-        public event EventHandler SearchResultChanged;
+        public event EventHandler? SearchResultChanged;
 
 
 
-        public Models Models
+        public Models? Models
         {
             get { return _models; }
             set { if (_models != value) { _models = value; RaisePropertyChanged(); } }
@@ -151,26 +151,26 @@ namespace NeeLaboratory.RealtimeSearch
 
         public void Close()
         {
-            _clipboardSearch.Stop();
+            _clipboardSearch?.Stop();
             Setting.Save(_settingFileName);
         }
 
 
-        private void Models_SearchResultChanged(object sender, EventArgs e)
+        private void Models_SearchResultChanged(object? sender, EventArgs e)
         {
-            SearchResultChanged?.Invoke(sender, null);
+            SearchResultChanged?.Invoke(sender, EventArgs.Empty);
 
-            if (Models.SearchResult.Items.Count == 0)
+            if (Models?.SearchResult != null && Models.SearchResult.Items.Count == 0)
             {
                 ResultMessage = $"条件に一致する項目はありません。";
             }
             else
             {
-                ResultMessage = null;
+                ResultMessage = "";
             }
         }
 
-        private void Setting_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void Setting_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(Setting.IsDetailVisibled))
             {
@@ -178,7 +178,7 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        private void ClipboardSearch_ClipboardChanged(object sender, ClipboardChangedEventArgs e)
+        private void ClipboardSearch_ClipboardChanged(object? sender, ClipboardChangedEventArgs e)
         {
             InputKeyword = e.Keyword;
 
@@ -186,9 +186,9 @@ namespace NeeLaboratory.RealtimeSearch
             AddHistory();
         }
 
-        private void SearchAreas_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void SearchAreas_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            Models.ReIndex();
+            Models?.ReIndex();
         }
 
         public void RestoreWindowPlacement(Window window)
@@ -218,12 +218,12 @@ namespace NeeLaboratory.RealtimeSearch
 
         public void SetClipboard(string text)
         {
-            _clipboardSearch.SetClipboard(text);
+            _clipboardSearch?.SetClipboard(text);
         }
 
         public void AddHistory()
         {
-            var keyword = Models.SearchResult?.Keyword;
+            var keyword = Models?.SearchResult?.Keyword;
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 Debug.WriteLine($"AddHistory: {keyword}");
@@ -233,17 +233,18 @@ namespace NeeLaboratory.RealtimeSearch
 
         public void Rreflesh(string path)
         {
-            Models.Reflesh(path);
+            Models?.Reflesh(path);
         }
 
         public void Rename(string src, string dst)
         {
-            Models.Rename(src, dst);
+            Models?.Rename(src, dst);
         }
 
         public async Task SearchAsync(bool isForce)
         {
-            await Models.SearchAsync(_keyword.Value?.Trim(), isForce);
+            if (Models is null) return;
+            await Models.SearchAsync(_keyword.Value.Trim(), isForce);
         }
 
         public void WebSearch()
@@ -252,7 +253,7 @@ namespace NeeLaboratory.RealtimeSearch
             //\　　'　　|　　`　　^　　"　　<　　>　　)　　(　　}　　{　　]　　[
 
             // キーワード整形。空白を"+"にする
-            string query = _keyword.Value?.Trim();
+            string query = _keyword.Value.Trim();
             if (string.IsNullOrEmpty(query)) return;
             query = query.Replace("+", "%2B");
             query = Regex.Replace(query, @"\s+", "+");
@@ -267,7 +268,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// ToggleDetailVisibleCommand command.
         /// </summary>
-        private RelayCommand _toggleDetailVisibleCommand;
+        private RelayCommand? _toggleDetailVisibleCommand;
         public RelayCommand ToggleDetailVisibleCommand
         {
             get { return _toggleDetailVisibleCommand = _toggleDetailVisibleCommand ?? new RelayCommand(ToggleDetailVisibleCommand_Executed); }
@@ -287,7 +288,7 @@ namespace NeeLaboratory.RealtimeSearch
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             long size = (long)value;
-            return (size >= 0) ? string.Format("{0:#,0} KB", (size + 1024 - 1) / 1024) : null;
+            return (size >= 0) ? string.Format("{0:#,0} KB", (size + 1024 - 1) / 1024) : "";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

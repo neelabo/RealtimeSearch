@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -22,7 +23,7 @@ namespace NeeLaboratory.RealtimeSearch
     public class ListViewColumnMemento
     {
         [DataMember]
-        public string Header { get; set; }
+        public string Header { get; set; } = "";
         [DataMember]
         public double Width { get; set; }
     }
@@ -32,9 +33,9 @@ namespace NeeLaboratory.RealtimeSearch
     {
         #region INotifyPropertyChanged Support
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected bool SetProperty<T>(ref T storage, T value, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
+        protected bool SetProperty<T>(ref T storage, T value, [System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
         {
             if (object.Equals(storage, value)) return false;
             storage = value;
@@ -42,7 +43,7 @@ namespace NeeLaboratory.RealtimeSearch
             return true;
         }
 
-        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = null)
+        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
@@ -62,7 +63,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         // legacy
         [Obsolete, DataMember(EmitDefaultValue = false)]
-        private ObservableCollection<string> SearchPaths;
+        private ObservableCollection<string>? SearchPaths;
 
         [DataMember]
         public ObservableCollection<SearchArea> SearchAreas { get; set; }
@@ -83,7 +84,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         // legacy
         [Obsolete, DataMember(Name = "SearchOption", EmitDefaultValue = false)]
-        private SearchOptionLegacyV1 SearchOptionLegacyV1;
+        private SearchOptionLegacyV1? SearchOptionLegacyV1;
 
         [DataMember(Name = "SearchOptionV2")]
         public NeeLaboratory.IO.Search.SearchOption SearchOption
@@ -106,18 +107,22 @@ namespace NeeLaboratory.RealtimeSearch
         public List<ExternalProgram> ExternalPrograms { set; get; }
 
         [DataMember]
-        public List<ListViewColumnMemento> ListViewColumnMemento { get; set; }
+        public List<ListViewColumnMemento> ListViewColumnMemento { get; set; } = new List<ListViewColumnMemento>();
 
         [DataMember]
         public WindowPlacement.WINDOWPLACEMENT WindowPlacement { get; set; }
 
 
         //----------------------------------------------------------------------------
+        [MemberNotNull(nameof(SearchAreas))]
+        [MemberNotNull(nameof(_searchOption))]
+        [MemberNotNull(nameof(ExternalPrograms))]
+        [MemberNotNull(nameof(WebSearchFormat))]
         private void Constructor()
         {
             SearchAreas = new ObservableCollection<SearchArea>();
             IsMonitorClipboard = true;
-            SearchOption = new NeeLaboratory.IO.Search.SearchOption();
+            _searchOption = new NeeLaboratory.IO.Search.SearchOption();
             ExternalPrograms = new List<ExternalProgram>();
             ExternalPrograms.Add(new ExternalProgram());
             ExternalPrograms.Add(new ExternalProgram());
@@ -176,7 +181,7 @@ namespace NeeLaboratory.RealtimeSearch
             var json = File.ReadAllBytes(path);
             var readOnlySpan = new ReadOnlySpan<byte>(json);
             var setting = JsonSerializer.Deserialize<Setting>(readOnlySpan, CreateJsonSerializerOptions());
-            return setting;
+            return setting ?? new Setting();
         }
 
         [Obsolete]
@@ -199,7 +204,8 @@ namespace NeeLaboratory.RealtimeSearch
                 using (XmlReader xr = XmlReader.Create(path))
                 {
                     DataContractSerializer serializer = new DataContractSerializer(typeof(Setting));
-                    Setting setting = (Setting)serializer.ReadObject(xr);
+                    var setting = serializer.ReadObject(xr) as Setting;
+                    if (setting is null) throw new FormatException();
                     return setting;
                 }
             }
@@ -222,8 +228,8 @@ namespace NeeLaboratory.RealtimeSearch
                 using (XmlReader xr = XmlReader.Create(reader))
                 {
                     DataContractSerializer serializer = new DataContractSerializer(typeof(Setting));
-                    Setting setting = (Setting)serializer.ReadObject(xr);
-                    return setting;
+                    var setting = serializer.ReadObject(xr) as Setting;
+                    return setting ?? new Setting();
                 }
             }
         }

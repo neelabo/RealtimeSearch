@@ -27,21 +27,15 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// コンストラクター
         /// </summary>
-        public DelayValue()
-        {
-            _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromSeconds(0.1);
-            _timer.Tick += Tick;
-        }
-
-        /// <summary>
-        /// コンストラクター
-        /// </summary>
         /// <param name="value">初期値</param>
-        public DelayValue(T value) : this()
+        public DelayValue(T value)
         {
             _value = value;
             _delayValue = value;
+
+            _timer = new DispatcherTimer();
+            _timer.Interval = TimeSpan.FromSeconds(0.1);
+            _timer.Tick += Tick;
         }
 
         #endregion
@@ -51,7 +45,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// 値が反映されたときのイベント
         /// </summary>
-        public event EventHandler ValueChanged;
+        public event EventHandler? ValueChanged;
 
         #endregion
 
@@ -103,7 +97,7 @@ namespace NeeLaboratory.RealtimeSearch
             if (!EqualityComparer<T>.Default.Equals(_delayValue, _value))
             {
                 _value = _delayValue;
-                ValueChanged?.Invoke(this, null);
+                ValueChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -112,7 +106,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Tick(object sender, EventArgs e)
+        private void Tick(object? sender, EventArgs e)
         {
             if (_delayTime <= DateTime.Now)
             {

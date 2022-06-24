@@ -28,7 +28,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// ドロップ ダウンとして表示するコンテキスト メニューを取得または設定します。
         /// </summary>
-        public ContextMenu DropDownContextMenu
+        public ContextMenu? DropDownContextMenu
         {
             get
             {

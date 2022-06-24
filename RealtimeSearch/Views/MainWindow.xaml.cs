@@ -40,9 +40,9 @@ namespace NeeLaboratory.RealtimeSearch
         private MainWindowViewModel _vm;
 
         private Point _dragStart;
-        private ListViewItem _dragDowned;
+        private ListViewItem? _dragDowned;
 
-        private GridViewColumnHeader _lastHeaderClicked = null;
+        private GridViewColumnHeader? _lastHeaderClicked = null;
         private ListSortDirection _lastDirection = ListSortDirection.Ascending;
 
         #endregion Fields
@@ -70,25 +70,23 @@ namespace NeeLaboratory.RealtimeSearch
 
             _vm.LoadSetting();
             RestoreListViewMemento(_vm.Setting.ListViewColumnMemento);
-
-            FileSystem.InitializeDefaultResource();
         }
 
         #endregion Constructors
 
         #region Methods
 
-        private void ViewModel_FilesChanged(object sender, EventArgs e)
+        private void ViewModel_FilesChanged(object? sender, EventArgs e)
         {
             this.Dispatcher.BeginInvoke(new Action(GridViewColumnHeader_Reset), null);
         }
 
-        private void MainWindow_SourceInitialized(object sender, EventArgs e)
+        private void MainWindow_SourceInitialized(object? sender, EventArgs e)
         {
             _vm.RestoreWindowPlacement(this);
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_Loaded(object? sender, RoutedEventArgs e)
         {
             _vm.Open(this);
 
@@ -99,18 +97,18 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        private void Window_Closing(object sender, EventArgs e)
+        private void Window_Closing(object? sender, EventArgs e)
         {
             _vm.Setting.ListViewColumnMemento = CreateListViewMemento();
             _vm.StoreWindowPlacement(this);
         }
 
-        private void Window_Closed(object sender, EventArgs e)
+        private void Window_Closed(object? sender, EventArgs e)
         {
             _vm.Close();
         }
 
-        private void MainWindow_KeyDown(object sender, KeyEventArgs e)
+        private void MainWindow_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {
@@ -119,20 +117,20 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        void ResultListView_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        void ResultListView_ScrollChanged(object? sender, ScrollChangedEventArgs e)
         {
             this.RenameManager.Stop();
         }
 
-        private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void ListViewItem_MouseDoubleClick(object? sender, MouseButtonEventArgs e)
         {
-            NodeContent file = ((ListViewItem)sender).Content as NodeContent;
+            NodeContent? file = ((ListViewItem?)sender)?.Content as NodeContent;
             if (file == null) return;
 
             Execute(new List<NodeContent>() { file });
         }
 
-        private async void Keyword_KeyDown(object sender, KeyEventArgs e)
+        private async void Keyword_KeyDown(object? sender, KeyEventArgs e)
         {
             if (sender is ComboBox comboBox)
             {
@@ -145,12 +143,12 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        private void Keyword_LostFocus(object sender, RoutedEventArgs e)
+        private void Keyword_LostFocus(object? sender, RoutedEventArgs e)
         {
             _vm.AddHistory();
         }
 
-        private void Keyword_TextChanged(object sender, TextChangedEventArgs e)
+        private void Keyword_TextChanged(object? sender, TextChangedEventArgs e)
         {
             var textBox = e.OriginalSource as TextBox;
             if (textBox != null)
@@ -159,7 +157,7 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        private void SettingButton_Click(object sender, RoutedEventArgs e)
+        private void SettingButton_Click(object? sender, RoutedEventArgs e)
         {
             ShowSettingWindow();
         }
@@ -193,12 +191,15 @@ namespace NeeLaboratory.RealtimeSearch
                     //Debug.WriteLine($"{ev.OldValue} => {ev.NewValue}");
                     if (ev.OldValue != ev.NewValue)
                     {
-                        NodeContent file = this.ResultListView.SelectedItem as NodeContent;
-                        var src = file.Path;
-                        var dst = Rename(file, ev.NewValue);
-                        if (dst != null)
+                        NodeContent? file = this.ResultListView.SelectedItem as NodeContent;
+                        if (file != null)
                         {
-                            _vm.Rename(src, dst);
+                            var src = file.Path;
+                            var dst = Rename(file, ev.NewValue);
+                            if (dst != null)
+                            {
+                                _vm.Rename(src, dst);
+                            }
                         }
                     }
                 };
@@ -238,7 +239,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <param name="file"></param>
         /// <param name="newName"></param>
         /// <returns>成功した場合は新しいフルパス。失敗した場合はnull</returns>
-        private string Rename(NodeContent file, string newName)
+        private string? Rename(NodeContent file, string newName)
         {
             if (file == null || string.IsNullOrWhiteSpace(newName)) return null;
 
@@ -253,7 +254,7 @@ namespace NeeLaboratory.RealtimeSearch
             }
 
             string src = file.Path;
-            string dst = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(src), newName);
+            string dst = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(src) ?? "", newName);
             if (src == dst) return null;
 
             bool isFile = System.IO.File.Exists(src);
@@ -277,7 +278,7 @@ namespace NeeLaboratory.RealtimeSearch
             else if (System.IO.File.Exists(dst) || System.IO.Directory.Exists(dst))
             {
                 string dstBase = dst;
-                string dir = System.IO.Path.GetDirectoryName(dst);
+                string dir = System.IO.Path.GetDirectoryName(dst) ?? "";
                 string name = System.IO.Path.GetFileNameWithoutExtension(dst);
                 string ext = System.IO.Path.GetExtension(dst);
                 int count = 1;
@@ -321,7 +322,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         #region Execute file
 
-        private ExternalProgram FindExternalProgram(string path)
+        private ExternalProgram? FindExternalProgram(string path)
         {
             foreach (var program in _vm.Setting.ExternalPrograms)
             {
@@ -461,17 +462,17 @@ namespace NeeLaboratory.RealtimeSearch
         #region DragDrop
 
         // ファイルのドラッグ判定開始
-        private void PreviewMouseDown_Event(object sender, MouseButtonEventArgs e)
+        private void PreviewMouseDown_Event(object? sender, MouseButtonEventArgs e)
         {
             _dragDowned = sender as ListViewItem;
             _dragStart = e.GetPosition(_dragDowned);
         }
 
         // ファイルのドラッグ開始
-        private void PreviewMouseMove_Event(object sender, System.Windows.Input.MouseEventArgs e)
+        private void PreviewMouseMove_Event(object? sender, System.Windows.Input.MouseEventArgs e)
         {
             var s = sender as ListViewItem;
-            var pn = s.Content as NodeContent;
+            //var pn = s?.Content as NodeContent;
 
             if (_dragDowned != null && _dragDowned == s && e.LeftButton == MouseButtonState.Pressed)
             {
@@ -483,14 +484,18 @@ namespace NeeLaboratory.RealtimeSearch
 
                     if (this.ResultListView.SelectedItems.Count > 0)
                     {
-                        string[] paths = new string[this.ResultListView.SelectedItems.Count];
+                        var paths = new List<string>();
                         for (int i = 0; i < this.ResultListView.SelectedItems.Count; ++i)
                         {
-                            paths[i] = ((NodeContent)this.ResultListView.SelectedItems[i]).Path;
+                            var path = (this.ResultListView.SelectedItems[i] as NodeContent)?.Path;
+                            if (path != null)
+                            {
+                                paths.Add(path);
+                            }
                         }
 
                         DataObject data = new DataObject();
-                        data.SetData(DataFormats.FileDrop, paths);
+                        data.SetData(DataFormats.FileDrop, paths.ToArray());
                         DragDrop.DoDragDrop(s, data, DragDropEffects.Copy);
                     }
                 }
@@ -552,7 +557,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void Property_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            NodeContent file = (target as ListView)?.SelectedItem as NodeContent;
+            NodeContent? file = (target as ListView)?.SelectedItem as NodeContent;
             if (file != null)
             {
                 try
@@ -584,7 +589,7 @@ namespace NeeLaboratory.RealtimeSearch
             if (items != null && items.Count >= 1)
             {
                 var message = (items.Count == 1)
-                    ? $"このファイルをごみ箱に移動しますか？\n\n{((NodeContent)items[0]).Path}"
+                    ? $"このファイルをごみ箱に移動しますか？\n\n{(items[0] as NodeContent)?.Path}"
                     : $"これらの {items.Count} 個の項目をごみ箱に移しますか？";
 
                 var result = MessageBox.Show(message, "削除確認", MessageBoxButton.OKCancel, MessageBoxImage.Question);
@@ -616,7 +621,7 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
         // 名前変更
-        private void Rename_Executed(object target, ExecutedRoutedEventArgs e)
+        private void Rename_Executed(object? target, ExecutedRoutedEventArgs? e)
         {
             var listView = target as ListView;
             var item = listView?.SelectedItem as NodeContent;
@@ -718,7 +723,7 @@ namespace NeeLaboratory.RealtimeSearch
 
             foreach (var item in items)
             {
-                NodeContent file = item as NodeContent;
+                NodeContent? file = item as NodeContent;
                 if (file != null && (System.IO.File.Exists((string)file.Path) || System.IO.Directory.Exists((string)file.Path)))
                 {
                     var startInfo = new System.Diagnostics.ProcessStartInfo("explorer.exe", (string)("/select,\"" + file.Path + "\"")) { UseShellExecute = false };
@@ -730,21 +735,22 @@ namespace NeeLaboratory.RealtimeSearch
         // ファイルのコピー
         private void Copy_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            var files = new System.Collections.Specialized.StringCollection();
+            var selectedItems = (target as ListView)?.SelectedItems;
+            if (selectedItems is null) return;
 
-            foreach (var item in (target as ListView)?.SelectedItems)
+            var files = new System.Collections.Specialized.StringCollection();
+            foreach (var item in selectedItems)
             {
-                NodeContent file = item as NodeContent;
+                NodeContent? file = item as NodeContent;
                 if (file != null) files.Add(file.Path);
             }
-
             if (files.Count > 0) Clipboard.SetFileDropList(files);
         }
 
         // ファイル名のコピー
         private void CopyName_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            NodeContent file = (target as ListView)?.SelectedItem as NodeContent;
+            NodeContent? file = (target as ListView)?.SelectedItem as NodeContent;
             if (file != null)
             {
                 string text = System.IO.Path.GetFileNameWithoutExtension(file.Path);
@@ -770,7 +776,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             if (this.ResultListView.ItemsSource == null) return;
 
-            GridViewColumnHeader headerClicked = e.OriginalSource as GridViewColumnHeader;
+            GridViewColumnHeader? headerClicked = e.OriginalSource as GridViewColumnHeader;
             ListSortDirection direction;
 
             if (headerClicked != null)
@@ -793,11 +799,11 @@ namespace NeeLaboratory.RealtimeSearch
                         }
                     }
 
-                    Binding binding = headerClicked.Column.DisplayMemberBinding as Binding;
+                    Binding? binding = headerClicked.Column.DisplayMemberBinding as Binding;
 
-                    string header = binding != null
-                        ? (headerClicked.Column.DisplayMemberBinding as Binding).Path.Path
-                        : headerClicked.Tag as string;
+                    string? header = binding != null
+                        ? binding.Path.Path
+                        : headerClicked.Tag as string ?? "";
 
                     GridViewColumnHeader_Sort(header, direction);
 
@@ -824,7 +830,8 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void GridViewColumnHeader_Sort(string sortBy, ListSortDirection direction)
         {
-            ListCollectionView dataView = CollectionViewSource.GetDefaultView(this.ResultListView.ItemsSource) as ListCollectionView;
+            ListCollectionView? dataView = CollectionViewSource.GetDefaultView(this.ResultListView.ItemsSource) as ListCollectionView;
+            if (dataView is null) return;
 
             dataView.SortDescriptions.Clear();
             SortDescription sd = new SortDescription(sortBy, direction);
@@ -837,7 +844,7 @@ namespace NeeLaboratory.RealtimeSearch
         #region ListViewColumnMemento
 
         // カラムヘッダ文字列取得
-        private string GetColumnHeaderText(GridViewColumn column)
+        private string? GetColumnHeaderText(GridViewColumn column)
         {
             return (column.Header as string) ?? (column.Header as GridViewColumnHeader)?.Content as string;
         }
@@ -846,12 +853,12 @@ namespace NeeLaboratory.RealtimeSearch
         private List<ListViewColumnMemento> CreateListViewMemento()
         {
             var columns = (this.ResultListView.View as GridView)?.Columns;
-            if (columns == null) return null;
+            if (columns == null) return new List<ListViewColumnMemento>();
 
             var memento = new List<ListViewColumnMemento>();
             foreach (var column in columns)
             {
-                string key = GetColumnHeaderText(column);
+                var key = GetColumnHeaderText(column);
                 if (key != null)
                 {
                     memento.Add(new ListViewColumnMemento() { Header = key, Width = column.Width });
@@ -863,7 +870,7 @@ namespace NeeLaboratory.RealtimeSearch
         // リストビューカラム状態復帰
         private void RestoreListViewMemento(List<ListViewColumnMemento> memento)
         {
-            if (memento == null) return;
+            if (!memento.Any()) return;
 
             var columns = (this.ResultListView.View as GridView)?.Columns;
             if (columns == null) return;

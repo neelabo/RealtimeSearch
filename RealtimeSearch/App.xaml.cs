@@ -21,12 +21,11 @@ namespace NeeLaboratory.RealtimeSearch
     /// </summary>
     public partial class App : Application
     {
-        public static Config Config { get; private set; }
+        public static Config Config { get; private set; } = new Config();
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            Config = new Config();
-            Config.Initialize(Assembly.GetEntryAssembly());
+            Config.Initialize(Assembly.GetExecutingAssembly());
 
             // カレントフォルダ設定
             System.Environment.CurrentDirectory = Config.LocalApplicationDataPath;

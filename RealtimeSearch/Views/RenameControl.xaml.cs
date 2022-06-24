@@ -20,15 +20,15 @@ namespace NeeLaboratory.RealtimeSearch
 
     public class RenameClosingEventArgs : EventArgs
     {
-        public string OldValue { get; set; }
-        public string NewValue { get; set; }
+        public string OldValue { get; set; } = "";
+        public string NewValue { get; set; } = "";
         public bool Cancel { get; set; }
     }
 
     public class RenameClosedEventArgs : EventArgs
     {
-        public string OldValue { get; set; }
-        public string NewValue { get; set; }
+        public string OldValue { get; set; } = "";
+        public string NewValue { get; set; } = "";
         public int MoveRename { get; set; }
     }
 
@@ -40,9 +40,9 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// PropertyChanged event. 
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = "")
+        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? name = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
@@ -51,8 +51,8 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// Target property.
         /// </summary>
-        private TextBlock _target;
-        public TextBlock Target
+        private TextBlock? _target;
+        public TextBlock? Target
         {
             get { return _target; }
             set
@@ -62,7 +62,7 @@ namespace NeeLaboratory.RealtimeSearch
                     _target = value;
                     RaisePropertyChanged();
 
-                    Text = _target.Text;
+                    Text = _target?.Text ?? "";
                     _old = Text;
                     _new = Text;
                     
@@ -73,8 +73,8 @@ namespace NeeLaboratory.RealtimeSearch
                     padding.Right += 20;
                     */
 
-                    this.RenameTextBox.FontFamily = Target.FontFamily;
-                    this.RenameTextBox.FontSize = Target.FontSize;
+                    this.RenameTextBox.FontFamily = Target?.FontFamily;
+                    this.RenameTextBox.FontSize = Target != null ? Target.FontSize : this.RenameTextBox.FontSize;
                 }
             }
         }
@@ -88,25 +88,25 @@ namespace NeeLaboratory.RealtimeSearch
             this.RenameTextBox.DataContext = this;
         }
 
-        private string _old;
-        private string _new;
+        private string _old = "";
+        private string _new = "";
 
         private int _moveRename;
 
         private int _keyCount;
 
 
-        public event EventHandler<RenameClosingEventArgs> Closing;
+        public event EventHandler<RenameClosingEventArgs>? Closing;
 
-        public event EventHandler Close;
+        public event EventHandler? Close;
 
-        public event EventHandler<RenameClosedEventArgs> Closed;
+        public event EventHandler<RenameClosedEventArgs>? Closed;
 
 
         /// <summary>
         /// Text property.
         /// </summary>
-        private string _text;
+        private string _text = "";
         public string Text
         {
             get { return _text; }
@@ -138,7 +138,7 @@ namespace NeeLaboratory.RealtimeSearch
                 _new = _old;
             }
 
-            Close?.Invoke(this, null);
+            Close?.Invoke(this, EventArgs.Empty);
         }
 
         //

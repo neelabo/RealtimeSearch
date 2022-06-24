@@ -14,27 +14,26 @@ namespace NeeLaboratory.RealtimeSearch
 {
     public class ClipboardChangedEventArgs : EventArgs
     {
-        public string Keyword { get; set; }
+        public string Keyword { get; set; } = "";
     }
 
     //
     public class ClipboardSearch
     {
-        private ClipboardListner _clipboardListner;
+        private ClipboardListner? _clipboardListner;
+        private Setting _setting;
+        private string _copyText = "";
 
 
-        private Setting Setting;
-
-
-        public event EventHandler<ClipboardChangedEventArgs> ClipboardChanged;
-
-        //
         public ClipboardSearch(Setting setting)
         {
-            Setting = setting;
+            _setting = setting;
         }
 
-        //
+
+        public event EventHandler<ClipboardChangedEventArgs>? ClipboardChanged;
+
+        
         public void Start(Window window)
         {
             // クリップボード監視
@@ -46,12 +45,10 @@ namespace NeeLaboratory.RealtimeSearch
         public void Stop()
         {
             // クリップボード監視終了
-            _clipboardListner.Dispose();
+            _clipboardListner?.Dispose();
             _clipboardListner = null;
         }
 
-
-        private string _copyText;
 
         public void SetClipboard(string text)
         {
@@ -63,7 +60,7 @@ namespace NeeLaboratory.RealtimeSearch
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern IntPtr GetForegroundWindow();
         
-        public async void ClipboardListner_DrawClipboard(object sender, Window window)
+        public async void ClipboardListner_DrawClipboard(object? sender, Window window)
         {
             IntPtr activeWindow = GetForegroundWindow();
             IntPtr thisWindow = new WindowInteropHelper(window).Handle;
@@ -78,7 +75,7 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 try
                 {
-                    if (Setting.IsMonitorClipboard)
+                    if (_setting.IsMonitorClipboard)
                     {
                         // text
                         if (Clipboard.ContainsText())
@@ -105,8 +102,8 @@ namespace NeeLaboratory.RealtimeSearch
                             // 即時検索
                             ClipboardChanged?.Invoke(this, new ClipboardChangedEventArgs()
                             {
-                                Keyword = name
-                            });
+                                Keyword = name ?? ""
+                            }); 
                         }
                     }
                     return;

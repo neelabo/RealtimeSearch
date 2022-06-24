@@ -80,27 +80,14 @@ namespace NeeLaboratory.RealtimeSearch
 
         #region アイコンリソース取得 (簡易版)
 
+        const string _dummyFilePath = "__dummy_file__";
+
         private static Dictionary<string, string> s_typeNameDictionary = new Dictionary<string, string>();
         private static Dictionary<string, BitmapSource> s_iconDictionary = new Dictionary<string, BitmapSource>();
-
-        private static string s_folderTypeName;
-        private static BitmapSource s_folderIcon;
-        private static string s_defaultTypeName;
-        private static BitmapSource s_defaultIcon;
-
-        /// <summary>
-        /// ファイルの標準アイコンを準備
-        /// </summary>
-        public static void InitializeDefaultResource()
-        {
-            if (s_folderTypeName != null) return;
-
-            const string path = "__dummy_file__";
-            s_folderTypeName = GetTypeNameWithAttribute(path, NativeMethods.FILE_ATTRIBUTE_DIRECTORY);
-            s_folderIcon = GetTypeIconSourceWithAttribute(path, IconSize.Small, NativeMethods.FILE_ATTRIBUTE_DIRECTORY);
-            s_defaultTypeName = GetTypeNameWithAttribute(path, 0);
-            s_defaultIcon = GetTypeIconSourceWithAttribute(path, IconSize.Small, 0);
-        }
+        private static Lazy<string> s_folderTypeName = new(() => GetTypeNameWithAttribute(_dummyFilePath, NativeMethods.FILE_ATTRIBUTE_DIRECTORY));
+        private static Lazy<BitmapSource> s_folderIcon = new(() => GetTypeIconSourceWithAttribute(_dummyFilePath, IconSize.Small, NativeMethods.FILE_ATTRIBUTE_DIRECTORY) ?? new BitmapImage());
+        private static Lazy<string> s_defaultTypeName = new(() => GetTypeNameWithAttribute(_dummyFilePath, 0));
+        private static Lazy<BitmapSource> s_defaultIcon = new(() => GetTypeIconSourceWithAttribute(_dummyFilePath, IconSize.Small, 0) ?? new BitmapImage());
 
 
         /// <summary>
@@ -111,11 +98,11 @@ namespace NeeLaboratory.RealtimeSearch
         /// <returns></returns>
         public static string CreateTypeName(string path, bool isDirectory)
         {
-            string typeName = null;
+            string? typeName = null;
 
             if (isDirectory)
             {
-                typeName = s_folderTypeName;
+                typeName = s_folderTypeName.Value;
             }
             else
             {
@@ -125,7 +112,7 @@ namespace NeeLaboratory.RealtimeSearch
                     if (!s_typeNameDictionary.TryGetValue(ext, out typeName))
                     {
                         typeName = GetTypeNameWithAttribute(ext, 0);
-                        if (typeName != null)
+                        if (!string.IsNullOrEmpty(typeName))
                         {
                             s_typeNameDictionary.Add(ext, typeName);
                         }
@@ -133,7 +120,7 @@ namespace NeeLaboratory.RealtimeSearch
                 }
             }
 
-            return typeName ?? s_defaultTypeName;
+            return typeName ?? s_defaultTypeName.Value;
         }
 
 
@@ -145,11 +132,11 @@ namespace NeeLaboratory.RealtimeSearch
         /// <returns></returns>
         public static BitmapSource CreateIcon(string path, bool isDirectory)
         {
-            BitmapSource icon = null;
+            BitmapSource? icon = null;
 
             if (isDirectory)
             {
-                icon = s_folderIcon;
+                icon = s_folderIcon.Value;
             }
             else
             {
@@ -166,7 +153,7 @@ namespace NeeLaboratory.RealtimeSearch
                     }
                 }
             }
-            return icon ?? s_defaultIcon;
+            return icon ?? s_defaultIcon.Value;
         }
 
         #endregion
@@ -191,7 +178,7 @@ namespace NeeLaboratory.RealtimeSearch
             }
             else
             {
-                return null;
+                return "";
             }
         }
 
@@ -213,7 +200,7 @@ namespace NeeLaboratory.RealtimeSearch
             }
             else
             {
-                return null;
+                return "";
             }
         }
 
@@ -223,7 +210,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <param name="path"></param>
         /// <param name="iconSize"></param>
         /// <returns></returns>
-        public static BitmapSource GetTypeIconSource(string path, IconSize iconSize)
+        public static BitmapSource? GetTypeIconSource(string path, IconSize iconSize)
         {
             var shinfo = new NativeMethods.SHFILEINFO();
             IntPtr hSuccess = NativeMethods.SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), NativeMethods.SHGFI_ICON | (iconSize == IconSize.Small ? NativeMethods.SHGFI_SMALLICON : NativeMethods.SHGFI_LARGEICON));
@@ -245,7 +232,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <param name="path"></param>
         /// <param name="iconSize"></param>
         /// <returns></returns>
-        public static BitmapSource GetTypeIconSourceWithAttribute(string path, IconSize iconSize, uint attribute)
+        public static BitmapSource? GetTypeIconSourceWithAttribute(string path, IconSize iconSize, uint attribute)
         {
             var shinfo = new NativeMethods.SHFILEINFO();
             IntPtr hSuccess = NativeMethods.SHGetFileInfo(path, attribute, ref shinfo, (uint)Marshal.SizeOf(shinfo), NativeMethods.SHGFI_ICON | (iconSize == IconSize.Small ? NativeMethods.SHGFI_SMALLICON : NativeMethods.SHGFI_LARGEICON) | NativeMethods.SHGFI_USEFILEATTRIBUTES);

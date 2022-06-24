@@ -20,12 +20,12 @@ namespace NeeLaboratory.RealtimeSearch
     public class RelayCommand : ICommand
     {
         private readonly Action _execute;
-        private readonly Func<bool> _canExecute;
+        private readonly Func<bool>? _canExecute;
 
         /// <summary>
         /// RaiseCanExecuteChanged が呼び出されたときに生成されます。
         /// </summary>
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged;
 
         /// <summary>
         /// 常に実行可能な新しいコマンドを作成します。
@@ -41,7 +41,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         /// <param name="execute">実行ロジック。</param>
         /// <param name="canExecute">実行ステータス ロジック。</param>
-        public RelayCommand(Action execute, Func<bool> canExecute)
+        public RelayCommand(Action execute, Func<bool>? canExecute)
         {
             if (execute == null)
                 throw new ArgumentNullException("execute");
@@ -56,7 +56,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// コマンドによって使用されるデータ。コマンドが、データの引き渡しを必要としない場合、このオブジェクトを null に設定できます。
         /// </param>
         /// <returns>このコマンドが実行可能な場合は true、それ以外の場合は false。</returns>
-        public bool CanExecute(object parameter)
+        public bool CanExecute(object? parameter)
         {
             return _canExecute == null ? true : _canExecute();
         }
@@ -67,7 +67,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <param name="parameter">
         /// コマンドによって使用されるデータ。コマンドが、データの引き渡しを必要としない場合、このオブジェクトを null に設定できます。
         /// </param>
-        public void Execute(object parameter)
+        public void Execute(object? parameter)
         {
             _execute();
         }
@@ -94,19 +94,19 @@ namespace NeeLaboratory.RealtimeSearch
     /// <typeparam name="T"></typeparam>
     public class RelayCommand<T> : ICommand
     {
-        private readonly Action<T> _execute;
-        private readonly Func<T, bool> _canExecute;
+        private readonly Action<T?> _execute;
+        private readonly Func<T?, bool>? _canExecute;
 
         /// <summary>
         /// RaiseCanExecuteChanged が呼び出されたときに生成されます。
         /// </summary>
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged;
 
         /// <summary>
         /// 常に実行可能な新しいコマンドを作成します。
         /// </summary>
         /// <param name="execute">実行ロジック。</param>
-        public RelayCommand(Action<T> execute)
+        public RelayCommand(Action<T?> execute)
             : this(execute, null)
         {
         }
@@ -116,7 +116,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         /// <param name="execute">実行ロジック。</param>
         /// <param name="canExecute">実行ステータス ロジック。</param>
-        public RelayCommand(Action<T> execute, Func<T, bool> canExecute)
+        public RelayCommand(Action<T?> execute, Func<T?, bool>? canExecute)
         {
             if (execute == null)
                 throw new ArgumentNullException("execute");
@@ -131,9 +131,9 @@ namespace NeeLaboratory.RealtimeSearch
         /// コマンドによって使用されるデータ。コマンドが、データの引き渡しを必要としない場合、このオブジェクトを null に設定できます。
         /// </param>
         /// <returns>このコマンドが実行可能な場合は true、それ以外の場合は false。</returns>
-        public bool CanExecute(object parameter)
+        public bool CanExecute(object? parameter)
         {
-            return _canExecute == null ? true : _canExecute((T)parameter);
+            return _canExecute == null ? true : _canExecute((T?)parameter);
         }
 
         /// <summary>
@@ -142,9 +142,9 @@ namespace NeeLaboratory.RealtimeSearch
         /// <param name="parameter">
         /// コマンドによって使用されるデータ。コマンドが、データの引き渡しを必要としない場合、このオブジェクトを null に設定できます。
         /// </param>
-        public void Execute(object parameter)
+        public void Execute(object? parameter)
         {
-            _execute((T)parameter);
+            _execute((T?)parameter);
         }
 
         /// <summary>

@@ -24,7 +24,7 @@ namespace NeeLaboratory.RealtimeSearch
         private Window _window;
         private IntPtr _handle;
 
-        public event EventHandler<Window> ClipboardUpdate;
+        public event EventHandler<Window>? ClipboardUpdate;
 
 
         private void NotifyClipboardUpdate()
@@ -41,16 +41,16 @@ namespace NeeLaboratory.RealtimeSearch
 
         public ClipboardListner(Window window)
         {
-            Open(window);
+            _window = window;
+            Open();
         }
 
 
-        public void Open(Window window)
+        public void Open()
         {
             if (_handle != IntPtr.Zero) throw new ApplicationException("ClipboardListner is already opened.");
 
-            _window = window;
-            _handle = new WindowInteropHelper(window).Handle;
+            _handle = new WindowInteropHelper(_window).Handle;
 
             AddClipboardFormatListener(_handle);
 

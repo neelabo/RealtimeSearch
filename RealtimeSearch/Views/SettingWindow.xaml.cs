@@ -22,9 +22,9 @@ namespace NeeLaboratory.RealtimeSearch
     {
         #region INotifyPropertyChanged Support
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected bool SetProperty<T>(ref T storage, T value, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
+        protected bool SetProperty<T>(ref T storage, T value, [System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
         {
             if (object.Equals(storage, value)) return false;
             storage = value;
@@ -32,7 +32,7 @@ namespace NeeLaboratory.RealtimeSearch
             return true;
         }
 
-        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = null)
+        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
@@ -45,15 +45,15 @@ namespace NeeLaboratory.RealtimeSearch
         #endregion
 
 
-        private CollectionViewSource _collectionViewSource;
-        public CollectionViewSource CollectionViewSource
+        private CollectionViewSource? _collectionViewSource;
+        public CollectionViewSource? CollectionViewSource
         {
             get { return _collectionViewSource; }
             set { _collectionViewSource = value; RaisePropertyChanged(); }
         }
 
-        private SearchArea _selectedArea;
-        public SearchArea SelectedArea
+        private SearchArea? _selectedArea;
+        public SearchArea? SelectedArea
         {
             get { return _selectedArea; }
             set { SetProperty(ref _selectedArea, value); }
@@ -84,7 +84,7 @@ namespace NeeLaboratory.RealtimeSearch
             this.CommandBindings.Add(new CommandBinding(CloseCommand, (t, e) => Close()));
 
             // help command
-            var readmeUri = "file://" + Path.GetDirectoryName(Assembly.GetEntryAssembly().Location).Replace('\\', '/').TrimEnd('/') + $"/README.html";
+            var readmeUri = "file://" + App.Config.AssemblyLocation.Replace('\\', '/').TrimEnd('/') + $"/README.html";
             this.CommandBindings.Add(new CommandBinding(HelpCommand, (t, e) =>
             {
                 try
@@ -219,7 +219,7 @@ namespace NeeLaboratory.RealtimeSearch
                 var command = item.Command as RoutedCommand;
                 if (command != null)
                 {
-                    string text = null;
+                    string? text = null;
                     foreach (InputGesture gesture in command.InputGestures)
                     {
                         if (text == null)

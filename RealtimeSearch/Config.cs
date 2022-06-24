@@ -20,22 +20,22 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// 
         /// </summary>
-        public string AssemblyLocation { get; private set; }
+        public string AssemblyLocation { get; private set; } = "";
 
         /// <summary>
         /// 会社名
         /// </summary>
-        public string CompanyName { get; private set; }
+        public string CompanyName { get; private set; } = "";
 
         /// <summary>
         /// プロダクト名
         /// </summary>
-        public string ProductName { get; private set; }
+        public string ProductName { get; private set; } = "";
 
         /// <summary>
         /// プロダクトバージョン
         /// </summary>
-        public string ProductVersion { get; private set; }
+        public string ProductVersion { get; private set; } = "";
 
         /// <summary>
         /// プロダクトバージョン(int)
@@ -64,18 +64,18 @@ namespace NeeLaboratory.RealtimeSearch
         private void ValidateProductInfo(Assembly asm)
         {
             // パス
-            AssemblyLocation = Path.GetDirectoryName(asm.Location);
+            AssemblyLocation = Path.GetDirectoryName(asm.Location) ?? "";
 
             // 会社名
-            AssemblyCompanyAttribute companyAttribute = Attribute.GetCustomAttribute(asm, typeof(AssemblyCompanyAttribute)) as AssemblyCompanyAttribute;
-            CompanyName = companyAttribute.Company;
+            AssemblyCompanyAttribute? companyAttribute = Attribute.GetCustomAttribute(asm, typeof(AssemblyCompanyAttribute)) as AssemblyCompanyAttribute;
+            CompanyName = companyAttribute?.Company ?? "NeeLaboratory";
 
             // タイトル
-            AssemblyTitleAttribute titleAttribute = Attribute.GetCustomAttribute(asm, typeof(AssemblyTitleAttribute)) as AssemblyTitleAttribute;
-            ProductName = titleAttribute.Title;
+            AssemblyTitleAttribute? titleAttribute = Attribute.GetCustomAttribute(asm, typeof(AssemblyTitleAttribute)) as AssemblyTitleAttribute;
+            ProductName = titleAttribute?.Title ?? "RealtimeSearch";
 
             // バージョンの取得
-            var version = asm.GetName().Version;
+            var version = asm.GetName().Version ?? new Version();
             if (version.Build == 0)
             {
                 ProductVersion = $"{version.Major}.{version.Minor}";
@@ -92,7 +92,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// ユーザデータフォルダ
         /// </summary>
-        private string _localApplicationDataPath;
+        private string? _localApplicationDataPath;
         public string LocalApplicationDataPath
         {
             get
@@ -153,14 +153,14 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
         // パッケージの種類(拡張子)
-        private string _packageType;
+        private string? _packageType;
         public string PackageType
         {
             get
             {
                 if (_packageType == null)
                 {
-                    _packageType = ConfigurationManager.AppSettings["PackageType"];
+                    _packageType = ConfigurationManager.AppSettings["PackageType"] ?? "";
                     if (_packageType != ".msi") _packageType = ".zip";
                 }
                 return _packageType;
@@ -191,7 +191,7 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
         //
-        public event EventHandler LocalApplicationDataRemoved;
+        public event EventHandler? LocalApplicationDataRemoved;
 
         //
         public void RemoveApplicationData()
@@ -215,7 +215,7 @@ namespace NeeLaboratory.RealtimeSearch
                 {
                     this.RemoveApplicationDataCore();
                     MessageBox.Show($"ユーザデータを削除しました。{ProductName}を終了します。", $"{ProductName} - 完了");
-                    LocalApplicationDataRemoved?.Invoke(this, null);
+                    LocalApplicationDataRemoved?.Invoke(this, EventArgs.Empty);
                 }
                 catch (Exception ex)
                 {
