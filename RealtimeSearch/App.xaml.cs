@@ -25,7 +25,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            Config.Initialize(Assembly.GetExecutingAssembly());
+            Config.Initialize();
 
             // カレントフォルダ設定
             System.Environment.CurrentDirectory = Config.LocalApplicationDataPath;

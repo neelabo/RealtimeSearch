@@ -51,20 +51,24 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// いろいろ初期化
         /// </summary>
-        public void Initialize(Assembly assembly)
+        public void Initialize()
         {
-            //var assembly = Assembly.GetEntryAssembly();
-            ValidateProductInfo(assembly);
+            ProcessModule? module = Process.GetCurrentProcess().MainModule;
+            if (module is null) throw new InvalidOperationException();
+
+            var assembly = Assembly.GetExecutingAssembly();
+
+            ValidateProductInfo(assembly, module);
         }
 
         /// <summary>
         /// アセンブリ情報収集
         /// </summary>
         /// <param name="asm"></param>
-        private void ValidateProductInfo(Assembly asm)
+        private void ValidateProductInfo(Assembly asm, ProcessModule module)
         {
             // パス
-            AssemblyLocation = Path.GetDirectoryName(asm.Location) ?? "";
+            AssemblyLocation = Path.GetDirectoryName(module.FileName) ?? "";
 
             // 会社名
             AssemblyCompanyAttribute? companyAttribute = Attribute.GetCustomAttribute(asm, typeof(AssemblyCompanyAttribute)) as AssemblyCompanyAttribute;

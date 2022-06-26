@@ -11,6 +11,7 @@
     <Version>4.0.0</Version>
     <Authors>NeeLaboratory</Authors>
     <Copyright>Copyright © 2015-2020 Ito Mitsuhiro (nee)</Copyright>
+    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
   </PropertyGroup>
   
   <ItemGroup>
@@ -19,6 +20,12 @@
   
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Update="App.config">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </None>
   </ItemGroup>
   
 </Project>
