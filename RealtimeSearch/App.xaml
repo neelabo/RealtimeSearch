@@ -10,7 +10,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="Views/MainWindow.xaml"
              xmlns:local="clr-namespace:NeeLaboratory.RealtimeSearch"
-             Startup="Application_Startup">
+             Startup="Application_Startup"
+             Exit="Application_Exit">
     <Application.Resources>
        
         <!-- IconButton Style -->

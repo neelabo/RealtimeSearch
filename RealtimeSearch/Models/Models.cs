@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Windows.Threading;
 using System.Windows.Data;
 using System.IO;
+using System.Collections.Specialized;
 
 namespace NeeLaboratory.RealtimeSearch
 {
@@ -57,9 +58,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         /// <summary>
         /// コンストラクタ
-        /// TODO: 設定をわたしているが、設定の読込もここでしょ
         /// </summary>
-        /// <param name="setting"></param>
         public Models(Setting setting)
         {
             _timer = new DispatcherTimer();
@@ -67,12 +66,14 @@ namespace NeeLaboratory.RealtimeSearch
             _timer.Tick += ProgressTimer_Tick;
 
             _setting = setting;
+            _setting.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
 
             _searchEngine = new SearchEngine();
             ////_searchEngine.Context.NodeFilter = SearchFilter;
             _searchEngine.SetSearchAreas(_setting.SearchAreas);
             _searchEngine.Start();
         }
+
 
 
         /// <summary>
@@ -123,6 +124,12 @@ namespace NeeLaboratory.RealtimeSearch
             set { if (_searchResult != value) { _searchResult = value; RaisePropertyChanged(); } }
         }
 
+
+
+        private void SearchAreas_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            ReIndex();
+        }
 
         /// <summary>
         /// インデックス再構築

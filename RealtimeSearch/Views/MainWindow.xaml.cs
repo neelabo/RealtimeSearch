@@ -53,7 +53,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             InitializeComponent();
 
-            _vm = new MainWindowViewModel();
+            _vm = new MainWindowViewModel(App.Setting);
             this.DataContext = _vm;
 
             RegistRoutedCommand();
@@ -68,8 +68,7 @@ namespace NeeLaboratory.RealtimeSearch
 
             this.ResultListView.AddHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler(ResultListView_ScrollChanged));
 
-            _vm.LoadSetting();
-            RestoreListViewMemento(_vm.Setting.ListViewColumnMemento);
+            RestoreListViewMemento(App.Setting.ListViewColumnMemento);
         }
 
         #endregion Constructors

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Setting xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.datacontract.org/2004/07/NeeLaboratory.RealtimeSearch">
+  <ExternalPrograms>
+    <ExternalProgram>
+      <Extensions></Extensions>
+      <Parameter>"$(file)"</Parameter>
+      <Program></Program>
+      <ProgramType>Normal</ProgramType>
+      <Protocol></Protocol>
+    </ExternalProgram>
+    <ExternalProgram>
+      <Extensions></Extensions>
+      <Parameter>"$(file)"</Parameter>
+      <Program></Program>
+      <ProgramType>Normal</ProgramType>
+      <Protocol></Protocol>
+    </ExternalProgram>
+    <ExternalProgram>
+      <Extensions></Extensions>
+      <Parameter>"$(file)"</Parameter>
+      <Program></Program>
+      <ProgramType>Normal</ProgramType>
+      <Protocol></Protocol>
+    </ExternalProgram>
+  </ExternalPrograms>
+  <IsDetailVisibled>false</IsDetailVisibled>
+  <IsMonitorClipboard>true</IsMonitorClipboard>
+  <IsTopmost>false</IsTopmost>
+  <ListViewColumnMemento>
+    <ListViewColumnMemento>
+      <Header>名前</Header>
+      <Width>280</Width>
+    </ListViewColumnMemento>
+    <ListViewColumnMemento>
+      <Header>更新日時</Header>
+      <Width>96</Width>
+    </ListViewColumnMemento>
+    <ListViewColumnMemento>
+      <Header>種類</Header>
+      <Width>96</Width>
+    </ListViewColumnMemento>
+    <ListViewColumnMemento>
+      <Header>サイズ</Header>
+      <Width>96</Width>
+    </ListViewColumnMemento>
+    <ListViewColumnMemento>
+      <Header>フォルダー</Header>
+      <Width>96</Width>
+    </ListViewColumnMemento>
+  </ListViewColumnMemento>
+  <SearchAreas xmlns:d2p1="http://schemas.datacontract.org/2004/07/NeeLaboratory.IO.Search">
+    <d2p1:SearchArea>
+      <d2p1:IncludeSubdirectories>true</d2p1:IncludeSubdirectories>
+      <d2p1:Path>F:\Work</d2p1:Path>
+    </d2p1:SearchArea>
+    <d2p1:SearchArea>
+      <d2p1:IncludeSubdirectories>true</d2p1:IncludeSubdirectories>
+      <d2p1:Path>F:\Downloads</d2p1:Path>
+    </d2p1:SearchArea>
+  </SearchAreas>
+  <SearchOptionV2 xmlns:d2p1="http://schemas.datacontract.org/2004/07/NeeLaboratory.IO.Search">
+    <d2p1:AllowFolder>false</d2p1:AllowFolder>
+  </SearchOptionV2>
+  <WebSearchFormat>https://www.google.co.jp/search?q=$(query)</WebSearchFormat>
+  <WindowRect xmlns:d2p1="http://schemas.datacontract.org/2004/07/System.Windows">
+    <d2p1:_height>351</d2p1:_height>
+    <d2p1:_width>800</d2p1:_width>
+    <d2p1:_x>1679</d2p1:_x>
+    <d2p1:_y>937</d2p1:_y>
+  </WindowRect>
+</Setting>

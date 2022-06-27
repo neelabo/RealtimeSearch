@@ -3,7 +3,6 @@
 // This software is released under the MIT License.
 // http://opensource.org/licenses/mit-license.php
 
-using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -23,12 +22,28 @@ namespace NeeLaboratory.RealtimeSearch
     {
         public static Config Config { get; private set; } = new Config();
 
+        public static Setting Setting { get; private set; } = new Setting();
+
+
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             Config.Initialize();
 
             // カレントフォルダ設定
-            System.Environment.CurrentDirectory = Config.LocalApplicationDataPath;
+            //System.Environment.CurrentDirectory = Config.LocalApplicationDataPath;
+
+            // 設定ファイル読み込み
+            var setting = SettingTools.Load();
+            if (setting is not null)
+            {
+                Setting = setting;
+            }
+        }
+
+        private void Application_Exit(object sender, ExitEventArgs e)
+        {
+            // 設定ファイル保存
+            SettingTools.Save(Setting);
         }
     }
 }
