@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -28,6 +27,7 @@ namespace NeeLaboratory.RealtimeSearch
         private bool _isRenaming;
         private ClipboardSearch? _clipboardSearch;
         private FileIO _fileIO;
+        private ExternalProgramCollection _programs;
 
         public MainWindowViewModel(Setting setting, Messenger messenger)
         {
@@ -47,7 +47,18 @@ namespace NeeLaboratory.RealtimeSearch
             _history = new History();
 
             _fileIO = new FileIO();
-            _fileIO.AddPropertyChanged(nameof(FileIO.Error), FileIO_ErrorChanged);
+            _fileIO.AddPropertyChanged(nameof(_fileIO.Error), FileIO_ErrorChanged);
+
+            _programs = new ExternalProgramCollection(_setting);
+            _programs.AddPropertyChanged(nameof(_programs.Error), Programs_ErrorChanged);
+        }
+
+        private void Programs_ErrorChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_programs.Error)) return;
+
+            ShowMessageBox(_programs.Error);
+            _programs.ClearError();
         }
 
         private void FileIO_ErrorChanged(object? sender, PropertyChangedEventArgs e)
@@ -275,6 +286,21 @@ namespace NeeLaboratory.RealtimeSearch
         {
             _setting.IsDetailVisibled = !_setting.IsDetailVisibled;
         }
-    }
 
+
+        public void Execute(IEnumerable<NodeContent> files)
+        {
+            _programs.Execute(files);
+        }
+
+        public void Execute(IEnumerable<NodeContent> files, int programId)
+        {
+            _programs.Execute(files, programId);
+        }
+
+        public void ExecuteDefault(IEnumerable<NodeContent> files)
+        {
+            _programs.ExecuteDefault(files);
+        }
+    }
 }
