@@ -16,36 +16,10 @@ using System.Collections.Specialized;
 
 namespace NeeLaboratory.RealtimeSearch
 {
-    // this commen is test.
-    public class Models : INotifyPropertyChanged
+    public class Search : BindableBase
     {
-        #region INotifyPropertyChanged Support
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected bool SetProperty<T>(ref T storage, T value, [System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
-        {
-            if (object.Equals(storage, value)) return false;
-            storage = value;
-            this.RaisePropertyChanged(propertyName);
-            return true;
-        }
-
-        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? name = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
-
-        public void AddPropertyChanged(string propertyName, PropertyChangedEventHandler handler)
-        {
-            PropertyChanged += (s, e) => { if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == propertyName) handler?.Invoke(s, e); };
-        }
-
-        #endregion
-
-
-        private bool _IsBusy;
-        private bool _IsBusyVisibled;
+        private bool _isBusy;
+        private bool _isBusyVisibled;
         private string _information = "";
         private Setting _setting;
         private DispatcherTimer _timer;
@@ -59,7 +33,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        public Models(Setting setting)
+        public Search(Setting setting)
         {
             _timer = new DispatcherTimer();
             _timer.Interval = TimeSpan.FromMilliseconds(1000);
@@ -75,7 +49,6 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
-
         /// <summary>
         /// 結果変更イベント
         /// </summary>
@@ -84,14 +57,14 @@ namespace NeeLaboratory.RealtimeSearch
 
         public bool IsBusy
         {
-            get { return _IsBusy; }
+            get { return _isBusy; }
             set
             {
-                if (_IsBusy != value)
+                if (_isBusy != value)
                 {
-                    _IsBusy = value;
+                    _isBusy = value;
 
-                    if (_IsBusy)
+                    if (_isBusy)
                     {
                         _timer.Start();
                     }
@@ -108,8 +81,8 @@ namespace NeeLaboratory.RealtimeSearch
 
         public bool IsBusyVisibled
         {
-            get { return _IsBusyVisibled; }
-            set { if (_IsBusyVisibled != value) { _IsBusyVisibled = value; RaisePropertyChanged(); } }
+            get { return _isBusyVisibled; }
+            set { if (_isBusyVisibled != value) { _isBusyVisibled = value; RaisePropertyChanged(); } }
         }
 
         public string Information
@@ -166,7 +139,7 @@ namespace NeeLaboratory.RealtimeSearch
                 return;
             }
 
-            if (!isForce && keyword == _lastSearchKeyword )
+            if (!isForce && keyword == _lastSearchKeyword)
             {
                 return;
             }
@@ -259,8 +232,6 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-
-
 #if false // フィルターサンプル
 
         /// <summary>
@@ -315,4 +286,6 @@ namespace NeeLaboratory.RealtimeSearch
 
 #endif
     }
+
+
 }

@@ -11,13 +11,15 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Collections.ObjectModel;
+using NeeLaboratory.IO.Search;
 
 namespace NeeLaboratory.RealtimeSearch
 {
     public class MainWindowViewModel : BindableBase
     {
         private Setting _setting;
-        private Models _models;
+        private Messenger _messenger;
+        private Search _search;
         private string _inputKeyword = "";
         private DelayValue<string> _keyword;
         private string _defaultWindowTitle;
@@ -25,32 +27,49 @@ namespace NeeLaboratory.RealtimeSearch
         private string _resultMessage = "";
         private bool _isRenaming;
         private ClipboardSearch? _clipboardSearch;
+        private FileIO _fileIO;
 
-
-        public MainWindowViewModel(Setting setting)
+        public MainWindowViewModel(Setting setting, Messenger messenger)
         {
             _setting = setting;
             _setting.PropertyChanged += Setting_PropertyChanged;
+
+            _messenger = messenger;
 
             _defaultWindowTitle = App.Config.ProductName;
 
             _keyword = new DelayValue<string>("");
             _keyword.ValueChanged += async (s, e) => await SearchAsync(false);
 
-            _models = new Models(setting);
-            _models.SearchResultChanged += Models_SearchResultChanged;
+            _search = new Search(setting);
+            _search.SearchResultChanged += Models_SearchResultChanged;
 
             _history = new History();
+
+            _fileIO = new FileIO();
+            _fileIO.AddPropertyChanged(nameof(FileIO.Error), FileIO_ErrorChanged);
         }
 
+        private void FileIO_ErrorChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_fileIO.Error)) return;
+
+            ShowMessageBox(_fileIO.Error);
+            _fileIO.ClearError();
+        }
+
+        private void ShowMessageBox(string message)
+        {
+            _messenger.Send(this, new ShowMessageBoxMessage(message));
+        }
 
         public event EventHandler? SearchResultChanged;
 
 
-        public Models Models
+        public Search Search
         {
-            get { return _models; }
-            set { SetProperty(ref _models, value); }
+            get { return _search; }
+            set { SetProperty(ref _search, value); }
         }
 
         public string WindowTitle => _defaultWindowTitle;
@@ -110,7 +129,7 @@ namespace NeeLaboratory.RealtimeSearch
             System.Threading.Thread.Sleep(ms);
         }
 
-        public void Open(Window window)
+        public void StartClipboardWatch(Window window)
         {
             // クリップボード監視
             _clipboardSearch = new ClipboardSearch(Setting);
@@ -118,7 +137,7 @@ namespace NeeLaboratory.RealtimeSearch
             _clipboardSearch.Start(window);
         }
 
-        public void Close()
+        public void StopClipboardWatch()
         {
             _clipboardSearch?.Stop();
         }
@@ -128,7 +147,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             SearchResultChanged?.Invoke(sender, EventArgs.Empty);
 
-            if (_models.SearchResult != null && _models.SearchResult.Items.Count == 0)
+            if (_search.SearchResult != null && _search.SearchResult.Items.Count == 0)
             {
                 ResultMessage = $"条件に一致する項目はありません。";
             }
@@ -186,7 +205,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         public void AddHistory()
         {
-            var keyword = _models.SearchResult?.Keyword;
+            var keyword = _search.SearchResult?.Keyword;
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 Debug.WriteLine($"AddHistory: {keyword}");
@@ -196,19 +215,34 @@ namespace NeeLaboratory.RealtimeSearch
 
         public void Rreflesh(string path)
         {
-            _models.Reflesh(path);
+            _search.Reflesh(path);
         }
 
-        public void Rename(string src, string dst)
+        // TODO: VMの責務ではない。MainWindowModel が欲しくなってきた
+        public void Rename(NodeContent file, string newValue)
         {
-            _models.Rename(src, dst);
+            var invalidChar = _fileIO.CheckInvalidFileNameChars(newValue);
+            if (invalidChar != '\0')
+            {
+                ShowMessageBox($"ファイル名に使用できない文字が含まれています。( {invalidChar} )");
+                return;
+            }
+
+            var src = file.Path;
+            var dst = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(src) ?? "", newValue);
+            var newName = _fileIO.Rename(src, dst);
+            if (newName is not null)
+            {
+                _search.Rename(src, newName);
+            }
         }
 
         public async Task SearchAsync(bool isForce)
         {
-            await _models.SearchAsync(_keyword.Value.Trim(), isForce);
+            await _search.SearchAsync(_keyword.Value.Trim(), isForce);
         }
 
+        // TODO: VMの責務ではない
         public void WebSearch()
         {
             //URLで使えない特殊文字。ひとまず変換なしで渡してみる
@@ -226,6 +260,7 @@ namespace NeeLaboratory.RealtimeSearch
             var startInfo = new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true };
             System.Diagnostics.Process.Start(startInfo);
         }
+
 
         /// <summary>
         /// ToggleDetailVisibleCommand command.

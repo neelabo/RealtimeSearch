@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -20,16 +21,32 @@ namespace NeeLaboratory.RealtimeSearch
 
     public class RenameClosingEventArgs : EventArgs
     {
-        public string OldValue { get; set; } = "";
-        public string NewValue { get; set; } = "";
+        public RenameClosingEventArgs(TextBlock target, string oldValue, string newValue)
+        {
+            Target = target;
+            OldValue = oldValue;
+            NewValue = newValue;
+        }
+
+        public TextBlock Target { get; private set; }
+        public string OldValue { get; private set; }
+        public string NewValue { get; private set; }
         public bool Cancel { get; set; }
     }
 
     public class RenameClosedEventArgs : EventArgs
     {
-        public string OldValue { get; set; } = "";
-        public string NewValue { get; set; } = "";
-        public int MoveRename { get; set; }
+        public RenameClosedEventArgs(TextBlock target, string oldValue, string newValue)
+        {
+            Target = target;
+            OldValue = oldValue;
+            NewValue = newValue;
+        }
+
+        public TextBlock Target { get; private set; }
+        public string OldValue { get; private set; }
+        public string NewValue { get; private set; }
+        public int Navigate { get; init; }
     }
 
     /// <summary>
@@ -37,9 +54,8 @@ namespace NeeLaboratory.RealtimeSearch
     /// </summary>
     public partial class RenameControl : UserControl, INotifyPropertyChanged
     {
-        /// <summary>
-        /// PropertyChanged event. 
-        /// </summary>
+        #region INotifyProertyChanged
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? name = "")
@@ -47,53 +63,36 @@ namespace NeeLaboratory.RealtimeSearch
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
-
-        /// <summary>
-        /// Target property.
-        /// </summary>
-        private TextBlock? _target;
-        public TextBlock? Target
-        {
-            get { return _target; }
-            set
-            {
-                if (_target != value)
-                {
-                    _target = value;
-                    RaisePropertyChanged();
-
-                    Text = _target?.Text ?? "";
-                    _old = Text;
-                    _new = Text;
-                    
-                    /*
-                    var padding = Target.Padding;
-                    padding.Top += 1;
-                    padding.Bottom += 1;
-                    padding.Right += 20;
-                    */
-
-                    this.RenameTextBox.FontFamily = Target?.FontFamily;
-                    this.RenameTextBox.FontSize = Target != null ? Target.FontSize : this.RenameTextBox.FontSize;
-                }
-            }
-        }
+        #endregion INotifyProertyChanged
 
 
-        //
-        public RenameControl()
+        private TextBlock _target;
+        private string _old = "";
+        private string _new = "";
+        private int _navigate;
+        private int _keyCount;
+        private int _closing;
+        private Window _targetWindow;
+        private Point _targetLocate;
+
+
+        public RenameControl(TextBlock textBlock)
         {
             InitializeComponent();
 
+            _target = textBlock;
+            _targetWindow = Window.GetWindow(_target);
+            _targetLocate = _target.TranslatePoint(default, _targetWindow);
+
+            Text = _target.Text ?? "";
+            _old = Text;
+            _new = Text;
+
+            this.RenameTextBox.FontFamily = _target.FontFamily;
+            this.RenameTextBox.FontSize = _target.FontSize;
+
             this.RenameTextBox.DataContext = this;
         }
-
-        private string _old = "";
-        private string _new = "";
-
-        private int _moveRename;
-
-        private int _keyCount;
 
 
         public event EventHandler<RenameClosingEventArgs>? Closing;
@@ -102,6 +101,8 @@ namespace NeeLaboratory.RealtimeSearch
 
         public event EventHandler<RenameClosedEventArgs>? Closed;
 
+
+        public TextBlock Target => _target;
 
         /// <summary>
         /// Text property.
@@ -113,25 +114,32 @@ namespace NeeLaboratory.RealtimeSearch
             set { if (_text != value) { _text = value; RaisePropertyChanged(); } }
         }
 
+        public bool IsSelectedWithoutExtension { get; set; } = true;
 
-        //
+
+        private void Target_LayoutUpdated(object? sender, EventArgs e)
+        {
+            var pos = _target.TranslatePoint(default, _targetWindow);
+            if (pos != _targetLocate)
+            {
+                Stop(true);
+            }
+        }
+
         private void RenameTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             Stop(true);
         }
 
 
-        private bool _closing;
-
-        //
         public void Stop(bool isSuccess = true)
         {
-            if (_closing) return;
-            _closing = true;
+            var closing = Interlocked.Increment(ref _closing);
+            if (closing > 1) return;
 
             _new = isSuccess ? Text.Trim() : _old;
 
-            var args = new RenameClosingEventArgs() { OldValue = _old, NewValue = _new };
+            var args = new RenameClosingEventArgs(_target, _old, _new);
             Closing?.Invoke(this, args);
             if (args.Cancel)
             {
@@ -141,10 +149,7 @@ namespace NeeLaboratory.RealtimeSearch
             Close?.Invoke(this, EventArgs.Empty);
         }
 
-        //
-        public bool IsSelectedWithoutExtension { get; set; } = true;
 
-        //
         private void RenameTextBox_Loaded(object sender, RoutedEventArgs e)
         {
             // 拡張子以外を選択状態にする
@@ -153,15 +158,17 @@ namespace NeeLaboratory.RealtimeSearch
 
             // 表示とともにフォーカスする
             this.RenameTextBox.Focus();
+
+            _target.LayoutUpdated += Target_LayoutUpdated;
         }
 
-        //
         private void RenameTextBox_Unloaded(object sender, RoutedEventArgs e)
         {
-            Closed?.Invoke(this, new RenameClosedEventArgs() { OldValue = _old, NewValue = _new, MoveRename = _moveRename });
+            _target.LayoutUpdated -= Target_LayoutUpdated;
+
+            Closed?.Invoke(this, new RenameClosedEventArgs(_target, _old, _new) { Navigate = _navigate });
         }
 
-        //
         private void RenameTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             // 最初の方向入力に限りカーソル位置を固定する
@@ -172,7 +179,6 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        //
         private void RenameTextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
@@ -187,7 +193,7 @@ namespace NeeLaboratory.RealtimeSearch
             }
             else if (e.Key == Key.Tab)
             {
-                _moveRename = (Keyboard.Modifiers == ModifierKeys.Shift) ? -1 : +1;
+                _navigate = (Keyboard.Modifiers == ModifierKeys.Shift) ? -1 : +1;
                 Stop(true);
                 e.Handled = true;
             }

@@ -53,7 +53,10 @@ namespace NeeLaboratory.RealtimeSearch
         {
             InitializeComponent();
 
-            _vm = new MainWindowViewModel(App.Setting);
+            var messenger = new Messenger();
+            messenger.Register<ShowMessageBoxMessage>(ShowMessageBox);
+
+            _vm = new MainWindowViewModel(App.Setting, messenger);
             this.DataContext = _vm;
 
             RegistRoutedCommand();
@@ -66,14 +69,19 @@ namespace NeeLaboratory.RealtimeSearch
             this.MouseRightButtonDown += (s, e) => this.RenameManager.Stop();
             this.Deactivated += (s, e) => this.RenameManager.Stop();
 
-            this.ResultListView.AddHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler(ResultListView_ScrollChanged));
-
             RestoreListViewMemento(App.Setting.ListViewColumnMemento);
         }
+
 
         #endregion Constructors
 
         #region Methods
+
+        private void ShowMessageBox(object? sender, ShowMessageBoxMessage msg)
+        {
+            MessageBox.Show(msg.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+
 
         private void ViewModel_FilesChanged(object? sender, EventArgs e)
         {
@@ -87,7 +95,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void Window_Loaded(object? sender, RoutedEventArgs e)
         {
-            _vm.Open(this);
+            _vm.StartClipboardWatch(this);
 
             // 検索パスが設定されていなければ設定画面を開く
             if (_vm.Setting.SearchAreas.Count <= 0)
@@ -104,7 +112,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void Window_Closed(object? sender, EventArgs e)
         {
-            _vm.Close();
+            _vm.StopClipboardWatch();
         }
 
         private void MainWindow_KeyDown(object? sender, KeyEventArgs e)
@@ -114,11 +122,6 @@ namespace NeeLaboratory.RealtimeSearch
                 this.keyword.Focus();
                 e.Handled = true;
             }
-        }
-
-        void ResultListView_ScrollChanged(object? sender, ScrollChangedEventArgs e)
-        {
-            this.RenameManager.Stop();
         }
 
         private void ListViewItem_MouseDoubleClick(object? sender, MouseButtonEventArgs e)
@@ -182,41 +185,39 @@ namespace NeeLaboratory.RealtimeSearch
 
             if (textBlock != null)
             {
-                var rename = new RenameControl();
+                var rename = new RenameControl(textBlock);
                 rename.IsSelectedWithoutExtension = System.IO.File.Exists(item.Path);
-                rename.Target = textBlock;
-                rename.Closing += (s, ev) =>
-                {
-                    //Debug.WriteLine($"{ev.OldValue} => {ev.NewValue}");
-                    if (ev.OldValue != ev.NewValue)
-                    {
-                        NodeContent? file = this.ResultListView.SelectedItem as NodeContent;
-                        if (file != null)
-                        {
-                            var src = file.Path;
-                            var dst = Rename(file, ev.NewValue);
-                            if (dst != null)
-                            {
-                                _vm.Rename(src, dst);
-                            }
-                        }
-                    }
-                };
-                rename.Closed += (s, ev) =>
-                {
-                    listViewItem.Focus();
-                    if (ev.MoveRename != 0)
-                    {
-                        RenameNext(ev.MoveRename);
-                    }
-                };
-                rename.Close += (s, ev) =>
-                {
-                    _vm.IsRenaming = false;
-                };
+                rename.Closing += Rename_Closing;
+                rename.Closed += Rename_Closed;
 
                 this.RenameManager.Open(rename);
                 _vm.IsRenaming = true;
+            }
+        }
+
+        private void Rename_Closing(object? sender, RenameClosingEventArgs e)
+        {
+            //Debug.WriteLine($"{ev.OldValue} => {ev.NewValue}");
+            if (e.OldValue != e.NewValue)
+            {
+                NodeContent? file = this.ResultListView.SelectedItem as NodeContent;
+                if (file != null)
+                {
+                    _vm.Rename(file, e.NewValue);
+                }
+            }
+        }
+
+        private void Rename_Closed(object? sender, RenameClosedEventArgs e)
+        {
+            _vm.IsRenaming = false;
+
+            var listViewItem = VisualTreeTools.FindAncestor<ListViewItem>(e.Target);
+            listViewItem?.Focus();
+
+            if (e.Navigate != 0)
+            {
+                RenameNext(e.Navigate);
             }
         }
 
@@ -230,91 +231,6 @@ namespace NeeLaboratory.RealtimeSearch
 
             // リネーム発動
             Rename_Executed(this.ResultListView, null);
-        }
-
-        /// <summary>
-        /// 名前変更
-        /// </summary>
-        /// <param name="file"></param>
-        /// <param name="newName"></param>
-        /// <returns>成功した場合は新しいフルパス。失敗した場合はnull</returns>
-        private string? Rename(NodeContent file, string newName)
-        {
-            if (file == null || string.IsNullOrWhiteSpace(newName)) return null;
-
-            //ファイル名に使用できない文字
-            char[] invalidChars = System.IO.Path.GetInvalidFileNameChars();
-            int invalidCharsIndex = newName.IndexOfAny(invalidChars);
-            if (invalidCharsIndex >= 0)
-            {
-                // 確認
-                MessageBox.Show($"ファイル名に使用できない文字が含まれています。( {newName[invalidCharsIndex]} )", "名前の変更の確認", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return null;
-            }
-
-            string src = file.Path;
-            string dst = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(src) ?? "", newName);
-            if (src == dst) return null;
-
-            bool isFile = System.IO.File.Exists(src);
-
-            // 拡張子変更警告
-            if (isFile && System.IO.Path.GetExtension(src).ToLower() != System.IO.Path.GetExtension(dst).ToLower())
-            {
-                // 確認
-                var resut = MessageBox.Show($"拡張子を変更すると、ファイルが使えなくなる可能性があります。\n\n変更しますか？", "名前の変更の確認", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
-                if (resut != MessageBoxResult.OK)
-                {
-                    return null;
-                }
-            }
-
-            // 重複ファイル名回避
-            if (string.Compare(src, dst, true) == 0)
-            {
-                // nop.
-            }
-            else if (System.IO.File.Exists(dst) || System.IO.Directory.Exists(dst))
-            {
-                string dstBase = dst;
-                string dir = System.IO.Path.GetDirectoryName(dst) ?? "";
-                string name = System.IO.Path.GetFileNameWithoutExtension(dst);
-                string ext = System.IO.Path.GetExtension(dst);
-                int count = 1;
-
-                do
-                {
-                    dst = $"{dir}\\{name} ({++count}){ext}";
-                }
-                while (System.IO.File.Exists(dst) || System.IO.Directory.Exists(dst));
-
-                // 確認
-                var resut = MessageBox.Show($"{System.IO.Path.GetFileName(dstBase)} は既に存在します。\n{System.IO.Path.GetFileName(dst)} に名前を変更しますか？", "名前の変更の確認", MessageBoxButton.OKCancel);
-                if (resut != MessageBoxResult.OK)
-                {
-                    return null;
-                }
-            }
-
-            // 名前変更実行
-            try
-            {
-                if (System.IO.Directory.Exists(src))
-                {
-                    System.IO.Directory.Move(src, dst);
-                }
-                else
-                {
-                    System.IO.File.Move(src, dst);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("名前の変更に失敗しました。\n\n" + ex.Message, "通知", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return null;
-            }
-
-            return dst;
         }
 
         #endregion Rename
@@ -377,14 +293,14 @@ namespace NeeLaboratory.RealtimeSearch
             }
             else
             {
-                foreach(var file in files)
+                foreach (var file in files)
                 {
                     ExecuteProgram(new List<NodeContent>() { file }, program);
                 }
             }
         }
 
-        void ExecuteProgram(IEnumerable<NodeContent> files, ExternalProgram program)
+        private void ExecuteProgram(IEnumerable<NodeContent> files, ExternalProgram program)
         {
             if (program.ProgramType == ExternalProgramType.Normal)
             {

@@ -247,5 +247,22 @@ namespace NeeLaboratory.RealtimeSearch
             }
             return null;
         }
+
+        /// <summary>
+        /// VisualTreeを親側にたどって、
+        /// 指定した型の要素を探す
+        /// </summary>
+        public static T? FindAncestor<T>(this DependencyObject obj) where T : DependencyObject
+        {
+            while (obj != null)
+            {
+                if (obj is T target)
+                {
+                    return target;
+                }
+                obj = VisualTreeHelper.GetParent(obj);
+            }
+            return null;
+        }
     }
 }
