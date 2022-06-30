@@ -19,6 +19,7 @@ namespace NeeLaboratory.RealtimeSearch
         private AppConfig _appConfig;
         private Messenger _messenger;
         private Search _search;
+        private WebSearch _webSearch;
         private string _inputKeyword = "";
         private DelayValue<string> _keyword;
         private string _defaultWindowTitle;
@@ -28,6 +29,7 @@ namespace NeeLaboratory.RealtimeSearch
         private ClipboardSearch? _clipboardSearch;
         private FileRename _fileRename;
         private ExternalProgramCollection _programs;
+
 
         public MainWindowViewModel(AppConfig appConfig, Messenger messenger)
         {
@@ -42,7 +44,9 @@ namespace NeeLaboratory.RealtimeSearch
             _keyword.ValueChanged += async (s, e) => await SearchAsync(false);
 
             _search = new Search(appConfig);
-            _search.SearchResultChanged += Models_SearchResultChanged;
+            _search.SearchResultChanged += Search_SearchResultChanged;
+
+            _webSearch = new WebSearch(appConfig);
 
             _history = new History();
 
@@ -53,26 +57,7 @@ namespace NeeLaboratory.RealtimeSearch
             _programs.AddPropertyChanged(nameof(_programs.Error), Programs_ErrorChanged);
         }
 
-        private void Programs_ErrorChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(_programs.Error)) return;
 
-            ShowMessageBox(_programs.Error);
-            _programs.ClearError();
-        }
-
-        private void FileIO_ErrorChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(_fileRename.Error)) return;
-
-            ShowMessageBox(_fileRename.Error);
-            _fileRename.ClearError();
-        }
-
-        private void ShowMessageBox(string message)
-        {
-            _messenger.Send(this, new ShowMessageBoxMessage(message));
-        }
 
         public event EventHandler? SearchResultChanged;
 
@@ -100,7 +85,6 @@ namespace NeeLaboratory.RealtimeSearch
         public History History
         {
             get { return _history; }
-            ////set { if (_history != value) { _history = value; RaisePropertyChanged(); } }
         }
 
         public string ResultMessage
@@ -126,10 +110,29 @@ namespace NeeLaboratory.RealtimeSearch
             get { return !_appConfig.IsDetailVisibled && !IsRenaming; }
         }
 
-
-        public AppConfig Setting
+        public bool IsDetailVisibled
         {
-            get { return _appConfig; }
+            get { return _appConfig.IsDetailVisibled; }
+            set { _appConfig.IsDetailVisibled = value; }
+        }
+
+        public bool IsTopmost
+        {
+            get { return _appConfig.IsTopmost; }
+            set
+            {
+                if (_appConfig.IsTopmost != value)
+                {
+                    _appConfig.IsTopmost = value;
+                    RaisePropertyChanged(nameof(IsTopmost));
+                }
+            }
+        }
+
+        public bool AllowFolder
+        {
+            get { return _appConfig.SearchOption.AllowFolder; }
+            set { _appConfig.SearchOption.AllowFolder = value; }
         }
 
 
@@ -140,13 +143,46 @@ namespace NeeLaboratory.RealtimeSearch
             System.Threading.Thread.Sleep(ms);
         }
 
+
+        private void Programs_ErrorChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_programs.Error)) return;
+
+            ShowMessageBox(_programs.Error);
+            _programs.ClearError();
+        }
+
+        private void FileIO_ErrorChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_fileRename.Error)) return;
+
+            ShowMessageBox(_fileRename.Error);
+            _fileRename.ClearError();
+        }
+
+        public void Loaded()
+        {
+            // 検索パスが設定されていなければ設定画面を開く
+            if (_appConfig.SearchAreas.Count <= 0)
+            {
+                _messenger.Send(this, new ShowSettingWindowMessage());
+            }
+        }
+
+        private void ShowMessageBox(string message)
+        {
+            _messenger.Send(this, new ShowMessageBoxMessage(message));
+        }
+
         public void StartClipboardWatch(Window window)
         {
             // クリップボード監視
-            _clipboardSearch = new ClipboardSearch(Setting);
+            _clipboardSearch = new ClipboardSearch(_appConfig);
             _clipboardSearch.ClipboardChanged += ClipboardSearch_ClipboardChanged;
             _clipboardSearch.Start(window);
         }
+
+
 
         public void StopClipboardWatch()
         {
@@ -154,7 +190,7 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
-        private void Models_SearchResultChanged(object? sender, EventArgs e)
+        private void Search_SearchResultChanged(object? sender, EventArgs e)
         {
             SearchResultChanged?.Invoke(sender, EventArgs.Empty);
 
@@ -170,9 +206,16 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void Setting_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(_appConfig.IsDetailVisibled))
+            switch (e.PropertyName)
             {
-                RaisePropertyChanged(nameof(IsTipsVisibled));
+                case nameof(_appConfig.IsDetailVisibled):
+                    RaisePropertyChanged(nameof(IsDetailVisibled));
+                    RaisePropertyChanged(nameof(IsTipsVisibled));
+                    break;
+
+                case nameof(_appConfig.IsTopmost):
+                    RaisePropertyChanged(nameof(IsTopmost));
+                    break;
             }
         }
 
@@ -195,6 +238,11 @@ namespace NeeLaboratory.RealtimeSearch
         public void StoreWindowPlacement(Window window)
         {
             _appConfig.WindowPlacement = WindowPlacement.GetPlacement(window);
+        }
+
+        public void StoreListViewCondition(List<ListViewColumnMemento> listViewColumnMementos)
+        {
+            _appConfig.ListViewColumnMemento = listViewColumnMementos;
         }
 
         // キーワード即時設定
@@ -229,9 +277,10 @@ namespace NeeLaboratory.RealtimeSearch
             _search.Reflesh(path);
         }
 
-        // TODO: VMの責務ではない。MainWindowModel が欲しくなってきた
+
         public void Rename(NodeContent file, string newValue)
         {
+            // TODO: 入力段階ではじくようにする
             var invalidChar = _fileRename.CheckInvalidFileNameChars(newValue);
             if (invalidChar != '\0')
             {
@@ -248,43 +297,25 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
+
+        public async Task ToggleAllowFolderAsync()
+        {
+            AllowFolder = !AllowFolder;
+            RaisePropertyChanged(nameof(AllowFolder));
+
+            await SearchAsync(true);
+        }
+
+
         public async Task SearchAsync(bool isForce)
         {
             await _search.SearchAsync(_keyword.Value.Trim(), isForce);
         }
 
-        // TODO: VMの責務ではない
+
         public void WebSearch()
         {
-            //URLで使えない特殊文字。ひとまず変換なしで渡してみる
-            //\　　'　　|　　`　　^　　"　　<　　>　　)　　(　　}　　{　　]　　[
-
-            // キーワード整形。空白を"+"にする
-            string query = _keyword.Value.Trim();
-            if (string.IsNullOrEmpty(query)) return;
-            query = query.Replace("+", "%2B");
-            query = Regex.Replace(query, @"\s+", "+");
-
-            string url = _appConfig.WebSearchFormat.Replace("$(query)", query);
-            Debug.WriteLine(url);
-
-            var startInfo = new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true };
-            System.Diagnostics.Process.Start(startInfo);
-        }
-
-
-        /// <summary>
-        /// ToggleDetailVisibleCommand command.
-        /// </summary>
-        private RelayCommand? _toggleDetailVisibleCommand;
-        public RelayCommand ToggleDetailVisibleCommand
-        {
-            get { return _toggleDetailVisibleCommand = _toggleDetailVisibleCommand ?? new RelayCommand(ToggleDetailVisibleCommand_Executed); }
-        }
-
-        private void ToggleDetailVisibleCommand_Executed()
-        {
-            _appConfig.IsDetailVisibled = !_appConfig.IsDetailVisibled;
+            _webSearch.Search(_keyword.Value);
         }
 
 
@@ -301,6 +332,21 @@ namespace NeeLaboratory.RealtimeSearch
         public void ExecuteDefault(IEnumerable<NodeContent> files)
         {
             _programs.ExecuteDefault(files);
+        }
+
+
+        /// <summary>
+        /// ToggleDetailVisibleCommand command.
+        /// </summary>
+        private RelayCommand? _toggleDetailVisibleCommand;
+        public RelayCommand ToggleDetailVisibleCommand
+        {
+            get { return _toggleDetailVisibleCommand = _toggleDetailVisibleCommand ?? new RelayCommand(ToggleDetailVisibleCommand_Executed); }
+        }
+
+        private void ToggleDetailVisibleCommand_Executed()
+        {
+            _appConfig.IsDetailVisibled = !_appConfig.IsDetailVisibled;
         }
     }
 }

@@ -52,6 +52,8 @@ namespace NeeLaboratory.RealtimeSearch
 
         public void Write<T>(string folderPath, string fileName, T content, bool isCreateBackup)
         {
+            var json = JsonSerializer.SerializeToUtf8Bytes(content, CreateJsonSerializerOptions());
+
             lock (_lock)
             {
                 if (!Directory.Exists(folderPath))
@@ -63,10 +65,15 @@ namespace NeeLaboratory.RealtimeSearch
                 var sourcePath = destinationPath + ".new";
                 var backupPath = isCreateBackup ? destinationPath + ".bkup" : null;
 
-                var json = JsonSerializer.SerializeToUtf8Bytes(content, CreateJsonSerializerOptions());
-                File.WriteAllBytes(sourcePath, json);
-
-                System.IO.File.Replace(sourcePath, destinationPath, backupPath);
+                if (File.Exists(destinationPath))
+                {
+                    File.WriteAllBytes(sourcePath, json);
+                    File.Replace(sourcePath, destinationPath, backupPath);
+                }
+                else
+                {
+                    File.WriteAllBytes(destinationPath, json);
+                }
             }
         }
 
@@ -82,7 +89,7 @@ namespace NeeLaboratory.RealtimeSearch
             options.AllowTrailingCommas = true;
 
             options.Converters.Add(new JsonStringEnumConverter());
-            
+
             return options;
         }
     }

@@ -43,7 +43,6 @@ namespace NeeLaboratory.RealtimeSearch
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-                //System.Windows.MessageBox.Show("設定が壊れています。", "読み込み失敗", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 throw new ApplicationException("設定の読み込みに失敗しました。", ex);
             }
         }
@@ -51,7 +50,15 @@ namespace NeeLaboratory.RealtimeSearch
         // TODO: ASync
         public void Save(AppConfig appConfig)
         {
-            _fileService.Write(FolderPath, AppConfigFileName, appConfig, false);
+            try
+            {
+                _fileService.Write(FolderPath, AppConfigFileName, appConfig, false);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                throw new ApplicationException("設定の保存に失敗しました。", ex);
+            }
         }
 
         private AppConfig? LoadAndReplaceLegacy()

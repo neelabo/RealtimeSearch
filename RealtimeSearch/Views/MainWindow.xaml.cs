@@ -55,6 +55,7 @@ namespace NeeLaboratory.RealtimeSearch
 
             var messenger = new Messenger();
             messenger.Register<ShowMessageBoxMessage>(ShowMessageBox);
+            messenger.Register<ShowSettingWindowMessage>(ShowSettingWindow);
 
             _vm = new MainWindowViewModel(App.AppConfig, messenger);
             this.DataContext = _vm;
@@ -72,16 +73,19 @@ namespace NeeLaboratory.RealtimeSearch
             RestoreListViewMemento(App.AppConfig.ListViewColumnMemento);
         }
 
-
         #endregion Constructors
 
         #region Methods
 
-        private void ShowMessageBox(object? sender, ShowMessageBoxMessage msg)
+        private void ShowMessageBox(object? sender, ShowMessageBoxMessage e)
         {
-            MessageBox.Show(msg.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
+        private void ShowSettingWindow(object? sender, ShowSettingWindowMessage e)
+        {
+            ShowSettingWindow();
+        }
 
         private void ViewModel_FilesChanged(object? sender, EventArgs e)
         {
@@ -95,18 +99,13 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void Window_Loaded(object? sender, RoutedEventArgs e)
         {
+            _vm.Loaded();
             _vm.StartClipboardWatch(this);
-
-            // 検索パスが設定されていなければ設定画面を開く
-            if (_vm.Setting.SearchAreas.Count <= 0)
-            {
-                ShowSettingWindow();
-            }
         }
 
         private void Window_Closing(object? sender, EventArgs e)
         {
-            _vm.Setting.ListViewColumnMemento = CreateListViewMemento();
+            _vm.StoreListViewCondition(CreateListViewMemento());
             _vm.StoreWindowPlacement(this);
         }
 
@@ -166,7 +165,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void ShowSettingWindow()
         {
-            var window = new SettingWindow(_vm.Setting);
+            var window = new SettingWindow(App.AppConfig);
             window.Owner = this;
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             window.ShowDialog();
@@ -245,7 +244,7 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
         // ファイルのドラッグ開始
-        private void PreviewMouseMove_Event(object? sender, System.Windows.Input.MouseEventArgs e)
+        private void PreviewMouseMove_Event(object? sender, MouseEventArgs e)
         {
             var s = sender as ListViewItem;
             //var pn = s?.Content as NodeContent;
@@ -327,8 +326,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private async void ToggleAllowFolder_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            _vm.Setting.ToggleAllowFolder();
-            await _vm.SearchAsync(true);
+            await _vm.ToggleAllowFolderAsync();
         }
 
         private void Property_Executed(object target, ExecutedRoutedEventArgs e)
