@@ -2,7 +2,7 @@
 
 namespace NeeLaboratory.RealtimeSearch
 {
-    public class FileIO : BindableBase
+    public class FileRename : BindableBase
     {
         private string _error = "";
 

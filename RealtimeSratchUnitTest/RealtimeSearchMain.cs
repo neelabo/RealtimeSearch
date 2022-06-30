@@ -16,7 +16,7 @@ namespace RealtimeSratchUnitTest
 #pragma warning disable CS0612 // Œ^‚Ü‚½‚Íƒƒ“ƒo[‚ª‹ŒŒ^®‚Å‚·
             var legacy = SettingLegacy.Load(input);
 #pragma warning restore CS0612 // Œ^‚Ü‚½‚Íƒƒ“ƒo[‚ª‹ŒŒ^®‚Å‚·
-            var setting = legacy.ConvertToSetting();
+            var setting = legacy.ConvertToAppConfig();
         }
     }
 }

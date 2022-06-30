@@ -16,7 +16,7 @@ namespace NeeLaboratory.RealtimeSearch
 {
     public class MainWindowViewModel : BindableBase
     {
-        private Setting _setting;
+        private AppConfig _appConfig;
         private Messenger _messenger;
         private Search _search;
         private string _inputKeyword = "";
@@ -26,30 +26,30 @@ namespace NeeLaboratory.RealtimeSearch
         private string _resultMessage = "";
         private bool _isRenaming;
         private ClipboardSearch? _clipboardSearch;
-        private FileIO _fileIO;
+        private FileRename _fileRename;
         private ExternalProgramCollection _programs;
 
-        public MainWindowViewModel(Setting setting, Messenger messenger)
+        public MainWindowViewModel(AppConfig appConfig, Messenger messenger)
         {
-            _setting = setting;
-            _setting.PropertyChanged += Setting_PropertyChanged;
+            _appConfig = appConfig;
+            _appConfig.PropertyChanged += Setting_PropertyChanged;
 
             _messenger = messenger;
 
-            _defaultWindowTitle = App.Config.ProductName;
+            _defaultWindowTitle = App.AppInfo.ProductName;
 
             _keyword = new DelayValue<string>("");
             _keyword.ValueChanged += async (s, e) => await SearchAsync(false);
 
-            _search = new Search(setting);
+            _search = new Search(appConfig);
             _search.SearchResultChanged += Models_SearchResultChanged;
 
             _history = new History();
 
-            _fileIO = new FileIO();
-            _fileIO.AddPropertyChanged(nameof(_fileIO.Error), FileIO_ErrorChanged);
+            _fileRename = new FileRename();
+            _fileRename.AddPropertyChanged(nameof(_fileRename.Error), FileIO_ErrorChanged);
 
-            _programs = new ExternalProgramCollection(_setting);
+            _programs = new ExternalProgramCollection(_appConfig);
             _programs.AddPropertyChanged(nameof(_programs.Error), Programs_ErrorChanged);
         }
 
@@ -63,10 +63,10 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void FileIO_ErrorChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (string.IsNullOrEmpty(_fileIO.Error)) return;
+            if (string.IsNullOrEmpty(_fileRename.Error)) return;
 
-            ShowMessageBox(_fileIO.Error);
-            _fileIO.ClearError();
+            ShowMessageBox(_fileRename.Error);
+            _fileRename.ClearError();
         }
 
         private void ShowMessageBox(string message)
@@ -123,13 +123,13 @@ namespace NeeLaboratory.RealtimeSearch
 
         public bool IsTipsVisibled
         {
-            get { return !_setting.IsDetailVisibled && !IsRenaming; }
+            get { return !_appConfig.IsDetailVisibled && !IsRenaming; }
         }
 
 
-        public Setting Setting
+        public AppConfig Setting
         {
-            get { return _setting; }
+            get { return _appConfig; }
         }
 
 
@@ -170,7 +170,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void Setting_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(_setting.IsDetailVisibled))
+            if (e.PropertyName == nameof(_appConfig.IsDetailVisibled))
             {
                 RaisePropertyChanged(nameof(IsTipsVisibled));
             }
@@ -186,15 +186,15 @@ namespace NeeLaboratory.RealtimeSearch
 
         public void RestoreWindowPlacement(Window window)
         {
-            if (_setting.WindowPlacement.HasValue)
+            if (_appConfig.WindowPlacement.HasValue)
             {
-                WindowPlacement.SetPlacement(window, _setting.WindowPlacement);
+                WindowPlacement.SetPlacement(window, _appConfig.WindowPlacement);
             }
         }
 
         public void StoreWindowPlacement(Window window)
         {
-            _setting.WindowPlacement = WindowPlacement.GetPlacement(window);
+            _appConfig.WindowPlacement = WindowPlacement.GetPlacement(window);
         }
 
         // キーワード即時設定
@@ -232,7 +232,7 @@ namespace NeeLaboratory.RealtimeSearch
         // TODO: VMの責務ではない。MainWindowModel が欲しくなってきた
         public void Rename(NodeContent file, string newValue)
         {
-            var invalidChar = _fileIO.CheckInvalidFileNameChars(newValue);
+            var invalidChar = _fileRename.CheckInvalidFileNameChars(newValue);
             if (invalidChar != '\0')
             {
                 ShowMessageBox($"ファイル名に使用できない文字が含まれています。( {invalidChar} )");
@@ -241,7 +241,7 @@ namespace NeeLaboratory.RealtimeSearch
 
             var src = file.Path;
             var dst = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(src) ?? "", newValue);
-            var newName = _fileIO.Rename(src, dst);
+            var newName = _fileRename.Rename(src, dst);
             if (newName is not null)
             {
                 _search.Rename(src, newName);
@@ -265,7 +265,7 @@ namespace NeeLaboratory.RealtimeSearch
             query = query.Replace("+", "%2B");
             query = Regex.Replace(query, @"\s+", "+");
 
-            string url = _setting.WebSearchFormat.Replace("$(query)", query);
+            string url = _appConfig.WebSearchFormat.Replace("$(query)", query);
             Debug.WriteLine(url);
 
             var startInfo = new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true };
@@ -284,7 +284,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void ToggleDetailVisibleCommand_Executed()
         {
-            _setting.IsDetailVisibled = !_setting.IsDetailVisibled;
+            _appConfig.IsDetailVisibled = !_appConfig.IsDetailVisibled;
         }
 
 

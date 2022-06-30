@@ -9,11 +9,11 @@ namespace NeeLaboratory.RealtimeSearch
 {
     public class ExternalProgramCollection : BindableBase
     {
-        private Setting _setting;
+        private AppConfig _setting;
         private List<ExternalProgram> _programs => _setting.ExternalPrograms;
 
 
-        public ExternalProgramCollection(Setting setting)
+        public ExternalProgramCollection(AppConfig setting)
         {
             _setting = setting;
         }

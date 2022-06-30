@@ -15,7 +15,7 @@ namespace NeeLaboratory.RealtimeSearch
     /// <summary>
     /// アプリ全体の設定
     /// </summary>
-    public class Config
+    public class ApplicationInfoService
     {
         /// <summary>
         /// 

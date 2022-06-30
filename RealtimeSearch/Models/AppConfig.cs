@@ -30,7 +30,7 @@ namespace NeeLaboratory.RealtimeSearch
 
 
 
-    public class Setting : BindableBase
+    public class AppConfig : BindableBase
     {
 
         private bool _isMonitorClipboard;
@@ -39,7 +39,7 @@ namespace NeeLaboratory.RealtimeSearch
         private NeeLaboratory.IO.Search.SearchOption _searchOption;
 
 
-        public Setting()
+        public AppConfig()
         {
             SearchAreas = new ObservableCollection<SearchArea>();
             IsMonitorClipboard = true;

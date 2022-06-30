@@ -56,7 +56,7 @@ namespace NeeLaboratory.RealtimeSearch
             var messenger = new Messenger();
             messenger.Register<ShowMessageBoxMessage>(ShowMessageBox);
 
-            _vm = new MainWindowViewModel(App.Setting, messenger);
+            _vm = new MainWindowViewModel(App.AppConfig, messenger);
             this.DataContext = _vm;
 
             RegistRoutedCommand();
@@ -69,7 +69,7 @@ namespace NeeLaboratory.RealtimeSearch
             this.MouseRightButtonDown += (s, e) => this.RenameManager.Stop();
             this.Deactivated += (s, e) => this.RenameManager.Stop();
 
-            RestoreListViewMemento(App.Setting.ListViewColumnMemento);
+            RestoreListViewMemento(App.AppConfig.ListViewColumnMemento);
         }
 
 

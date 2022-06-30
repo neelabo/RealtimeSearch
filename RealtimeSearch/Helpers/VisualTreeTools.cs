@@ -11,9 +11,6 @@ using System.Windows.Media;
 
 namespace NeeLaboratory.RealtimeSearch
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public static class VisualTreeTools
     {
         /// <summary>

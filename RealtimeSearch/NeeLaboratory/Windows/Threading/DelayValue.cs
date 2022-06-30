@@ -13,16 +13,11 @@ namespace NeeLaboratory.RealtimeSearch
     /// <typeparam name="T"></typeparam>
     public class DelayValue<T> where T : IComparable
     {
-        #region Fields
-
         private T _value;
         private T _delayValue;
         private DateTime _delayTime = DateTime.MaxValue;
         private DispatcherTimer _timer;
 
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         /// コンストラクター
@@ -38,18 +33,12 @@ namespace NeeLaboratory.RealtimeSearch
             _timer.Tick += Tick;
         }
 
-        #endregion
-
-        #region Events
 
         /// <summary>
         /// 値が反映されたときのイベント
         /// </summary>
         public event EventHandler? ValueChanged;
 
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// 現在値
@@ -59,9 +48,7 @@ namespace NeeLaboratory.RealtimeSearch
             get { return _value; }
             set { SetValue(value, 0); }
         }
-        #endregion
 
-        #region Methods
 
         /// <summary>
         /// 遅延値設定
@@ -122,7 +109,5 @@ namespace NeeLaboratory.RealtimeSearch
         {
             return _timer.IsEnabled ? $"{_value} ({_delayValue}, {(_delayTime - DateTime.Now).TotalMilliseconds}ms)" : $"{_value}";
         }
-
-        #endregion
     }
 }

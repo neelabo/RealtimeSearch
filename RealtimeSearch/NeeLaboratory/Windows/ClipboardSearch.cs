@@ -21,11 +21,11 @@ namespace NeeLaboratory.RealtimeSearch
     public class ClipboardSearch
     {
         private ClipboardListner? _clipboardListner;
-        private Setting _setting;
+        private AppConfig _setting;
         private string _copyText = "";
 
 
-        public ClipboardSearch(Setting setting)
+        public ClipboardSearch(AppConfig setting)
         {
             _setting = setting;
         }

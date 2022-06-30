@@ -14,9 +14,6 @@ namespace NeeLaboratory.RealtimeSearch
     /// </summary>
     public class History
     {
-        public ObservableCollection<string> Collection { get; private set; }
-
-        //
         public History()
         {
             Collection = new ObservableCollection<string>();
@@ -24,7 +21,9 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
-        //
+        public ObservableCollection<string> Collection { get; private set; }
+
+
         public void Add(string keyword)
         {
             if (string.IsNullOrWhiteSpace(keyword)) return;

@@ -66,10 +66,10 @@ namespace NeeLaboratory.RealtimeSearch
         public static readonly RoutedCommand AddCommand = new RoutedCommand("AddCommand", typeof(SettingWindow));
         public static readonly RoutedCommand DelCommand = new RoutedCommand("DelCommand", typeof(SettingWindow));
 
-        public Setting Setting { get; private set; }
+        public AppConfig Setting { get; private set; }
 
 
-        public SettingWindow(Setting setting)
+        public SettingWindow(AppConfig setting)
         {
             Setting = setting;
             UpdateCollectionViewSource();
@@ -84,7 +84,7 @@ namespace NeeLaboratory.RealtimeSearch
             this.CommandBindings.Add(new CommandBinding(CloseCommand, (t, e) => Close()));
 
             // help command
-            var readmeUri = "file://" + App.Config.AssemblyLocation.Replace('\\', '/').TrimEnd('/') + $"/README.html";
+            var readmeUri = "file://" + App.AppInfo.AssemblyLocation.Replace('\\', '/').TrimEnd('/') + $"/README.html";
             this.CommandBindings.Add(new CommandBinding(HelpCommand, (t, e) =>
             {
                 try

@@ -3,6 +3,7 @@
 // This software is released under the MIT License.
 // http://opensource.org/licenses/mit-license.php
 
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -20,30 +21,53 @@ namespace NeeLaboratory.RealtimeSearch
     /// </summary>
     public partial class App : Application
     {
-        public static Config Config { get; private set; } = new Config();
+        private PersistAndRestoreService _persistAndRestoreService;
 
-        public static Setting Setting { get; private set; } = new Setting();
+        public App()
+        {
+            _persistAndRestoreService = new PersistAndRestoreService(new FileService());
+        }
+
+        public static ApplicationInfoService AppInfo { get; private set; } = new ApplicationInfoService();
+
+        public static AppConfig AppConfig { get; private set; } = new AppConfig();
 
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            Config.Initialize();
+            AppInfo.Initialize();
 
-            // カレントフォルダ設定
-            //System.Environment.CurrentDirectory = Config.LocalApplicationDataPath;
-
-            // 設定ファイル読み込み
-            var setting = SettingTools.Load();
-            if (setting is not null)
+            try
             {
-                Setting = setting;
+                // カレントフォルダ設定
+                //System.Environment.CurrentDirectory = Config.LocalApplicationDataPath;
+
+                // 設定ファイル読み込み
+                var appConfig = _persistAndRestoreService.Load();
+                if (appConfig is not null)
+                {
+                    AppConfig = appConfig;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, AppInfo.ProductName, MessageBoxButton.OK, MessageBoxImage.Error);
+                throw;
             }
         }
 
         private void Application_Exit(object sender, ExitEventArgs e)
         {
-            // 設定ファイル保存
-            SettingTools.Save(Setting);
+            try
+            {
+                // 設定ファイル保存
+                _persistAndRestoreService.Save(AppConfig);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, AppInfo.ProductName, MessageBoxButton.OK, MessageBoxImage.Error);
+                throw;
+            }
         }
     }
 }

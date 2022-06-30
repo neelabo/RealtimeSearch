@@ -21,7 +21,7 @@ namespace NeeLaboratory.RealtimeSearch
         private bool _isBusy;
         private bool _isBusyVisibled;
         private string _information = "";
-        private Setting _setting;
+        private AppConfig _appConfig;
         private DispatcherTimer _timer;
         private SearchEngine _searchEngine;
         private SearchResult? _searchResult;
@@ -33,18 +33,18 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        public Search(Setting setting)
+        public Search(AppConfig appConfig)
         {
             _timer = new DispatcherTimer();
             _timer.Interval = TimeSpan.FromMilliseconds(1000);
             _timer.Tick += ProgressTimer_Tick;
 
-            _setting = setting;
-            _setting.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
+            _appConfig = appConfig;
+            _appConfig.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
 
             _searchEngine = new SearchEngine();
             ////_searchEngine.Context.NodeFilter = SearchFilter;
-            _searchEngine.SetSearchAreas(_setting.SearchAreas);
+            _searchEngine.SetSearchAreas(_appConfig.SearchAreas);
             _searchEngine.Start();
         }
 
@@ -109,7 +109,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         public void ReIndex()
         {
-            _searchEngine.SetSearchAreas(_setting.SearchAreas);
+            _searchEngine.SetSearchAreas(_appConfig.SearchAreas);
         }
 
         /// <summary>
@@ -153,7 +153,7 @@ namespace NeeLaboratory.RealtimeSearch
                 // 同時に実行可能なのは1検索のみ。以前の検索はキャンセルして新しい検索コマンドを発行
                 _searchCancellationTokenSource.Cancel();
                 _searchCancellationTokenSource = new CancellationTokenSource();
-                var searchResult = await _searchEngine.SearchAsync(keyword, _setting.SearchOption, _searchCancellationTokenSource.Token);
+                var searchResult = await _searchEngine.SearchAsync(keyword, _appConfig.SearchOption, _searchCancellationTokenSource.Token);
                 if (searchResult.Exception != null)
                 {
                     throw searchResult.Exception;

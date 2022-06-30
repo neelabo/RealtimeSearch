@@ -156,9 +156,9 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        public Setting ConvertToSetting()
+        public AppConfig ConvertToAppConfig()
         {
-            var setting = new Setting();
+            var setting = new AppConfig();
 
             setting.SearchAreas = this.SearchAreas;
             setting.IsMonitorClipboard = this.IsMonitorClipboard;
