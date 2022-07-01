@@ -104,17 +104,52 @@ namespace NeeLaboratory.RealtimeSearch
 
         public TextBlock Target => _target;
 
-        /// <summary>
-        /// Text property.
-        /// </summary>
-        private string _text = "";
+
         public string Text
         {
-            get { return _text; }
-            set { if (_text != value) { _text = value; RaisePropertyChanged(); } }
+            get { return (string)GetValue(TextProperty); }
+            set { SetValue(TextProperty, value); }
         }
 
-        public bool IsSelectedWithoutExtension { get; set; } = true;
+        public static readonly DependencyProperty TextProperty =
+            DependencyProperty.Register("Text", typeof(string), typeof(RenameControl), new PropertyMetadata("", null, TextProperty_CoerceValueCallback));
+
+        private static object TextProperty_CoerceValueCallback(DependencyObject d, object baseValue)
+        {
+            if (d is RenameControl control && control.IsCoerceFileName)
+            {
+                return ReplaceInvalidFileNameChars((string)baseValue);
+            }
+            return baseValue;
+        }
+
+        private static string ReplaceInvalidFileNameChars(string source)
+        {
+            var invalidChars = System.IO.Path.GetInvalidFileNameChars();
+            return new string(source.Select(e => invalidChars.Contains(e) ? '_' : e).ToArray());
+        }
+
+
+        public bool IsCoerceFileName
+        {
+            get { return (bool)GetValue(IsCoerceFileNameProperty); }
+            set { SetValue(IsCoerceFileNameProperty, value); }
+        }
+
+        public static readonly DependencyProperty IsCoerceFileNameProperty =
+            DependencyProperty.Register("IsCoerceFileName", typeof(bool), typeof(RenameControl), new PropertyMetadata(false));
+
+
+        public bool IsSelectedWithoutExtension
+        {
+            get { return (bool)GetValue(IsSelectedWithoutExtensionProperty); }
+            set { SetValue(IsSelectedWithoutExtensionProperty, value); }
+        }
+
+        public static readonly DependencyProperty IsSelectedWithoutExtensionProperty =
+            DependencyProperty.Register("IsSelectedWithoutExtension", typeof(bool), typeof(RenameControl), new PropertyMetadata(true));
+
+
 
 
         private void Target_LayoutUpdated(object? sender, EventArgs e)

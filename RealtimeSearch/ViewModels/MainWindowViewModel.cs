@@ -51,12 +51,12 @@ namespace NeeLaboratory.RealtimeSearch
             _history = new History();
 
             _fileRename = new FileRename();
+            _fileRename.Renamed += (s, e) => _search.Rename(e.OldFullPath, e.FullPath);
             _fileRename.AddPropertyChanged(nameof(_fileRename.Error), FileIO_ErrorChanged);
 
             _programs = new ExternalProgramCollection(_appConfig);
             _programs.AddPropertyChanged(nameof(_programs.Error), Programs_ErrorChanged);
         }
-
 
 
         public event EventHandler? SearchResultChanged;
@@ -280,21 +280,9 @@ namespace NeeLaboratory.RealtimeSearch
 
         public void Rename(NodeContent file, string newValue)
         {
-            // TODO: 入力段階ではじくようにする
-            var invalidChar = _fileRename.CheckInvalidFileNameChars(newValue);
-            if (invalidChar != '\0')
-            {
-                ShowMessageBox($"ファイル名に使用できない文字が含まれています。( {invalidChar} )");
-                return;
-            }
-
-            var src = file.Path;
-            var dst = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(src) ?? "", newValue);
-            var newName = _fileRename.Rename(src, dst);
-            if (newName is not null)
-            {
-                _search.Rename(src, newName);
-            }
+            var folder = System.IO.Path.GetDirectoryName(file.Path) ?? ""; 
+            var oldValue = System.IO.Path.GetFileName(file.Path);
+            _fileRename.Rename(folder, oldValue, newValue);
         }
 
 

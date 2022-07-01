@@ -185,6 +185,7 @@ namespace NeeLaboratory.RealtimeSearch
             if (textBlock != null)
             {
                 var rename = new RenameControl(textBlock);
+                rename.IsCoerceFileName = true;
                 rename.IsSelectedWithoutExtension = System.IO.File.Exists(item.Path);
                 rename.Closing += Rename_Closing;
                 rename.Closed += Rename_Closed;
