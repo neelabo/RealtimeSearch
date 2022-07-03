@@ -12,11 +12,14 @@ namespace NeeLaboratory.RealtimeSearch
 {
     public class ClipboardListner : IDisposable
     {
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        private extern static void AddClipboardFormatListener(IntPtr hwnd);
+        private static class NativeMethods
+        {
+            [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+            internal extern static void AddClipboardFormatListener(IntPtr hwnd);
 
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        private extern static void RemoveClipboardFormatListener(IntPtr hwnd);
+            [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+            internal extern static void RemoveClipboardFormatListener(IntPtr hwnd);
+        }
 
         private const int WM_CLOSE = 0x0010;
         private const int WM_CLIPBOARDUPDATE = 0x031D;
@@ -52,7 +55,7 @@ namespace NeeLaboratory.RealtimeSearch
 
             _handle = new WindowInteropHelper(_window).Handle;
 
-            AddClipboardFormatListener(_handle);
+            NativeMethods.AddClipboardFormatListener(_handle);
 
             HwndSource source = HwndSource.FromHwnd(_handle);
             source.AddHook(new HwndSourceHook(WndProc));
@@ -63,7 +66,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             if (_handle != IntPtr.Zero)
             {
-                RemoveClipboardFormatListener(_handle);
+                NativeMethods.RemoveClipboardFormatListener(_handle);
                 _handle = IntPtr.Zero;
             }
         }

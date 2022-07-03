@@ -75,17 +75,21 @@ namespace NeeLaboratory.RealtimeSearch
 
         #endregion Constructors
 
-        #region Methods
+        #region Messaging
 
         private void ShowMessageBox(object? sender, ShowMessageBoxMessage e)
         {
-            MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            e.Result = MessageBox.Show(e.Message, e.Caption, e.Button, e.Icon);
         }
 
         private void ShowSettingWindow(object? sender, ShowSettingWindowMessage e)
         {
             ShowSettingWindow();
         }
+
+        #endregion Messaging
+
+        #region Methods
 
         private void ViewModel_FilesChanged(object? sender, EventArgs e)
         {
@@ -335,14 +339,7 @@ namespace NeeLaboratory.RealtimeSearch
             NodeContent? file = (target as ListView)?.SelectedItem as NodeContent;
             if (file != null)
             {
-                try
-                {
-                    FileSystem.OpenProperty(this, file.Path);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                _vm.OpenProperty(file);
             }
         }
 
@@ -361,37 +358,9 @@ namespace NeeLaboratory.RealtimeSearch
         private void Delete_Executed(object target, ExecutedRoutedEventArgs e)
         {
             var items = (target as ListView)?.SelectedItems;
-            if (items != null && items.Count >= 1)
+            if (items != null && items.Count > 0)
             {
-                var message = (items.Count == 1)
-                    ? $"このファイルをごみ箱に移動しますか？\n\n{(items[0] as NodeContent)?.Path}"
-                    : $"これらの {items.Count} 個の項目をごみ箱に移しますか？";
-
-                var result = MessageBox.Show(message, "削除確認", MessageBoxButton.OKCancel, MessageBoxImage.Question);
-
-
-                if (result == MessageBoxResult.OK)
-                {
-                    try
-                    {
-                        // ゴミ箱に捨てる
-                        foreach (var item in items.OfType<NodeContent>())
-                        {
-                            if (item.IsDirectory)
-                            {
-                                Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(item.Path, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
-                            }
-                            else
-                            {
-                                Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(item.Path, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"ファイル削除に失敗しました\n\n原因: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
+                _vm.Delete(items.Cast<NodeContent>().ToList());
             }
         }
 
@@ -418,6 +387,7 @@ namespace NeeLaboratory.RealtimeSearch
         // ファイルを開く
         private void Open_Executed(object target, ExecutedRoutedEventArgs e, ExecuteType executeType, int programId = 0)
         {
+            // TODO: vm
             var items = (target as ListView)?.SelectedItems;
 
             if (items == null) return;
@@ -438,29 +408,6 @@ namespace NeeLaboratory.RealtimeSearch
                     _vm.Execute(nodes, programId);
                     break;
             }
-
-#if false
-            foreach (var item in items)
-            {
-                NodeContent file = item as NodeContent;
-                if (file != null && (System.IO.File.Exists((string)file.Path) || System.IO.Directory.Exists((string)file.Path)))
-                {
-                    switch (executeType)
-                    {
-                        default:
-                        case ExecuteType.Default:
-                            ExecuteDefault(file);
-                            break;
-                        case ExecuteType.ExternalPrograms:
-                            Execute(file);
-                            break;
-                        case ExecuteType.SelectedExternalProgram:
-                            Execute(file, programId);
-                            break;
-                    }
-                }
-            }
-#endif
         }
 
         private void OpenEx1_Executed(object target, ExecutedRoutedEventArgs e)
@@ -492,6 +439,7 @@ namespace NeeLaboratory.RealtimeSearch
         // ファイルの場所を開く
         private void OpenPlace_Executed(object target, ExecutedRoutedEventArgs e)
         {
+            // TODO: vm
             var items = (target as ListView)?.SelectedItems;
 
             if (items == null) return;
@@ -510,16 +458,10 @@ namespace NeeLaboratory.RealtimeSearch
         // ファイルのコピー
         private void Copy_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            var selectedItems = (target as ListView)?.SelectedItems;
-            if (selectedItems is null) return;
+            var items = (target as ListView)?.SelectedItems;
+            if (items is null) return;
 
-            var files = new System.Collections.Specialized.StringCollection();
-            foreach (var item in selectedItems)
-            {
-                NodeContent? file = item as NodeContent;
-                if (file != null) files.Add(file.Path);
-            }
-            if (files.Count > 0) Clipboard.SetFileDropList(files);
+            _vm.CopyFilesToClipboard(items.Cast<NodeContent>().ToList());
         }
 
         // ファイル名のコピー
@@ -528,8 +470,7 @@ namespace NeeLaboratory.RealtimeSearch
             NodeContent? file = (target as ListView)?.SelectedItem as NodeContent;
             if (file != null)
             {
-                string text = System.IO.Path.GetFileNameWithoutExtension(file.Path);
-                _vm.SetClipboard(text);
+                _vm.CopyNameToClipboard(file);
             }
         }
 

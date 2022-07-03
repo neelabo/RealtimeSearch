@@ -12,7 +12,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             if (value is FileInfo file)
             {
-                return FileSystem.CreateTypeName(file.Path, file.IsDirectory);
+                return ShellFileResource.CreateTypeName(file.Path, file.IsDirectory);
             }
 
             return DependencyProperty.UnsetValue;

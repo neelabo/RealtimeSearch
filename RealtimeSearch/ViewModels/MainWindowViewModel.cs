@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Collections.ObjectModel;
 using NeeLaboratory.IO.Search;
+using System.Linq;
 
 namespace NeeLaboratory.RealtimeSearch
 {
@@ -182,8 +183,6 @@ namespace NeeLaboratory.RealtimeSearch
             _clipboardSearch.Start(window);
         }
 
-
-
         public void StopClipboardWatch()
         {
             _clipboardSearch?.Stop();
@@ -257,19 +256,22 @@ namespace NeeLaboratory.RealtimeSearch
             _keyword.SetValue(keyword, 200);
         }
 
-        public void SetClipboard(string text)
+
+        public void CopyFilesToClipboard(List<NodeContent> files)
         {
-            _clipboardSearch?.SetClipboard(text);
+            ClipboardTools.SetFileDropList(files.Select(e => e.Path).ToArray());
         }
+
+        public void CopyNameToClipboard(NodeContent file)
+        {
+            ClipboardTools.SetText(System.IO.Path.GetFileNameWithoutExtension(file.Path));
+        }
+
 
         public void AddHistory()
         {
-            var keyword = _search.SearchResult?.Keyword;
-            if (!string.IsNullOrWhiteSpace(keyword))
-            {
-                Debug.WriteLine($"AddHistory: {keyword}");
-                History.Add(keyword);
-            }
+            var keyword = _search.SearchResult?.Keyword ?? "";
+            History.Add(keyword);
         }
 
         public void Rreflesh(string path)
@@ -277,10 +279,45 @@ namespace NeeLaboratory.RealtimeSearch
             _search.Reflesh(path);
         }
 
+        public void OpenProperty(NodeContent item)
+        {
+            try
+            {
+                ShellFileResource.OpenProperty(Application.Current.MainWindow, item.Path);
+            }
+            catch (Exception ex)
+            {
+                _messenger.Send(this, new ShowMessageBoxMessage(ex.Message, MessageBoxImage.Error));
+            }
+        }
+
+        public void Delete(IList<NodeContent> items)
+        {
+            if (items.Count == 0) return;
+
+            var text = (items.Count == 1)
+                ? $"このファイルをごみ箱に移動しますか？\n\n{items[0].Path}"
+                : $"これらの {items.Count} 個の項目をごみ箱に移しますか？";
+            var dialogMessage = new ShowMessageBoxMessage(text, null, MessageBoxButton.OKCancel, MessageBoxImage.Question);
+            _messenger.Send(this, dialogMessage);
+
+            if (dialogMessage.Result == MessageBoxResult.OK)
+            {
+                try
+                {
+                    FileSystem.SendToRecycleBin(items.Select(e => e.Path).ToList());
+                }
+                catch (Exception ex)
+                {
+                    _messenger.Send(this, new ShowMessageBoxMessage($"ファイル削除に失敗しました\n\n原因: {ex.Message}", MessageBoxImage.Error));
+                }
+            }
+        }
+
 
         public void Rename(NodeContent file, string newValue)
         {
-            var folder = System.IO.Path.GetDirectoryName(file.Path) ?? ""; 
+            var folder = System.IO.Path.GetDirectoryName(file.Path) ?? "";
             var oldValue = System.IO.Path.GetFileName(file.Path);
             _fileRename.Rename(folder, oldValue, newValue);
         }
@@ -323,6 +360,9 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
+        // TODO: この存在の是非はWinUI3移行時に判定する
+#region Commands
+
         /// <summary>
         /// ToggleDetailVisibleCommand command.
         /// </summary>
@@ -336,5 +376,8 @@ namespace NeeLaboratory.RealtimeSearch
         {
             _appConfig.IsDetailVisibled = !_appConfig.IsDetailVisibled;
         }
+
+#endregion Commands
+
     }
 }

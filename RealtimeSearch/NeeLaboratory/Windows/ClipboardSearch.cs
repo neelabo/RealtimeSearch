@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Text;
@@ -17,12 +15,21 @@ namespace NeeLaboratory.RealtimeSearch
         public string Keyword { get; set; } = "";
     }
 
-    //
     public class ClipboardSearch
     {
+        #region NativeMethods
+
+        private static class NativeMethods
+        {
+            [DllImport("user32.dll", CharSet = CharSet.Auto)]
+            public static extern IntPtr GetForegroundWindow();
+        }
+
+        #endregion NativeMethods
+
+
         private ClipboardListner? _clipboardListner;
         private AppConfig _setting;
-        private string _copyText = "";
 
 
         public ClipboardSearch(AppConfig setting)
@@ -41,7 +48,6 @@ namespace NeeLaboratory.RealtimeSearch
             _clipboardListner.ClipboardUpdate += ClipboardListner_DrawClipboard;
         }
 
-        //
         public void Stop()
         {
             // クリップボード監視終了
@@ -50,19 +56,9 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
-        public void SetClipboard(string text)
-        {
-            Clipboard.SetDataObject(text);
-            _copyText = text;
-        }
-
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern IntPtr GetForegroundWindow();
-        
         public async void ClipboardListner_DrawClipboard(object? sender, Window window)
         {
-            IntPtr activeWindow = GetForegroundWindow();
+            IntPtr activeWindow = NativeMethods.GetForegroundWindow();
             IntPtr thisWindow = new WindowInteropHelper(window).Handle;
             if (activeWindow == thisWindow)
             {
@@ -81,7 +77,6 @@ namespace NeeLaboratory.RealtimeSearch
                         if (Clipboard.ContainsText())
                         {
                             string text = Clipboard.GetText();
-                            if (_copyText == text) return; // コピーしたファイル名と同じであるなら処理しない
 
                             // 即時検索
                             ClipboardChanged?.Invoke(this, new ClipboardChangedEventArgs()
