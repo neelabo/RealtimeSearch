@@ -147,8 +147,14 @@ packages/*
 csx/
 *.build.csdef
 
-# Windows Store app package directory
+# Windows Store app package directories and files
 AppPackages/
+BundleArtifacts/
+Package.StoreAssociation.xml
+_pkginfo.txt
+*.appx
+*.appxbundle
+*.appxupload
 
 # Others
 sql/
