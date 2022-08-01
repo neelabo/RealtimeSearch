@@ -1,194 +1,131 @@
-﻿// from http://grabacr.net/archives/1585
-using System;
+﻿using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Windows;
-using System.Windows.Interop;
 
 namespace NeeLaboratory.RealtimeSearch
 {
-    public static class WindowPlacement
+    [ImmutableObject(true)]
+    [JsonConverter(typeof(JsonWindowPlaceConverter))]
+    public class WindowPlacement
     {
-        #region Native structs
+        public static WindowPlacement None { get; } = new WindowPlacement();
 
-        [Serializable, DataContract]
-        [StructLayout(LayoutKind.Sequential)]
-        public struct WINDOWPLACEMENT
+        public WindowPlacement()
         {
-            private int _length;
-            private int _flags;
-            private SHOWCOMMAND _showCmd;
-            private POINT _minPosition;
-            private POINT _maxPosition;
-            private RECT _normalPosition;
-
-            [DataMember]
-            public int Length
-            {
-                get => _length;
-                set => _length = value;
-            }
-
-            [DataMember]
-            public int Flags
-            {
-                get => _flags;
-                set => _flags = value;
-            }
-
-            [DataMember]
-            public SHOWCOMMAND ShowCmd
-            {
-                get => _showCmd;
-                set => _showCmd = value;
-            }
-
-            [DataMember]
-            public POINT MinPosition
-            {
-                get => _minPosition;
-                set => _minPosition = value;
-            }
-
-            [DataMember]
-            public POINT MaxPosition
-            {
-                get => _maxPosition;
-                set => _maxPosition = value;
-            }
-
-            [DataMember]
-            public RECT NormalPosition
-            {
-                get => _normalPosition;
-                set => _normalPosition = value;
-            }
-
-            // 有効判定
-            public bool HasValue => _length > 0;
         }
 
-        [Serializable, DataContract]
-        [StructLayout(LayoutKind.Sequential)]
-        public struct POINT
+        public WindowPlacement(WindowState windowState, int left, int top, int width, int height)
         {
-            private int _x;
-            private int _y;
+            WindowState = windowState;
+            Left = left;
+            Top = top;
+            Width = width;
+            Height = height;
+        }
 
-            public POINT(int x, int y)
-            {
-                _x = x;
-                _y = y;
-            }
+        public WindowPlacement(WindowState windowState, int left, int top, int width, int height, bool isFullScreen) : this(windowState, left, top, width, height)
+        {
+            IsFullScreen = isFullScreen;
 
-            [DataMember]
-            public int X
+            if (isFullScreen)
             {
-                get => _x;
-                set => _x = value;
-            }
-
-            [DataMember]
-            public int Y
-            {
-                get => _y;
-                set => _y = value;
+                WindowState = WindowState.Maximized;
             }
         }
 
-        [Serializable, DataContract]
-        [StructLayout(LayoutKind.Sequential)]
-        public struct RECT
+
+        public WindowState WindowState { get; private set; }
+        public int Left { get; private set; }
+        public int Top { get; private set; }
+        public int Width { get; private set; }
+        public int Height { get; private set; }
+
+        public bool IsFullScreen { get; private set; }
+
+        public int Right => Left + Width;
+        public int Bottom => Top + Height;
+
+
+        public bool IsValid()
         {
-            private int _left;
-            private int _top;
-            private int _right;
-            private int _bottom;
-
-            public RECT(int left, int top, int right, int bottom)
-            {
-                _left = left;
-                _top = top;
-                _right = right;
-                _bottom = bottom;
-            }
-
-            [DataMember]
-            public int Left
-            {
-                get => _left;
-                set => _left = value;
-            }
-
-            [DataMember]
-            public int Top
-            {
-                get => _top;
-                set => _top = value;
-            }
-
-            [DataMember]
-            public int Right
-            {
-                get => _right;
-                set => _right = value;
-            }
-
-            [DataMember]
-            public int Bottom
-            {
-                get => _bottom;
-                set => _bottom = value;
-            }
+            return Width > 0 || Height > 0;
         }
 
-        public enum SHOWCOMMAND
+        public WindowPlacement WithIsFullScreeen(bool isFullScreen)
         {
-            HIDE = 0,
-            SHOWNORMAL = 1,
-            SHOWMINIMIZED = 2,
-            SHOWMAXIMIZED = 3,
-            SHOWNOACTIVATE = 4,
-            SHOW = 5,
-            MINIMIZE = 6,
-            SHOWMINNOACTIVE = 7,
-            SHOWNA = 8,
-            RESTORE = 9,
-            SHOWDEFAULT = 10,
+            return new WindowPlacement(this.WindowState, this.Left, this.Top, this.Width, this.Height, isFullScreen);
         }
 
-        #endregion
-
-        internal static class NativeMethods
+        public WindowPlacement WithState(WindowState state)
         {
-            [DllImport("user32.dll")]
-            public static extern bool SetWindowPlacement(IntPtr hWnd, [In] ref WINDOWPLACEMENT lpwndpl);
-
-            [DllImport("user32.dll")]
-            public static extern bool GetWindowPlacement(IntPtr hWnd, out WINDOWPLACEMENT lpwndpl);
+            var isFullScreen = state == WindowState.Maximized ? this.IsFullScreen : false;
+            return new WindowPlacement(state, this.Left, this.Top, this.Width, this.Height, isFullScreen);
         }
 
-
-        public static void SetPlacement(Window window, WINDOWPLACEMENT placement)
+        public WindowPlacement WithState(WindowState state, bool isFullScreen)
         {
-            var hwnd = new WindowInteropHelper(window).Handle;
-            placement.Length = Marshal.SizeOf(typeof(WINDOWPLACEMENT));
-            placement.Flags = 0;
-            placement.ShowCmd = (placement.ShowCmd == SHOWCOMMAND.SHOWMINIMIZED) ? SHOWCOMMAND.SHOWNORMAL : placement.ShowCmd;
-
-            NativeMethods.SetWindowPlacement(hwnd, ref placement);
+            isFullScreen = state == WindowState.Maximized ? isFullScreen : false;
+            return new WindowPlacement(state, this.Left, this.Top, this.Width, this.Height, isFullScreen);
         }
 
-        public static WINDOWPLACEMENT GetPlacement(Window window)
+        public override string ToString()
         {
-            var hwnd = new WindowInteropHelper(window).Handle;
-            if (hwnd == IntPtr.Zero) throw new InvalidOperationException();
+            var state = IsFullScreen ? "FullScreen" : WindowState.ToString();
+            return $"{state},{Left},{Top},{Width},{Height}";
+        }
 
-            NativeMethods.GetWindowPlacement(hwnd, out WINDOWPLACEMENT placement);
+        public static WindowPlacement Parse(string? s)
+        {
+            if (string.IsNullOrWhiteSpace(s)) return WindowPlacement.None;
+
+            var tokens = s.Split(',');
+            if (tokens.Length != 5)
+            {
+                Debug.WriteLine($"WindowPlacement.Parse(): InvalidCast: {s}");
+                return WindowPlacement.None;
+            }
+
+            bool isFullScreen;
+            WindowState windowState;
+            if (tokens[0] == "FullScreen")
+            {
+                windowState = WindowState.Maximized;
+                isFullScreen = true;
+            }
+            else
+            {
+                windowState = (WindowState)(Enum.Parse(typeof(WindowState), tokens[0]));
+                isFullScreen = false;
+            }
+
+            var placement = new WindowPlacement(
+                windowState,
+                int.Parse(tokens[1]),
+                int.Parse(tokens[2]),
+                int.Parse(tokens[3]),
+                int.Parse(tokens[4]),
+                isFullScreen);
 
             return placement;
         }
-    }
 
+
+        public sealed class JsonWindowPlaceConverter : JsonConverter<WindowPlacement>
+        {
+            public override WindowPlacement Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                return WindowPlacement.Parse(reader.GetString());
+            }
+
+            public override void Write(Utf8JsonWriter writer, WindowPlacement value, JsonSerializerOptions options)
+            {
+                writer.WriteStringValue(value.IsValid() ? value.ToString() : "");
+            }
+        }
+    }
 
 }

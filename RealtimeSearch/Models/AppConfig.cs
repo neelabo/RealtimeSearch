@@ -85,7 +85,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         public List<ListViewColumnMemento> ListViewColumnMemento { get; set; } = new List<ListViewColumnMemento>();
 
-        public WindowPlacement.WINDOWPLACEMENT WindowPlacement { get; set; }
+        public WindowPlacement WindowPlacement { get; set; } = new WindowPlacement();
 
 
 

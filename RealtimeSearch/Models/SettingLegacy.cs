@@ -54,9 +54,6 @@ namespace NeeLaboratory.RealtimeSearch
         [DataMember]
         public List<ListViewColumnMemento> ListViewColumnMemento { get; private set; } = new List<ListViewColumnMemento>();
 
-        [DataMember]
-        public WindowPlacement.WINDOWPLACEMENT WindowPlacement { get; private set; }
-
 
         [MemberNotNull(nameof(SearchAreas))]
         [MemberNotNull(nameof(SearchOption))]
@@ -168,7 +165,6 @@ namespace NeeLaboratory.RealtimeSearch
             setting.WebSearchFormat = this.WebSearchFormat;
             setting.ExternalPrograms = this.ExternalPrograms;
             setting.ListViewColumnMemento = this.ListViewColumnMemento;
-            setting.WindowPlacement = this.WindowPlacement;
 
             return setting;
         }

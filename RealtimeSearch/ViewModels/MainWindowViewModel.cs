@@ -228,15 +228,12 @@ namespace NeeLaboratory.RealtimeSearch
 
         public void RestoreWindowPlacement(Window window)
         {
-            if (_appConfig.WindowPlacement.HasValue)
-            {
-                WindowPlacement.SetPlacement(window, _appConfig.WindowPlacement);
-            }
+            WindowPlacementTools.RestoreWindowPlacement(window, _appConfig.WindowPlacement);
         }
 
         public void StoreWindowPlacement(Window window)
         {
-            _appConfig.WindowPlacement = WindowPlacement.GetPlacement(window);
+            _appConfig.WindowPlacement = WindowPlacementTools.StoreWindowPlacement(window, true);
         }
 
         public void StoreListViewCondition(List<ListViewColumnMemento> listViewColumnMementos)
@@ -361,7 +358,7 @@ namespace NeeLaboratory.RealtimeSearch
 
 
         // TODO: この存在の是非はWinUI3移行時に判定する
-#region Commands
+        #region Commands
 
         /// <summary>
         /// ToggleDetailVisibleCommand command.
@@ -377,7 +374,7 @@ namespace NeeLaboratory.RealtimeSearch
             _appConfig.IsDetailVisibled = !_appConfig.IsDetailVisibled;
         }
 
-#endregion Commands
+        #endregion Commands
 
     }
 }
