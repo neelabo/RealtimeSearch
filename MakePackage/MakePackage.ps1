@@ -16,7 +16,8 @@ $assembly = 'RealtimeSearch'
 $solutionDir = Resolve-Path ".."
 $projectDir = "$solutionDir\$assembly"
 $project = "$projectDir\$product.csproj"
-$productDir = "Publish"
+$publishDir = "Publish"
+$productDir = "$publishDir\$product-x64"
 
 
 #---------------------
@@ -80,7 +81,8 @@ function Publish-Product($project, $output)
 {
 	#& dotnet publish $project -c Release -r win-x64 -p:PublishReadyToRun=true --no-self-contained -o publish/x64
 	#& dotnet publish $project -c Release -r win-x86 -p:PublishReadyToRun=true --no-self-contained -o publish/x86
-	& dotnet publish $project -c Release -o $output
+	#& dotnet publish $project -c Release -o $output
+	& dotnet publish $project -p:PublishProfile=FolderProfile-x64.pubxml -c Release
 }
 
 
@@ -203,7 +205,11 @@ function New-Msi
 # main
 
 # clean product
-Remove-Files $productDir
+#Remove-Files $productDir
+if (Test-Path $publishDir)
+{
+	Remove-Item $publishDir -Recurse
+}
 
 # build
 Write-Host "`n[Build] ...`n" -fore Cyan
