@@ -261,7 +261,10 @@ namespace NeeLaboratory.RealtimeSearch
 
         public void CopyNameToClipboard(NodeContent file)
         {
-            ClipboardTools.SetText(System.IO.Path.GetFileNameWithoutExtension(file.Path));
+            var text = file.IsDirectory
+                ? System.IO.Path.GetFileName(file.Path)
+                : System.IO.Path.GetFileNameWithoutExtension(file.Path);
+            ClipboardTools.SetText(text);
         }
 
 
