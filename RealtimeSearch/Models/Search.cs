@@ -45,7 +45,6 @@ namespace NeeLaboratory.RealtimeSearch
             _searchEngine = new SearchEngine();
             ////_searchEngine.Context.NodeFilter = SearchFilter;
             _searchEngine.SetSearchAreas(_appConfig.SearchAreas);
-            _searchEngine.Start();
         }
 
 
@@ -173,7 +172,6 @@ namespace NeeLaboratory.RealtimeSearch
                 // 監視開始
                 _watcher?.Dispose();
                 _watcher = new SearchResultWatcher(_searchEngine, SearchResult);
-                _watcher.Start();
             }
             catch (OperationCanceledException)
             {
