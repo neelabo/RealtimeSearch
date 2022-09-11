@@ -13,10 +13,10 @@ namespace RealtimeSratchUnitTest
         [InlineData("TestData/UserSetting.v3.xml")]
         public void Test1(string input)
         {
-#pragma warning disable CS0612 // Œ^‚Ü‚½‚Íƒƒ“ƒo[‚ª‹ŒŒ^®‚Å‚·
+#pragma warning disable CS0618 // Œ^‚Ü‚½‚Íƒƒ“ƒo[‚ª‹ŒŒ^®‚Å‚·
             var legacy = SettingLegacy.Load(input);
-#pragma warning restore CS0612 // Œ^‚Ü‚½‚Íƒƒ“ƒo[‚ª‹ŒŒ^®‚Å‚·
-            var setting = legacy.ConvertToAppConfig();
+#pragma warning restore CS0618 // Œ^‚Ü‚½‚Íƒƒ“ƒo[‚ª‹ŒŒ^®‚Å‚·
+            _ = legacy.ConvertToAppConfig();
         }
     }
 }

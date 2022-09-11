@@ -5,7 +5,7 @@ namespace NeeLaboratory.RealtimeSearch
 {
     public class WebSearch
     {
-        private AppConfig _appConfig;
+        private readonly AppConfig _appConfig;
 
 
         public WebSearch(AppConfig appConfig)

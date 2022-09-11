@@ -17,13 +17,13 @@ namespace NeeLaboratory.RealtimeSearch
     /// 古い形式の設定データ
     /// </summary>
     /// <remarks>
-    /// サブクラスは当面共用する。変更され問題が発生したときに対処ｐする
+    /// サブクラスは当面共用する。変更され問題が発生したときに対処する
     /// </remarks>
-    [Obsolete, DataContract(Name = "Setting")]
+    [Obsolete("no used"), DataContract(Name = "Setting")]
     public class SettingLegacy
     {
         // legacy
-        [Obsolete, DataMember(EmitDefaultValue = false)]
+        [Obsolete("no used"), DataMember(EmitDefaultValue = false)]
         private ObservableCollection<string>? SearchPaths;
 
         [DataMember]
@@ -64,10 +64,12 @@ namespace NeeLaboratory.RealtimeSearch
             SearchAreas = new ObservableCollection<SearchArea>();
             IsMonitorClipboard = true;
             SearchOption = new NeeLaboratory.IO.Search.SearchOption();
-            ExternalPrograms = new List<ExternalProgram>();
-            ExternalPrograms.Add(new ExternalProgram());
-            ExternalPrograms.Add(new ExternalProgram());
-            ExternalPrograms.Add(new ExternalProgram());
+            ExternalPrograms = new List<ExternalProgram>
+            {
+                new ExternalProgram(),
+                new ExternalProgram(),
+                new ExternalProgram()
+            };
             WebSearchFormat = "https://www.google.co.jp/search?q=$(query)";
         }
 
@@ -87,7 +89,6 @@ namespace NeeLaboratory.RealtimeSearch
         [OnDeserialized]
         private void Deserialized(StreamingContext c)
         {
-#pragma warning disable CS0612
             if (SearchPaths != null)
             {
                 SearchAreas = new ObservableCollection<SearchArea>(SearchPaths.Select(e => new SearchArea(e, true)));
@@ -98,18 +99,19 @@ namespace NeeLaboratory.RealtimeSearch
                 SearchOption.AllowFolder = SearchOptionLegacyV1.AllowFolder;
                 SearchOptionLegacyV1 = null;
             }
-#pragma warning restore CS0612
         }
 
-        [Obsolete]
+        [Obsolete("no used")]
         public void Save(string path)
         {
-            XmlWriterSettings settings = new XmlWriterSettings();
-            settings.Encoding = new System.Text.UTF8Encoding(false);
-            settings.Indent = true;
-            using (XmlWriter xw = XmlWriter.Create(path, settings))
+            var settings = new XmlWriterSettings
             {
-                DataContractSerializer serializer = new DataContractSerializer(typeof(SettingLegacy));
+                Encoding = new System.Text.UTF8Encoding(false),
+                Indent = true
+            };
+            using (var xw = XmlWriter.Create(path, settings))
+            {
+                var serializer = new DataContractSerializer(typeof(SettingLegacy));
                 serializer.WriteObject(xw, this);
             }
         }
@@ -122,9 +124,8 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 using (XmlReader xr = XmlReader.Create(path))
                 {
-                    DataContractSerializer serializer = new DataContractSerializer(typeof(SettingLegacy));
-                    var setting = serializer.ReadObject(xr) as SettingLegacy;
-                    if (setting is null) throw new FormatException();
+                    var serializer = new DataContractSerializer(typeof(SettingLegacy));
+                    if (serializer.ReadObject(xr) is not SettingLegacy setting) throw new FormatException();
                     return setting;
                 }
             }
@@ -134,7 +135,7 @@ namespace NeeLaboratory.RealtimeSearch
 
                 // 全部読み込み
                 string text;
-                using (StreamReader sr = new StreamReader(path))
+                using (var sr = new StreamReader(path))
                 {
                     text = sr.ReadToEnd();
                 }
@@ -144,9 +145,9 @@ namespace NeeLaboratory.RealtimeSearch
                 text = text.Replace("http://schemas.datacontract.org/2004/07/RealtimeSearch", "http://schemas.datacontract.org/2004/07/NeeLaboratory.RealtimeSearch");
 
                 using (var reader = new StringReader(text))
-                using (XmlReader xr = XmlReader.Create(reader))
+                using (var xr = XmlReader.Create(reader))
                 {
-                    DataContractSerializer serializer = new DataContractSerializer(typeof(SettingLegacy));
+                    var serializer = new DataContractSerializer(typeof(SettingLegacy));
                     var setting = serializer.ReadObject(xr) as SettingLegacy;
                     return setting;
                 }
@@ -155,16 +156,17 @@ namespace NeeLaboratory.RealtimeSearch
 
         public AppConfig ConvertToAppConfig()
         {
-            var setting = new AppConfig();
-
-            setting.SearchAreas = this.SearchAreas;
-            setting.IsMonitorClipboard = this.IsMonitorClipboard;
-            setting.IsTopmost = this.IsTopmost;
-            setting.SearchOption = this.SearchOption;
-            setting.IsDetailVisibled = this.IsDetailVisibled;
-            setting.WebSearchFormat = this.WebSearchFormat;
-            setting.ExternalPrograms = this.ExternalPrograms;
-            setting.ListViewColumnMemento = this.ListViewColumnMemento;
+            var setting = new AppConfig
+            {
+                SearchAreas = this.SearchAreas,
+                IsMonitorClipboard = this.IsMonitorClipboard,
+                IsTopmost = this.IsTopmost,
+                SearchOption = this.SearchOption,
+                IsDetailVisibled = this.IsDetailVisibled,
+                WebSearchFormat = this.WebSearchFormat,
+                ExternalPrograms = this.ExternalPrograms,
+                ListViewColumnMemento = this.ListViewColumnMemento
+            };
 
             return setting;
         }

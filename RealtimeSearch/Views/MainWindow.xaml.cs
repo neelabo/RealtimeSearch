@@ -20,24 +20,22 @@ namespace NeeLaboratory.RealtimeSearch
     /// </summary>
     public partial class MainWindow : Window
     {
-        #region Fieds
+        public static readonly RoutedCommand OpenCommand = new("OpenCommand", typeof(MainWindow));
+        public static readonly RoutedCommand OpenCommand1 = new("OpenCommand1", typeof(MainWindow));
+        public static readonly RoutedCommand OpenCommand2 = new("OpenCommand2", typeof(MainWindow));
+        public static readonly RoutedCommand OpenCommand3 = new("OpenCommand3", typeof(MainWindow));
+        public static readonly RoutedCommand OpenCommandDefault = new("OpenCommandDefault", typeof(MainWindow));
+        public static readonly RoutedCommand CopyCommand = new("CopyCommand", typeof(MainWindow));
+        public static readonly RoutedCommand OpenPlaceCommand = new("OpenPlaceCommand", typeof(MainWindow));
+        public static readonly RoutedCommand CopyNameCommand = new("CopyNameCommand", typeof(MainWindow));
+        public static readonly RoutedCommand RenameCommand = new("RenameCommand", typeof(MainWindow));
+        public static readonly RoutedCommand DeleteCommand = new("DeleteCommand", typeof(MainWindow));
+        public static readonly RoutedCommand SearchCommand = new("SearchCommand", typeof(MainWindow));
+        public static readonly RoutedCommand WebSearchCommand = new("WebSearchCommand", typeof(MainWindow));
+        public static readonly RoutedCommand PropertyCommand = new("PropertyCommand", typeof(MainWindow));
+        public static readonly RoutedCommand ToggleAllowFolderCommand = new("ToggleAllowFolderCommand", typeof(MainWindow));
 
-        public static readonly RoutedCommand OpenCommand = new RoutedCommand("OpenCommand", typeof(MainWindow));
-        public static readonly RoutedCommand OpenCommand1 = new RoutedCommand("OpenCommand1", typeof(MainWindow));
-        public static readonly RoutedCommand OpenCommand2 = new RoutedCommand("OpenCommand2", typeof(MainWindow));
-        public static readonly RoutedCommand OpenCommand3 = new RoutedCommand("OpenCommand3", typeof(MainWindow));
-        public static readonly RoutedCommand OpenCommandDefault = new RoutedCommand("OpenCommandDefault", typeof(MainWindow));
-        public static readonly RoutedCommand CopyCommand = new RoutedCommand("CopyCommand", typeof(MainWindow));
-        public static readonly RoutedCommand OpenPlaceCommand = new RoutedCommand("OpenPlaceCommand", typeof(MainWindow));
-        public static readonly RoutedCommand CopyNameCommand = new RoutedCommand("CopyNameCommand", typeof(MainWindow));
-        public static readonly RoutedCommand RenameCommand = new RoutedCommand("RenameCommand", typeof(MainWindow));
-        public static readonly RoutedCommand DeleteCommand = new RoutedCommand("DeleteCommand", typeof(MainWindow));
-        public static readonly RoutedCommand SearchCommand = new RoutedCommand("SearchCommand", typeof(MainWindow));
-        public static readonly RoutedCommand WebSearchCommand = new RoutedCommand("WebSearchCommand", typeof(MainWindow));
-        public static readonly RoutedCommand PropertyCommand = new RoutedCommand("PropertyCommand", typeof(MainWindow));
-        public static readonly RoutedCommand ToggleAllowFolderCommand = new RoutedCommand("ToggleAllowFolderCommand", typeof(MainWindow));
-
-        private MainWindowViewModel _vm;
+        private readonly MainWindowViewModel _vm;
 
         private Point _dragStart;
         private ListViewItem? _dragDowned;
@@ -45,9 +43,6 @@ namespace NeeLaboratory.RealtimeSearch
         private GridViewColumnHeader? _lastHeaderClicked = null;
         private ListSortDirection _lastDirection = ListSortDirection.Ascending;
 
-        #endregion Fields
-
-        #region Constructors
 
         public MainWindow()
         {
@@ -73,7 +68,6 @@ namespace NeeLaboratory.RealtimeSearch
             RestoreListViewMemento(App.AppConfig.ListViewColumnMemento);
         }
 
-        #endregion Constructors
 
         #region Messaging
 
@@ -129,8 +123,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void ListViewItem_MouseDoubleClick(object? sender, MouseButtonEventArgs e)
         {
-            NodeContent? file = ((ListViewItem?)sender)?.Content as NodeContent;
-            if (file == null) return;
+            if (((ListViewItem?)sender)?.Content is not NodeContent file) return;
 
             _vm.Execute(new List<NodeContent>() { file });
         }
@@ -155,8 +148,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void Keyword_TextChanged(object? sender, TextChangedEventArgs e)
         {
-            var textBox = e.OriginalSource as TextBox;
-            if (textBox != null)
+            if (e.OriginalSource is TextBox textBox)
             {
                 _vm.SetKeywordDelay(textBox.Text);
             }
@@ -169,9 +161,11 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void ShowSettingWindow()
         {
-            var window = new SettingWindow(App.AppConfig);
-            window.Owner = this;
-            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            var window = new SettingWindow(App.AppConfig)
+            {
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
             window.ShowDialog();
         }
 
@@ -188,9 +182,11 @@ namespace NeeLaboratory.RealtimeSearch
 
             if (textBlock != null)
             {
-                var rename = new RenameControl(textBlock);
-                rename.IsCoerceFileName = true;
-                rename.IsSelectedWithoutExtension = System.IO.File.Exists(item.Path);
+                var rename = new RenameControl(textBlock)
+                {
+                    IsCoerceFileName = true,
+                    IsSelectedWithoutExtension = System.IO.File.Exists(item.Path)
+                };
                 rename.Closing += Rename_Closing;
                 rename.Closed += Rename_Closed;
 
@@ -204,8 +200,7 @@ namespace NeeLaboratory.RealtimeSearch
             //Debug.WriteLine($"{ev.OldValue} => {ev.NewValue}");
             if (e.OldValue != e.NewValue)
             {
-                NodeContent? file = this.ResultListView.SelectedItem as NodeContent;
-                if (file != null)
+                if (this.ResultListView.SelectedItem is NodeContent file)
                 {
                     _vm.Rename(file, e.NewValue);
                 }
@@ -274,7 +269,7 @@ namespace NeeLaboratory.RealtimeSearch
                             }
                         }
 
-                        DataObject data = new DataObject();
+                        var data = new DataObject();
                         data.SetData(DataFormats.FileDrop, paths.ToArray());
                         DragDrop.DoDragDrop(s, data, DragDropEffects.Copy);
                     }
@@ -336,8 +331,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void Property_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            NodeContent? file = (target as ListView)?.SelectedItem as NodeContent;
-            if (file != null)
+            if ((target as ListView)?.SelectedItem is NodeContent file)
             {
                 _vm.OpenProperty(file);
             }
@@ -368,9 +362,8 @@ namespace NeeLaboratory.RealtimeSearch
         private void Rename_Executed(object? target, ExecutedRoutedEventArgs? e)
         {
             var listView = target as ListView;
-            var item = listView?.SelectedItem as NodeContent;
 
-            if (item != null)
+            if (listView?.SelectedItem is NodeContent item)
             {
                 PopupRenameTextBox(item);
             }
@@ -385,7 +378,7 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
         // ファイルを開く
-        private void Open_Executed(object target, ExecutedRoutedEventArgs e, ExecuteType executeType, int programId = 0)
+        private void Open_Executed(object target, ExecutedRoutedEventArgs _, ExecuteType executeType, int programId = 0)
         {
             // TODO: vm
             var items = (target as ListView)?.SelectedItems;
@@ -446,11 +439,10 @@ namespace NeeLaboratory.RealtimeSearch
 
             foreach (var item in items)
             {
-                NodeContent? file = item as NodeContent;
-                if (file != null && (System.IO.File.Exists((string)file.Path) || System.IO.Directory.Exists((string)file.Path)))
+                if (item is NodeContent file && (System.IO.File.Exists(file.Path) || System.IO.Directory.Exists(file.Path)))
                 {
-                    var startInfo = new System.Diagnostics.ProcessStartInfo("explorer.exe", (string)("/select,\"" + file.Path + "\"")) { UseShellExecute = false };
-                    System.Diagnostics.Process.Start(startInfo);
+                    var startInfo = new ProcessStartInfo("explorer.exe", "/select,\"" + file.Path + "\"") { UseShellExecute = false };
+                    Process.Start(startInfo);
                 }
             }
         }
@@ -467,8 +459,7 @@ namespace NeeLaboratory.RealtimeSearch
         // ファイル名のコピー
         private void CopyName_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            NodeContent? file = (target as ListView)?.SelectedItem as NodeContent;
-            if (file != null)
+            if ((target as ListView)?.SelectedItem is NodeContent file)
             {
                 _vm.CopyNameToClipboard(file);
             }
@@ -492,10 +483,9 @@ namespace NeeLaboratory.RealtimeSearch
         {
             if (this.ResultListView.ItemsSource == null) return;
 
-            GridViewColumnHeader? headerClicked = e.OriginalSource as GridViewColumnHeader;
             ListSortDirection direction;
 
-            if (headerClicked != null)
+            if (e.OriginalSource is GridViewColumnHeader headerClicked)
             {
                 if (headerClicked.Role != GridViewColumnHeaderRole.Padding)
                 {
@@ -515,9 +505,8 @@ namespace NeeLaboratory.RealtimeSearch
                         }
                     }
 
-                    Binding? binding = headerClicked.Column.DisplayMemberBinding as Binding;
 
-                    string? header = binding != null
+                    string? header = headerClicked.Column.DisplayMemberBinding is Binding binding
                         ? binding.Path.Path
                         : headerClicked.Tag as string ?? "";
 
@@ -546,11 +535,10 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void GridViewColumnHeader_Sort(string sortBy, ListSortDirection direction)
         {
-            ListCollectionView? dataView = CollectionViewSource.GetDefaultView(this.ResultListView.ItemsSource) as ListCollectionView;
-            if (dataView is null) return;
+            if (CollectionViewSource.GetDefaultView(this.ResultListView.ItemsSource) is not ListCollectionView dataView) return;
 
             dataView.SortDescriptions.Clear();
-            SortDescription sd = new SortDescription(sortBy, direction);
+            var sd = new SortDescription(sortBy, direction);
             dataView.SortDescriptions.Add(sd);
             dataView.Refresh();
         }
@@ -560,7 +548,7 @@ namespace NeeLaboratory.RealtimeSearch
         #region ListViewColumnMemento
 
         // カラムヘッダ文字列取得
-        private string? GetColumnHeaderText(GridViewColumn column)
+        private static string? GetColumnHeaderText(GridViewColumn column)
         {
             return (column.Header as string) ?? (column.Header as GridViewColumnHeader)?.Content as string;
         }

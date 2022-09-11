@@ -12,7 +12,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private static class NativeMethods
         {
-            [DllImport("kernel32.dll", SetLastError = true)]
+            [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
             public static extern bool MoveFile(string src, string dst);
         }
 

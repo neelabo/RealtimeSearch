@@ -180,7 +180,7 @@ namespace NeeLaboratory.RealtimeSearch
 
             Debug.WriteLine("RemoveAllApplicationData ...");
 
-            var productFolder = GetFileSystemPath(Environment.SpecialFolder.LocalApplicationData, false);
+            //var productFolder = GetFileSystemPath(Environment.SpecialFolder.LocalApplicationData, false);
             Directory.Delete(LocalApplicationDataPath, true);
             System.Threading.Thread.Sleep(500);
 

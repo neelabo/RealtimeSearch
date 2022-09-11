@@ -81,12 +81,12 @@ namespace NeeLaboratory.RealtimeSearch
 
         const string _dummyFilePath = "__dummy_file__";
 
-        private static Dictionary<string, string> _typeNameDictionary = new Dictionary<string, string>();
-        private static Dictionary<string, BitmapSource> _iconDictionary = new Dictionary<string, BitmapSource>();
-        private static Lazy<string> _folderTypeName = new(() => GetTypeNameWithAttribute(_dummyFilePath, NativeMethods.FILE_ATTRIBUTE_DIRECTORY));
-        private static Lazy<BitmapSource> _folderIcon = new(() => GetTypeIconSourceWithAttribute(_dummyFilePath, IconSize.Small, NativeMethods.FILE_ATTRIBUTE_DIRECTORY) ?? new BitmapImage());
-        private static Lazy<string> _defaultTypeName = new(() => GetTypeNameWithAttribute(_dummyFilePath, 0));
-        private static Lazy<BitmapSource> _defaultIcon = new(() => GetTypeIconSourceWithAttribute(_dummyFilePath, IconSize.Small, 0) ?? new BitmapImage());
+        private static readonly Dictionary<string, string> _typeNameDictionary = new();
+        private static readonly Dictionary<string, BitmapSource> _iconDictionary = new();
+        private static readonly Lazy<string> _folderTypeName = new(() => GetTypeNameWithAttribute(_dummyFilePath, NativeMethods.FILE_ATTRIBUTE_DIRECTORY));
+        private static readonly Lazy<BitmapSource> _folderIcon = new(() => GetTypeIconSourceWithAttribute(_dummyFilePath, IconSize.Small, NativeMethods.FILE_ATTRIBUTE_DIRECTORY) ?? new BitmapImage());
+        private static readonly Lazy<string> _defaultTypeName = new(() => GetTypeNameWithAttribute(_dummyFilePath, 0));
+        private static readonly Lazy<BitmapSource> _defaultIcon = new(() => GetTypeIconSourceWithAttribute(_dummyFilePath, IconSize.Small, 0) ?? new BitmapImage());
 
 
         /// <summary>
@@ -163,12 +163,14 @@ namespace NeeLaboratory.RealtimeSearch
         /// <returns></returns>
         public static string GetTypeName(string path)
         {
-            var shfi = new NativeMethods.SHFILEINFO();
-            shfi.szDisplayName = "";
-            shfi.szTypeName = "";
+            var shfi = new NativeMethods.SHFILEINFO
+            {
+                szDisplayName = "",
+                szTypeName = ""
+            };
 
             IntPtr hSuccess = NativeMethods.SHGetFileInfo(path, 0, ref shfi, (uint)Marshal.SizeOf(shfi), NativeMethods.SHGFI_TYPENAME);
-            if (!string.IsNullOrEmpty(shfi.szTypeName))
+            if (hSuccess != IntPtr.Zero && !string.IsNullOrEmpty(shfi.szTypeName))
             {
                 return shfi.szTypeName;
             }
@@ -185,12 +187,14 @@ namespace NeeLaboratory.RealtimeSearch
         /// <returns></returns>
         public static string GetTypeNameWithAttribute(string path, uint attribute)
         {
-            var shfi = new NativeMethods.SHFILEINFO();
-            shfi.szDisplayName = "";
-            shfi.szTypeName = "";
+            var shfi = new NativeMethods.SHFILEINFO
+            {
+                szDisplayName = "",
+                szTypeName = ""
+            };
 
             IntPtr hSuccess = NativeMethods.SHGetFileInfo(path, attribute, ref shfi, (uint)Marshal.SizeOf(shfi), NativeMethods.SHGFI_TYPENAME | NativeMethods.SHGFI_USEFILEATTRIBUTES);
-            if (!string.IsNullOrEmpty(shfi.szTypeName))
+           if (hSuccess != IntPtr.Zero && !string.IsNullOrEmpty(shfi.szTypeName))
             {
                 return shfi.szTypeName;
             }

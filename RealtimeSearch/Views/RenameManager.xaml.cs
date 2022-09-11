@@ -43,9 +43,8 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void Rename_Close(object? sender, EventArgs e)
         {
-            var rename = sender as RenameControl;
-            if (rename is null) return;
-            
+            if (sender is not RenameControl rename) return;
+
             if (rename.Target != null)
             {
                 rename.Target.Visibility = Visibility.Visible;

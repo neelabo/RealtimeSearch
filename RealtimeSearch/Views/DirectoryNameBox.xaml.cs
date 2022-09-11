@@ -165,9 +165,11 @@ namespace NeeLaboratory.RealtimeSearch
         {
             if (SelectDirectory)
             {
-                var dialog = new System.Windows.Forms.FolderBrowserDialog();
-                dialog.Description = Title ?? "フォルダ選択";
-                dialog.SelectedPath = Text;
+                var dialog = new System.Windows.Forms.FolderBrowserDialog
+                {
+                    Description = Title ?? "フォルダ選択",
+                    SelectedPath = Text
+                };
 
                 if (string.IsNullOrWhiteSpace(dialog.SelectedPath))
                 {
@@ -182,8 +184,10 @@ namespace NeeLaboratory.RealtimeSearch
             }
             else
             {
-                var dialog = new System.Windows.Forms.OpenFileDialog();
-                dialog.Title = Title ?? "ファイル選択";
+                var dialog = new System.Windows.Forms.OpenFileDialog
+                {
+                    Title = Title ?? "ファイル選択"
+                };
                 if (System.IO.File.Exists(Text))
                 {
                     dialog.InitialDirectory = System.IO.Path.GetDirectoryName(Text);
@@ -216,8 +220,7 @@ namespace NeeLaboratory.RealtimeSearch
         //
         private void PathTextBox_Drop(object sender, DragEventArgs e)
         {
-            var dropFiles = e.Data.GetData(System.Windows.DataFormats.FileDrop) as string[];
-            if (dropFiles == null) return;
+            if (e.Data.GetData(System.Windows.DataFormats.FileDrop) is not string[] dropFiles) return;
 
             if (SelectDirectory)
             {

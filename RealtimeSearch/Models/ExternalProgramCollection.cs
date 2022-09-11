@@ -9,8 +9,8 @@ namespace NeeLaboratory.RealtimeSearch
 {
     public class ExternalProgramCollection : BindableBase
     {
-        private AppConfig _setting;
-        private List<ExternalProgram> _programs => _setting.ExternalPrograms;
+        private readonly AppConfig _setting;
+        private string _error = "";
 
 
         public ExternalProgramCollection(AppConfig setting)
@@ -19,22 +19,22 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
-        private string _error = "";
         public string Error
         {
             get { return _error; }
             set { SetProperty(ref _error, value); }
         }
 
+
+
         public void ClearError()
         {
             _error = "";
         }
 
-
         private ExternalProgram? FindExternalProgram(string path)
         {
-            foreach (var program in _programs)
+            foreach (var program in _setting.ExternalPrograms)
             {
                 if (program.CheckExtensions(path))
                 {
@@ -71,7 +71,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             try
             {
-                Execute(files, _programs[programId - 1]);
+                Execute(files, _setting.ExternalPrograms[programId - 1]);
             }
             catch (Exception e)
             {
@@ -122,7 +122,7 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        private string ReplaceKeyword(string s, IEnumerable<NodeContent> files)
+        private static string ReplaceKeyword(string s, IEnumerable<NodeContent> files)
         {
             if (files.Count() == 1)
             {

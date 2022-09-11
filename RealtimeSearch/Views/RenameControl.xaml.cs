@@ -66,13 +66,13 @@ namespace NeeLaboratory.RealtimeSearch
         #endregion INotifyProertyChanged
 
 
-        private TextBlock _target;
-        private string _old = "";
+        private readonly TextBlock _target;
+        private readonly string _old = "";
         private string _new = "";
         private int _navigate;
         private int _keyCount;
         private int _closing;
-        private Window _targetWindow;
+        private readonly Window _targetWindow;
         private Point _targetLocate;
 
 

@@ -16,7 +16,7 @@ namespace NeeLaboratory.RealtimeSearch
         private T _value;
         private T _delayValue;
         private DateTime _delayTime = DateTime.MaxValue;
-        private DispatcherTimer _timer;
+        private readonly DispatcherTimer _timer;
 
 
         /// <summary>
@@ -28,8 +28,10 @@ namespace NeeLaboratory.RealtimeSearch
             _value = value;
             _delayValue = value;
 
-            _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromSeconds(0.1);
+            _timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(0.1)
+            };
             _timer.Tick += Tick;
         }
 

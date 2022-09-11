@@ -45,7 +45,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <returns></returns>
         public static ListViewItem GetListViewItemFromItem(ListView listView, object item)
         {
-            return (ListViewItem)(listView.ItemContainerGenerator.ContainerFromItem(item));
+            return (ListViewItem)listView.ItemContainerGenerator.ContainerFromItem(item);
         }
 
 
@@ -179,8 +179,7 @@ namespace NeeLaboratory.RealtimeSearch
             // parentの子を親として再帰検索
             foreach (var item in parent.Items)
             {
-                var child = parent.ItemContainerGenerator.ContainerFromItem(item) as ItemsControl;
-                if (child != null && child.Items.Count > 0)
+                if (parent.ItemContainerGenerator.ContainerFromItem(item) is ItemsControl child && child.Items.Count > 0)
                 {
                     var result = FindContainer<T>(child, childItem);
                     if (result != null)
@@ -227,8 +226,7 @@ namespace NeeLaboratory.RealtimeSearch
                 return null;
             }
 
-            var result = root as T;
-            if (result != null && (string.IsNullOrEmpty(name) || name.Equals(result.Name)))
+            if (root is T result && (string.IsNullOrEmpty(name) || name.Equals(result.Name)))
             {
                 return result;
             }

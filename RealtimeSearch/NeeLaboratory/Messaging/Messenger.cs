@@ -6,7 +6,7 @@ namespace NeeLaboratory.RealtimeSearch
 {
     public class Messenger
     {
-        private Dictionary<Type, Delegate> _map = new Dictionary<Type, Delegate>();
+        private readonly Dictionary<Type, Delegate> _map = new();
 
         public void Register<TMessage>(Action<object?, TMessage> action)
         {

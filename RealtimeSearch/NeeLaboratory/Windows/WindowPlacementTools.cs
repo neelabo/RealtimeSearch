@@ -292,9 +292,11 @@ namespace NeeLaboratory.RealtimeSearch
             //NativeMethods.GetMonitorInfo(hMonitor, ref monitorInfo);
 
             // タスクバーのあるモニターハンドルを取得
-            var appBarData = new NativeMethods.APPBARDATA();
-            appBarData.cbSize = Marshal.SizeOf(typeof(NativeMethods.APPBARDATA));
-            appBarData.hWnd = IntPtr.Zero;
+            var appBarData = new NativeMethods.APPBARDATA
+            {
+                cbSize = Marshal.SizeOf(typeof(NativeMethods.APPBARDATA)),
+                hWnd = IntPtr.Zero
+            };
             NativeMethods.SHAppBarMessage(NativeMethods.ABM_GETTASKBARPOS, ref appBarData);
             IntPtr hMonitorWithTaskBar = NativeMethods.MonitorFromRect(ref appBarData.rc, NativeMethods.MONITOR_DEFAULTTONEAREST);
 
@@ -309,12 +311,12 @@ namespace NeeLaboratory.RealtimeSearch
                     switch (appBarData.uEdge)
                     {
                         case NativeMethods.ABE_TOP:
-                            rect.Top = rect.Top - (appBarData.rc.Bottom - appBarData.rc.Top);
-                            rect.Bottom = rect.Bottom - (appBarData.rc.Bottom - appBarData.rc.Top);
+                            rect.Top -= appBarData.rc.Bottom - appBarData.rc.Top;
+                            rect.Bottom -= appBarData.rc.Bottom - appBarData.rc.Top;
                             break;
                         case NativeMethods.ABE_LEFT:
-                            rect.Left = rect.Left - (appBarData.rc.Right - appBarData.rc.Left);
-                            rect.Right = rect.Right - (appBarData.rc.Right - appBarData.rc.Left);
+                            rect.Left -= appBarData.rc.Right - appBarData.rc.Left;
+                            rect.Right -= appBarData.rc.Right - appBarData.rc.Left;
                             break;
                     }
                 }
@@ -356,40 +358,36 @@ namespace NeeLaboratory.RealtimeSearch
 
         private static NativeMethods.WINDOWPLACEMENT ConvertToNativeWindowPlacement(WindowPlacement placement)
         {
-            var raw = new NativeMethods.WINDOWPLACEMENT();
-            raw.Length = Marshal.SizeOf(typeof(NativeMethods.WINDOWPLACEMENT));
-            raw.Flags = 0;
-            raw.ShowCmd = ConvertToNativeShowCmd(placement.WindowState);
-            raw.MinPosition = new NativeMethods.POINT(-1, -1);
-            raw.MaxPosition = new NativeMethods.POINT(-1, -1);
-            raw.NormalPosition = new NativeMethods.RECT(placement.Left, placement.Top, placement.Right, placement.Bottom);
+            var raw = new NativeMethods.WINDOWPLACEMENT
+            {
+                Length = Marshal.SizeOf(typeof(NativeMethods.WINDOWPLACEMENT)),
+                Flags = 0,
+                ShowCmd = ConvertToNativeShowCmd(placement.WindowState),
+                MinPosition = new NativeMethods.POINT(-1, -1),
+                MaxPosition = new NativeMethods.POINT(-1, -1),
+                NormalPosition = new NativeMethods.RECT(placement.Left, placement.Top, placement.Right, placement.Bottom)
+            };
             return raw;
         }
 
         private static WindowState ConvertToWindowState(NativeMethods.SW showCmd)
         {
-            switch (showCmd)
+            return showCmd switch
             {
-                default:
-                    return WindowState.Normal;
-                case NativeMethods.SW.SHOWMINIMIZED:
-                    return WindowState.Minimized;
-                case NativeMethods.SW.SHOWMAXIMIZED:
-                    return WindowState.Maximized;
-            }
+                NativeMethods.SW.SHOWMINIMIZED => WindowState.Minimized,
+                NativeMethods.SW.SHOWMAXIMIZED => WindowState.Maximized,
+                _ => WindowState.Normal,
+            };
         }
 
         private static NativeMethods.SW ConvertToNativeShowCmd(WindowState windowState)
         {
-            switch (windowState)
+            return windowState switch
             {
-                default:
-                    return NativeMethods.SW.SHOWNORMAL;
-                case WindowState.Minimized:
-                    return NativeMethods.SW.SHOWMINIMIZED;
-                case WindowState.Maximized:
-                    return NativeMethods.SW.SHOWMAXIMIZED;
-            }
+                WindowState.Minimized => NativeMethods.SW.SHOWMINIMIZED,
+                WindowState.Maximized => NativeMethods.SW.SHOWMAXIMIZED,
+                _ => NativeMethods.SW.SHOWNORMAL,
+            };
         }
     }
 

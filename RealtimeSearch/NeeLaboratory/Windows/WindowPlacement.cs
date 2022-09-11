@@ -62,13 +62,13 @@ namespace NeeLaboratory.RealtimeSearch
 
         public WindowPlacement WithState(WindowState state)
         {
-            var isFullScreen = state == WindowState.Maximized ? this.IsFullScreen : false;
+            var isFullScreen = state == WindowState.Maximized && this.IsFullScreen;
             return new WindowPlacement(state, this.Left, this.Top, this.Width, this.Height, isFullScreen);
         }
 
         public WindowPlacement WithState(WindowState state, bool isFullScreen)
         {
-            isFullScreen = state == WindowState.Maximized ? isFullScreen : false;
+            isFullScreen = state == WindowState.Maximized && isFullScreen;
             return new WindowPlacement(state, this.Left, this.Top, this.Width, this.Height, isFullScreen);
         }
 

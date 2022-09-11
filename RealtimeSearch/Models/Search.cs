@@ -21,11 +21,11 @@ namespace NeeLaboratory.RealtimeSearch
         private bool _isBusy;
         private bool _isBusyVisibled;
         private string _information = "";
-        private AppConfig _appConfig;
-        private DispatcherTimer _timer;
-        private SearchEngine _searchEngine;
+        private readonly AppConfig _appConfig;
+        private readonly DispatcherTimer _timer;
+        private readonly SearchEngine _searchEngine;
         private SearchResult? _searchResult;
-        private CancellationTokenSource _searchCancellationTokenSource = new CancellationTokenSource();
+        private CancellationTokenSource _searchCancellationTokenSource = new();
         private SearchResultWatcher? _watcher;
         private string _lastSearchKeyword = "";
 
@@ -35,8 +35,10 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         public Search(AppConfig appConfig)
         {
-            _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromMilliseconds(1000);
+            _timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(1000)
+            };
             _timer.Tick += ProgressTimer_Tick;
 
             _appConfig = appConfig;

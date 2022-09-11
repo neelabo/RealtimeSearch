@@ -17,7 +17,7 @@ namespace NeeLaboratory.RealtimeSearch
 
     public static class ExternalProgramTypeExtensions
     {
-        public static Dictionary<ExternalProgramType, string> ExternalProgramTypeNames = new Dictionary<ExternalProgramType, string>
+        public static readonly Dictionary<ExternalProgramType, string> ExternalProgramTypeNames = new()
         {
             [ExternalProgramType.Normal] = "外部プログラム",
             [ExternalProgramType.Uri] = "プロトコル起動",
@@ -28,26 +28,30 @@ namespace NeeLaboratory.RealtimeSearch
     [DataContract]
     public class ExternalProgram : INotifyPropertyChanged
     {
-        public const string KeyFile = "$(file)";
-        public const string KeyUri = "$(uri)";
-        public const string KeyFileQuat = "\"$(file)\"";
-        public const string KeyUriQuat = "\"$(uri)\"";
-
-        /// <summary>
-        /// PropertyChanged event. 
-        /// </summary>
+        #region PropertyChanged
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
+        #endregion PropertyChanged
 
 
-        /// <summary>
-        /// ProgramType property.
-        /// </summary>
+        public const string KeyFile = "$(file)";
+        public const string KeyUri = "$(uri)";
+        public const string KeyFileQuat = "\"$(file)\"";
+        public const string KeyUriQuat = "\"$(uri)\"";
+
         private ExternalProgramType _programType;
+        private string _program = "";
+        private string _parameter = "";
+        private string _protocol = "";
+        private string? _extensions;
+        private bool _isMultiArgumentEnabled;
+        private List<string>? _extensionsList;
+        
+
         [DataMember]
         public ExternalProgramType ProgramType
         {
@@ -55,31 +59,24 @@ namespace NeeLaboratory.RealtimeSearch
             set { if (_programType != value) { _programType = value; RaisePropertyChanged(); } }
         }
 
-
-
-        /// <summary>
-        /// Program property.
-        /// </summary>
-        private string _program = "";
         [DataMember]
         public string Program
         {
             get { return _program; }
-            set { value = value ?? ""; _program = value.Trim(); RaisePropertyChanged(); }
+            set
+            {
+                value ??= ""; _program = value.Trim();
+                RaisePropertyChanged();
+            }
         }
 
-
-        /// <summary>
-        /// Parameter property.
-        /// </summary>
-        private string _parameter = "";
         [DataMember]
         public string Parameter
         {
             get { return _parameter; }
             set
             {
-                value = value ?? "";
+                value ??= "";
                 var s = value.Trim();
                 if (!s.Contains("$(file)"))
                 {
@@ -90,11 +87,6 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-
-        /// <summary>
-        /// Protocol property.
-        /// </summary>
-        private string _protocol = "";
         [DataMember]
         public string Protocol
         {
@@ -102,10 +94,6 @@ namespace NeeLaboratory.RealtimeSearch
             set { _protocol = (value ?? "").Trim(); RaisePropertyChanged(); }
         }
 
-        /// <summary>
-        /// Extensions property.
-        /// </summary>
-        private string? _extensions;
         [DataMember]
         public string? Extensions
         {
@@ -113,10 +101,6 @@ namespace NeeLaboratory.RealtimeSearch
             set { if (_extensions != value) { _extensions = value; RaisePropertyChanged(); CreateExtensionsList(_extensions); } }
         }
 
-        private List<string>? _extensionsList { get; set; }
-
-
-        private bool _isMultiArgumentEnabled;
         [DataMember]
         public bool IsMultiArgumentEnabled
         {
@@ -125,7 +109,7 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
-        //
+
         private void CreateExtensionsList(string? exts)
         {
             if (exts == null) return;
@@ -143,11 +127,7 @@ namespace NeeLaboratory.RealtimeSearch
             _extensionsList = list;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
+
         public bool CheckExtensions(string input)
         {
             if (input == null) return false;
@@ -158,7 +138,6 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
-        ///
         private void Constructor()
         {
             Program = "";
@@ -167,26 +146,16 @@ namespace NeeLaboratory.RealtimeSearch
             Extensions = "";
         }
 
-        ///
         public ExternalProgram()
         {
             Constructor();
         }
 
-        //
         [OnDeserializing]
         private void Deserializing(StreamingContext c)
         {
             Constructor();
         }
-
-        //
-        [OnDeserialized]
-        private void Deserializied(StreamingContext c)
-        {
-        }
-
-
 
     }
 }

@@ -44,10 +44,12 @@ namespace NeeLaboratory.RealtimeSearch
             SearchAreas = new ObservableCollection<SearchArea>();
             IsMonitorClipboard = true;
             _searchOption = new NeeLaboratory.IO.Search.SearchOption();
-            ExternalPrograms = new List<ExternalProgram>();
-            ExternalPrograms.Add(new ExternalProgram());
-            ExternalPrograms.Add(new ExternalProgram());
-            ExternalPrograms.Add(new ExternalProgram());
+            ExternalPrograms = new List<ExternalProgram>
+            {
+                new ExternalProgram(),
+                new ExternalProgram(),
+                new ExternalProgram()
+            };
             WebSearchFormat = "https://www.google.co.jp/search?q=$(query)";
         }
 

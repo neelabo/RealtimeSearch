@@ -93,7 +93,7 @@ namespace NeeLaboratory.RealtimeSearch
             [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
             public static extern int SHFileOperation([In] ref SHFILEOPSTRUCT lpFileOp);
 
-            [DllImport("kernel32.dll")]
+            [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
             public static extern uint FormatMessage(uint dwFlags, IntPtr lpSource, uint dwMessageId, uint dwLanguageId, StringBuilder lpBuffer, int nSize, IntPtr Arguments);
 
             public const uint FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000;
@@ -141,7 +141,7 @@ namespace NeeLaboratory.RealtimeSearch
                     throw new IOException($"Code=0x{result:x4}");
 
                 default:
-                    StringBuilder message = new StringBuilder(1024);
+                    var message = new StringBuilder(1024);
                     var length = NativeMethods.FormatMessage(NativeMethods.FORMAT_MESSAGE_FROM_SYSTEM, IntPtr.Zero, (uint)result, 0, message, message.Capacity, IntPtr.Zero);
                     if (length > 0)
                     {

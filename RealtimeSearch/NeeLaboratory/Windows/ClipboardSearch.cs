@@ -29,7 +29,7 @@ namespace NeeLaboratory.RealtimeSearch
 
 
         private ClipboardListner? _clipboardListner;
-        private AppConfig _setting;
+        private readonly AppConfig _setting;
 
 
         public ClipboardSearch(AppConfig setting)

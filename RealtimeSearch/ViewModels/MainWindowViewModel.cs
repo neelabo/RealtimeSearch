@@ -17,19 +17,19 @@ namespace NeeLaboratory.RealtimeSearch
 {
     public class MainWindowViewModel : BindableBase
     {
-        private AppConfig _appConfig;
-        private Messenger _messenger;
+        private readonly AppConfig _appConfig;
+        private readonly Messenger _messenger;
         private Search _search;
-        private WebSearch _webSearch;
+        private readonly WebSearch _webSearch;
         private string _inputKeyword = "";
-        private DelayValue<string> _keyword;
-        private string _defaultWindowTitle;
-        private History _history;
+        private readonly DelayValue<string> _keyword;
+        private readonly string _defaultWindowTitle;
+        private readonly History _history;
         private string _resultMessage = "";
         private bool _isRenaming;
         private ClipboardSearch? _clipboardSearch;
-        private FileRename _fileRename;
-        private ExternalProgramCollection _programs;
+        private readonly FileRename _fileRename;
+        private readonly ExternalProgramCollection _programs;
 
 
         public MainWindowViewModel(AppConfig appConfig, Messenger messenger)
@@ -138,8 +138,10 @@ namespace NeeLaboratory.RealtimeSearch
 
 
 
-        [System.Diagnostics.Conditional("DEBUG")]
-        private void __Sleep(int ms)
+        [Conditional("DEBUG")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:命名スタイル", Justification = "<保留中>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:使用されていないプライベート メンバーを削除する", Justification = "<保留中>")]
+        private static void __Sleep(int ms)
         {
             System.Threading.Thread.Sleep(ms);
         }
@@ -252,7 +254,6 @@ namespace NeeLaboratory.RealtimeSearch
         {
             _keyword.SetValue(keyword, 200);
         }
-
 
         public void CopyFilesToClipboard(List<NodeContent> files)
         {
@@ -369,7 +370,7 @@ namespace NeeLaboratory.RealtimeSearch
         private RelayCommand? _toggleDetailVisibleCommand;
         public RelayCommand ToggleDetailVisibleCommand
         {
-            get { return _toggleDetailVisibleCommand = _toggleDetailVisibleCommand ?? new RelayCommand(ToggleDetailVisibleCommand_Executed); }
+            get { return _toggleDetailVisibleCommand ??= new RelayCommand(ToggleDetailVisibleCommand_Executed); }
         }
 
         private void ToggleDetailVisibleCommand_Executed()

@@ -21,7 +21,7 @@ namespace NeeLaboratory.RealtimeSearch
     /// </summary>
     public partial class App : Application
     {
-        private PersistAndRestoreService _persistAndRestoreService;
+        private readonly PersistAndRestoreService _persistAndRestoreService;
 
         public App()
         {

@@ -9,7 +9,7 @@ namespace NeeLaboratory.RealtimeSearch
 {
     public class FileService : IFileService
     {
-        private object _lock = new object();
+        private readonly object _lock = new();
 
         public void Delete(string folderPath, string fileName)
         {
@@ -35,7 +35,8 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        private T? Read<T>(Stream stream)
+#if false
+        private static T? Read<T>(Stream stream)
         {
             using (var ms = new MemoryStream())
             {
@@ -43,8 +44,9 @@ namespace NeeLaboratory.RealtimeSearch
                 return Read<T>(new ReadOnlySpan<byte>(ms.ToArray()));
             }
         }
+#endif
 
-        private T? Read<T>(ReadOnlySpan<byte> json)
+        private static T? Read<T>(ReadOnlySpan<byte> json)
         {
             return JsonSerializer.Deserialize<T>(json, CreateJsonSerializerOptions());
         }
@@ -80,13 +82,14 @@ namespace NeeLaboratory.RealtimeSearch
 
         private static JsonSerializerOptions CreateJsonSerializerOptions()
         {
-            var options = new JsonSerializerOptions();
-
-            options.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
-            options.WriteIndented = true;
-            options.IgnoreReadOnlyProperties = true;
-            options.ReadCommentHandling = JsonCommentHandling.Skip;
-            options.AllowTrailingCommas = true;
+            var options = new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = true,
+                IgnoreReadOnlyProperties = true,
+                ReadCommentHandling = JsonCommentHandling.Skip,
+                AllowTrailingCommas = true
+            };
 
             options.Converters.Add(new JsonStringEnumConverter());
 

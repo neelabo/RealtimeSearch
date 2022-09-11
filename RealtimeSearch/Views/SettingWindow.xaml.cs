@@ -61,10 +61,10 @@ namespace NeeLaboratory.RealtimeSearch
 
 
 
-        public static readonly RoutedCommand CloseCommand = new RoutedCommand("CloseCommand", typeof(SettingWindow));
-        public static readonly RoutedCommand HelpCommand = new RoutedCommand("HelpCommand", typeof(SettingWindow));
-        public static readonly RoutedCommand AddCommand = new RoutedCommand("AddCommand", typeof(SettingWindow));
-        public static readonly RoutedCommand DelCommand = new RoutedCommand("DelCommand", typeof(SettingWindow));
+        public static readonly RoutedCommand CloseCommand = new("CloseCommand", typeof(SettingWindow));
+        public static readonly RoutedCommand HelpCommand = new("HelpCommand", typeof(SettingWindow));
+        public static readonly RoutedCommand AddCommand = new("AddCommand", typeof(SettingWindow));
+        public static readonly RoutedCommand DelCommand = new("DelCommand", typeof(SettingWindow));
 
         public AppConfig Setting { get; private set; }
 
@@ -138,8 +138,10 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void UpdateCollectionViewSource()
         {
-            var collectionViewSource = new CollectionViewSource();
-            collectionViewSource.Source = Setting.SearchAreas;
+            var collectionViewSource = new CollectionViewSource
+            {
+                Source = Setting.SearchAreas
+            };
             collectionViewSource.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(SearchArea.Path), System.ComponentModel.ListSortDirection.Ascending));
 
             CollectionViewSource = collectionViewSource;
@@ -167,9 +169,11 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void AddPathWithDialog()
         {
-            var dialog = new System.Windows.Forms.FolderBrowserDialog();
-            dialog.Description = "検索フォルダーの追加";
-            dialog.SelectedPath = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            var dialog = new System.Windows.Forms.FolderBrowserDialog
+            {
+                Description = "検索フォルダーの追加",
+                SelectedPath = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal)
+            };
 
             var result = dialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
@@ -195,8 +199,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void ListBox_Drop(object sender, DragEventArgs e)
         {
-            var dropFiles = e.Data.GetData(System.Windows.DataFormats.FileDrop) as string[];
-            if (dropFiles == null) return;
+            if (e.Data.GetData(System.Windows.DataFormats.FileDrop) is not string[] dropFiles) return;
 
             foreach (var file in dropFiles)
             {
@@ -213,11 +216,10 @@ namespace NeeLaboratory.RealtimeSearch
         {
             if (control == null) return;
 
-            KeyGestureConverter kgc = new KeyGestureConverter();
+            var kgc = new KeyGestureConverter();
             foreach (var item in control.Items.OfType<MenuItem>())
             {
-                var command = item.Command as RoutedCommand;
-                if (command != null)
+                if (item.Command is RoutedCommand command)
                 {
                     string? text = null;
                     foreach (InputGesture gesture in command.InputGestures)

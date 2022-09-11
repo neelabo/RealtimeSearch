@@ -18,11 +18,11 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
-        public string FolderPath => App.AppInfo.LocalApplicationDataPath;
+        private static string FolderPath => App.AppInfo.LocalApplicationDataPath;
 
-        public string AppConfigFileName => App.AppInfo.ProductName + ".app.json";
+        private static string AppConfigFileName => App.AppInfo.ProductName + ".app.json";
 
-        public string LegacySettingFileName => "UserSetting.xml";
+        private static string LegacySettingFileName => "UserSetting.xml";
 
 
         // TODO ASync
@@ -66,9 +66,9 @@ namespace NeeLaboratory.RealtimeSearch
             var legacyFileName = Path.Combine(FolderPath, LegacySettingFileName);
             if (!File.Exists(legacyFileName)) return null;
 
-#pragma warning disable CS0612 // 型またはメンバーが旧型式です
+#pragma warning disable CS0618 // 型またはメンバーが旧型式です
             var legacy = SettingLegacy.Load(legacyFileName);
-#pragma warning restore CS0612 // 型またはメンバーが旧型式です
+#pragma warning restore CS0618 // 型またはメンバーが旧型式です
             if (legacy is null) return null;
 
             var appConfig = legacy.ConvertToAppConfig();

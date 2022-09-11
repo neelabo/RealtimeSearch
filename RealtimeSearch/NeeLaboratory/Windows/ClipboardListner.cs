@@ -21,10 +21,10 @@ namespace NeeLaboratory.RealtimeSearch
             internal extern static void RemoveClipboardFormatListener(IntPtr hwnd);
         }
 
-        private const int WM_CLOSE = 0x0010;
+        //private const int WM_CLOSE = 0x0010;
         private const int WM_CLIPBOARDUPDATE = 0x031D;
 
-        private Window _window;
+        private readonly Window _window;
         private IntPtr _handle;
 
         public event EventHandler<Window>? ClipboardUpdate;
@@ -86,6 +86,7 @@ namespace NeeLaboratory.RealtimeSearch
         public void Dispose()
         {
             Close();
+            GC.SuppressFinalize(this);
         }
     }
 }
