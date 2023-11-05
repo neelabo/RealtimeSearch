@@ -45,6 +45,9 @@ namespace NeeLaboratory.RealtimeSearch
             _appConfig.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
 
             _searchEngine = new SearchEngine();
+            _searchEngine.AllowFolder = _appConfig.AllowFolder;
+            _appConfig.AddPropertyChanged(nameof(AppConfig.AllowFolder), (s, e) => _searchEngine.AllowFolder = _appConfig.AllowFolder);
+
             ////_searchEngine.Context.NodeFilter = SearchFilter;
             _searchEngine.SetSearchAreas(_appConfig.SearchAreas);
         }
@@ -154,7 +157,7 @@ namespace NeeLaboratory.RealtimeSearch
                 // 同時に実行可能なのは1検索のみ。以前の検索はキャンセルして新しい検索コマンドを発行
                 _searchCancellationTokenSource.Cancel();
                 _searchCancellationTokenSource = new CancellationTokenSource();
-                var searchResult = await _searchEngine.SearchAsync(keyword, _appConfig.SearchOption, _searchCancellationTokenSource.Token);
+                var searchResult = await _searchEngine.SearchAsync(keyword, _searchCancellationTokenSource.Token);
                 if (searchResult.Exception != null)
                 {
                     throw searchResult.Exception;
@@ -186,13 +189,17 @@ namespace NeeLaboratory.RealtimeSearch
                 {
                     Information = "正規表現エラー: " + ex1.InnerException?.Message;
                 }
-                if (e is SearchKeywordDateTimeException ex2)
+                else if (e is SearchKeywordDateTimeException ex2)
                 {
                     Information = "日時指定が不正です";
                 }
-                else if (e is SearchKeywordOptionException ex3)
+                else if (e is SearchKeywordBooleanException ex3)
                 {
-                    Information = "不正なオプションです: " + ex3.Option;
+                    Information = "フラグ指定が不正です";
+                }
+                else if (e is SearchKeywordOptionException ex4)
+                {
+                    Information = "不正なオプションです: " + ex4.Option;
                 }
                 else
                 {

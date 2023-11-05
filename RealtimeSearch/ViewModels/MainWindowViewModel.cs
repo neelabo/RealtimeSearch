@@ -132,8 +132,8 @@ namespace NeeLaboratory.RealtimeSearch
 
         public bool AllowFolder
         {
-            get { return _appConfig.SearchOption.AllowFolder; }
-            set { _appConfig.SearchOption.AllowFolder = value; }
+            get { return _appConfig.AllowFolder; }
+            set { _appConfig.AllowFolder = value; }
         }
 
 
@@ -216,6 +216,10 @@ namespace NeeLaboratory.RealtimeSearch
 
                 case nameof(_appConfig.IsTopmost):
                     RaisePropertyChanged(nameof(IsTopmost));
+                    break;
+
+                case nameof(_appConfig.AllowFolder):
+                    RaisePropertyChanged(nameof(AllowFolder));
                     break;
             }
         }

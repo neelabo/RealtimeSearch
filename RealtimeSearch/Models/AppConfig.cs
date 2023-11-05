@@ -36,14 +36,13 @@ namespace NeeLaboratory.RealtimeSearch
         private bool _isMonitorClipboard;
         private bool _isTopmost;
         private bool _isDetailVisibled;
-        private NeeLaboratory.IO.Search.SearchOption _searchOption;
+        private bool _allowFolder;
 
 
         public AppConfig()
         {
             SearchAreas = new ObservableCollection<SearchArea>();
             IsMonitorClipboard = true;
-            _searchOption = new NeeLaboratory.IO.Search.SearchOption();
             ExternalPrograms = new List<ExternalProgram>
             {
                 new ExternalProgram(),
@@ -68,11 +67,10 @@ namespace NeeLaboratory.RealtimeSearch
             set { _isTopmost = value; RaisePropertyChanged(); }
         }
 
-
-        public NeeLaboratory.IO.Search.SearchOption SearchOption
+        public bool AllowFolder
         {
-            get { return _searchOption; }
-            set { if (_searchOption != value) { _searchOption = value; RaisePropertyChanged(); } }
+            get { return _allowFolder; }
+            set { SetProperty(ref _allowFolder, value); }
         }
 
         public bool IsDetailVisibled
@@ -90,11 +88,9 @@ namespace NeeLaboratory.RealtimeSearch
         public WindowPlacement WindowPlacement { get; set; } = new WindowPlacement();
 
 
-
         public void ToggleAllowFolder()
         {
-            SearchOption.AllowFolder = !SearchOption.AllowFolder;
-            RaisePropertyChanged("SearchOption.AllowFolder");
+            AllowFolder = !AllowFolder;
         }
     }
 }
