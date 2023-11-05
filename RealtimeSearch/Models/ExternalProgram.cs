@@ -25,7 +25,6 @@ namespace NeeLaboratory.RealtimeSearch
     }
 
 
-    [DataContract]
     public class ExternalProgram : INotifyPropertyChanged
     {
         #region PropertyChanged
@@ -47,19 +46,22 @@ namespace NeeLaboratory.RealtimeSearch
         private string _program = "";
         private string _parameter = "";
         private string _protocol = "";
-        private string? _extensions;
+        private string _extensions = "";
         private bool _isMultiArgumentEnabled;
-        private List<string>? _extensionsList;
-        
+        private List<string> _extensionsList = new();
 
-        [DataMember]
+
+        public ExternalProgram()
+        {
+        }
+
+
         public ExternalProgramType ProgramType
         {
             get { return _programType; }
             set { if (_programType != value) { _programType = value; RaisePropertyChanged(); } }
         }
 
-        [DataMember]
         public string Program
         {
             get { return _program; }
@@ -70,7 +72,6 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        [DataMember]
         public string Parameter
         {
             get { return _parameter; }
@@ -87,21 +88,18 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        [DataMember]
         public string Protocol
         {
             get { return _protocol; }
             set { _protocol = (value ?? "").Trim(); RaisePropertyChanged(); }
         }
 
-        [DataMember]
-        public string? Extensions
+        public string Extensions
         {
             get { return _extensions; }
             set { if (_extensions != value) { _extensions = value; RaisePropertyChanged(); CreateExtensionsList(_extensions); } }
         }
 
-        [DataMember]
         public bool IsMultiArgumentEnabled
         {
             get { return _isMultiArgumentEnabled; }
@@ -109,15 +107,14 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
-
-        private void CreateExtensionsList(string? exts)
+        private void CreateExtensionsList(string extensions)
         {
-            if (exts == null) return;
+            if (extensions == null) return;
 
             var reg = new Regex(@"^[\*\.\s]+");
 
             var list = new List<string>();
-            foreach (var token in exts.Split(';', ' '))
+            foreach (var token in extensions.Split(';', ' '))
             {
                 //var ext = token.Trim().TrimStart('.').ToLower();
                 var ext = reg.Replace(token.Trim(), "").ToLower();
@@ -136,26 +133,5 @@ namespace NeeLaboratory.RealtimeSearch
             var ext = System.IO.Path.GetExtension(input).ToLower();
             return _extensionsList.Contains(ext);
         }
-
-
-        private void Constructor()
-        {
-            Program = "";
-            Parameter = "";
-            Protocol = "";
-            Extensions = "";
-        }
-
-        public ExternalProgram()
-        {
-            Constructor();
-        }
-
-        [OnDeserializing]
-        private void Deserializing(StreamingContext c)
-        {
-            Constructor();
-        }
-
     }
 }

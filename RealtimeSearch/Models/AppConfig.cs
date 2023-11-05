@@ -1,4 +1,4 @@
-﻿using NeeLaboratory.IO.Search;
+﻿using NeeLaboratory.IO.Search.FileNode;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,12 +19,9 @@ using System.Xml;
 
 namespace NeeLaboratory.RealtimeSearch
 {
-    [DataContract]
     public class ListViewColumnMemento
     {
-        [DataMember]
         public string Header { get; set; } = "";
-        [DataMember]
         public double Width { get; set; }
     }
 
@@ -35,13 +32,13 @@ namespace NeeLaboratory.RealtimeSearch
 
         private bool _isMonitorClipboard;
         private bool _isTopmost;
-        private bool _isDetailVisibled;
+        private bool _isDetailVisible;
         private bool _allowFolder;
 
 
         public AppConfig()
         {
-            SearchAreas = new ObservableCollection<SearchArea>();
+            SearchAreas = new ObservableCollection<NodeArea>();
             IsMonitorClipboard = true;
             ExternalPrograms = new List<ExternalProgram>
             {
@@ -53,7 +50,7 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
-        public ObservableCollection<SearchArea> SearchAreas { get; set; }
+        public ObservableCollection<NodeArea> SearchAreas { get; set; }
 
         public bool IsMonitorClipboard
         {
@@ -73,10 +70,10 @@ namespace NeeLaboratory.RealtimeSearch
             set { SetProperty(ref _allowFolder, value); }
         }
 
-        public bool IsDetailVisibled
+        public bool IsDetailVisible
         {
-            get { return _isDetailVisibled; }
-            set { if (_isDetailVisibled != value) { _isDetailVisibled = value; RaisePropertyChanged(); } }
+            get { return _isDetailVisible; }
+            set { if (_isDetailVisible != value) { _isDetailVisible = value; RaisePropertyChanged(); } }
         }
 
         public string WebSearchFormat { set; get; }
@@ -86,6 +83,15 @@ namespace NeeLaboratory.RealtimeSearch
         public List<ListViewColumnMemento> ListViewColumnMemento { get; set; } = new List<ListViewColumnMemento>();
 
         public WindowPlacement WindowPlacement { get; set; } = new WindowPlacement();
+
+
+        [Obsolete("typo")] // ver.4
+        [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingDefault)] 
+        public bool IsDetailVisibled
+        {
+            get { return default; }
+            set { _isDetailVisible = value; }
+        }
 
 
         public void ToggleAllowFolder()

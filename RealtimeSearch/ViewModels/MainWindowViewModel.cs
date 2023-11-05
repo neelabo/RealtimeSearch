@@ -10,8 +10,8 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Collections.ObjectModel;
-using NeeLaboratory.IO.Search;
 using System.Linq;
+using NeeLaboratory.IO.Search.FileNode;
 
 namespace NeeLaboratory.RealtimeSearch
 {
@@ -108,13 +108,13 @@ namespace NeeLaboratory.RealtimeSearch
 
         public bool IsTipsVisibled
         {
-            get { return !_appConfig.IsDetailVisibled && !IsRenaming; }
+            get { return !_appConfig.IsDetailVisible && !IsRenaming; }
         }
 
         public bool IsDetailVisibled
         {
-            get { return _appConfig.IsDetailVisibled; }
-            set { _appConfig.IsDetailVisibled = value; }
+            get { return _appConfig.IsDetailVisible; }
+            set { _appConfig.IsDetailVisible = value; }
         }
 
         public bool IsTopmost
@@ -209,7 +209,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             switch (e.PropertyName)
             {
-                case nameof(_appConfig.IsDetailVisibled):
+                case nameof(_appConfig.IsDetailVisible):
                     RaisePropertyChanged(nameof(IsDetailVisibled));
                     RaisePropertyChanged(nameof(IsTipsVisibled));
                     break;
@@ -379,7 +379,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void ToggleDetailVisibleCommand_Executed()
         {
-            _appConfig.IsDetailVisibled = !_appConfig.IsDetailVisibled;
+            _appConfig.IsDetailVisible = !_appConfig.IsDetailVisible;
         }
 
         #endregion Commands
