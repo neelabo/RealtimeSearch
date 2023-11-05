@@ -13,7 +13,6 @@ namespace NeeLaboratory.RealtimeSearch
     /// <summary>
     /// モデルを簡略化するための <see cref="INotifyPropertyChanged"/> の実装。
     /// </summary>
-    [DataContract]
     public abstract class BindableBase : INotifyPropertyChanged
     {
         /// <summary>
@@ -77,7 +76,6 @@ namespace NeeLaboratory.RealtimeSearch
     /// <summary>
     /// モデルを簡略化するための <see cref="INotifyPropertyChanged"/> と <see cref="INotifyPropertyChanging"/> の実装。
     /// </summary>
-    [DataContract]
     public abstract class BindableBaseFull : INotifyPropertyChanged, INotifyPropertyChanging
     {
         /// <summary>

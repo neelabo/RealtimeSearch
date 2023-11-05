@@ -6,13 +6,14 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using NeeLaboratory.IO.Search;
 using System.Threading;
 using System.Diagnostics;
 using System.Windows.Threading;
 using System.Windows.Data;
 using System.IO;
 using System.Collections.Specialized;
+using NeeLaboratory.IO.Search;
+using NeeLaboratory.IO.Search.FileSearch;
 
 namespace NeeLaboratory.RealtimeSearch
 {

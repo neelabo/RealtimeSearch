@@ -1,4 +1,4 @@
-﻿using NeeLaboratory.IO.Search;
+﻿using NeeLaboratory.IO.Search.FileNode;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -52,8 +52,8 @@ namespace NeeLaboratory.RealtimeSearch
             set { _collectionViewSource = value; RaisePropertyChanged(); }
         }
 
-        private SearchArea? _selectedArea;
-        public SearchArea? SelectedArea
+        private NodeArea? _selectedArea;
+        public NodeArea? SelectedArea
         {
             get { return _selectedArea; }
             set { SetProperty(ref _selectedArea, value); }
@@ -142,7 +142,7 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 Source = Setting.SearchAreas
             };
-            collectionViewSource.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(SearchArea.Path), System.ComponentModel.ListSortDirection.Ascending));
+            collectionViewSource.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(NodeArea.Path), System.ComponentModel.ListSortDirection.Ascending));
 
             CollectionViewSource = collectionViewSource;
             SelectedArea = null;
@@ -153,7 +153,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             if (!System.IO.Directory.Exists(path)) return;
 
-            var area = new SearchArea(path, true);
+            var area = new NodeArea(path, true);
             var existArea = Setting.SearchAreas.FirstOrDefault(p => p.Path == area.Path);
 
             if (existArea != null)
