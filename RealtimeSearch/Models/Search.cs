@@ -155,6 +155,9 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 IsBusy = true;
 
+                // キーワード検証
+                _searchEngine.Analyze(keyword);
+
                 // 同時に実行可能なのは1検索のみ。以前の検索はキャンセルして新しい検索コマンドを発行
                 _searchCancellationTokenSource.Cancel();
                 _searchCancellationTokenSource = new CancellationTokenSource();
