@@ -37,7 +37,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         /// <param name="file"></param>
         /// <param name="newNameSource"></param>
-        /// <returns>成功した場合は新しいフルパス。失敗した場合はnull</returns>
+        /// <returns>成功した場合は新しいフルパス。失敗した場合は null</returns>
         public string? Rename(string folder, string oldName, string newNameSource)
         {
             if (string.IsNullOrWhiteSpace(oldName) || string.IsNullOrWhiteSpace(newNameSource)) return null;
