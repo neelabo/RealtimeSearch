@@ -13,7 +13,6 @@ using System.Windows.Data;
 using System.IO;
 using System.Collections.Specialized;
 using NeeLaboratory.IO.Search;
-using NeeLaboratory.IO.Search.FileSearch;
 
 namespace NeeLaboratory.RealtimeSearch
 {
@@ -24,10 +23,9 @@ namespace NeeLaboratory.RealtimeSearch
         private string _information = "";
         private readonly AppConfig _appConfig;
         private readonly DispatcherTimer _timer;
-        private readonly SearchEngine _searchEngine;
-        private SearchResult? _searchResult;
+        private readonly FileSearchEngine _searchEngine;
         private CancellationTokenSource _searchCancellationTokenSource = new();
-        private SearchResultWatcher? _watcher;
+        private FileSearchResultWatcher? _searchResult;
         private string _lastSearchKeyword = "";
 
 
@@ -36,21 +34,18 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         public Search(AppConfig appConfig)
         {
+            _appConfig = appConfig;
+
+            _searchEngine = new FileSearchEngine(_appConfig, true, true);
+            ReIndex();
+
+            _appConfig.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
+
             _timer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(1000)
             };
             _timer.Tick += ProgressTimer_Tick;
-
-            _appConfig = appConfig;
-            _appConfig.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
-
-            _searchEngine = new SearchEngine();
-            _searchEngine.AllowFolder = _appConfig.AllowFolder;
-            _appConfig.AddPropertyChanged(nameof(AppConfig.AllowFolder), (s, e) => _searchEngine.AllowFolder = _appConfig.AllowFolder);
-
-            ////_searchEngine.Context.NodeFilter = SearchFilter;
-            _searchEngine.SetSearchAreas(_appConfig.SearchAreas);
         }
 
 
@@ -96,12 +91,18 @@ namespace NeeLaboratory.RealtimeSearch
             set { _information = value; RaisePropertyChanged(); }
         }
 
-        public SearchResult? SearchResult
+        public FileSearchResultWatcher? SearchResult
         {
             get { return _searchResult; }
-            set { if (_searchResult != value) { _searchResult = value; RaisePropertyChanged(); } }
+            set
+            {
+                if (_searchResult != value)
+                {
+                    _searchResult?.Dispose();
+                    _searchResult = value; RaisePropertyChanged();
+                }
+            }
         }
-
 
 
         private void SearchAreas_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -114,15 +115,15 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         public void ReIndex()
         {
-            _searchEngine.SetSearchAreas(_appConfig.SearchAreas);
+            _searchEngine.SetSearchAreas(_appConfig.SearchAreas.Select(e => e.Path).ToList());
         }
 
         /// <summary>
         /// 特定パスの情報を更新
         /// </summary>
-        public void Reflesh(string path)
+        public void Refresh(string path)
         {
-            _searchEngine.Reflesh(path);
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -130,7 +131,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         public void Rename(string src, string dst)
         {
-            _searchEngine.Rename(src, dst);
+            _searchEngine.Tree.RequestRename(src, dst);
         }
 
         /// <summary>
@@ -177,10 +178,6 @@ namespace NeeLaboratory.RealtimeSearch
 
                 // 項目変更監視
                 SearchResult.Items.CollectionChanged += (s, e) => SearchResultChanged?.Invoke(s, e);
-
-                // 監視開始
-                _watcher?.Dispose();
-                _watcher = new SearchResultWatcher(_searchEngine, SearchResult);
             }
             catch (OperationCanceledException)
             {
@@ -231,71 +228,19 @@ namespace NeeLaboratory.RealtimeSearch
         {
             if (_searchEngine.State == SearchCommandEngineState.Collect)
             {
-                return $"{_searchEngine.NodeCountMaybe:#,0} 個のインデックス作成中...";
+                //return $"{_searchEngine.NodeCountMaybe:#,0} 個のインデックス作成中...";
+                return $"Indexing in progress...";
             }
             else if (_searchEngine.State == SearchCommandEngineState.Search)
             {
-                return $"検索中...";
+                return $"Searching...";
             }
             else
             {
-                return $"処理中...";
+                return $"Processing....";
             }
         }
 
-#if false // フィルターサンプル
-
-        /// <summary>
-        /// インデックスフィルタ用無効属性
-        /// </summary>
-        private static FileAttributes _ignoreAttributes =  FileAttributes.ReparsePoint | FileAttributes.Hidden | FileAttributes.System | FileAttributes.Temporary;
-
-        /// <summary>
-        /// インデックスフィルタ用無効パス
-        /// </summary>
-        private static List<string> _ignores = new List<string>()
-        {
-            System.Environment.GetFolderPath(System.Environment.SpecialFolder.Windows),
-            System.Environment.GetFolderPath(System.Environment.SpecialFolder.Windows) + ".old",
-        };
-
-        /// <summary>
-        /// インデックスフィルタ
-        /// </summary>
-        /// <param name="info"></param>
-        /// <returns></returns>
-        private static bool SearchFilter(FileSystemInfo info)
-        {
-            // 属性フィルター
-            if ((info.Attributes & _ignoreAttributes) != 0)
-            {
-                return false;
-            }
-
-            // ディレクトリ無効フィルター
-            if ((info.Attributes & FileAttributes.Directory) != 0)
-            {
-                var infoFullName = info.FullName;
-                var infoLen = infoFullName.Length;
-
-                foreach (var ignore in _ignores)
-                {
-                    var ignoreLen = ignore.Length;
-
-                    if (ignoreLen == infoLen || (ignoreLen < infoLen && infoFullName[ignoreLen] == '\\'))
-                    {
-                        if (infoFullName.StartsWith(ignore, true, null))
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            return true;
-        }
-
-#endif
     }
 
 

@@ -3,10 +3,13 @@
 // This software is released under the MIT License.
 // http://opensource.org/licenses/mit-license.php
 
+using NeeLaboratory.IO.Search.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -48,6 +51,28 @@ namespace NeeLaboratory.RealtimeSearch
                 {
                     AppConfig = appConfig;
                 }
+
+#if false
+                // logger
+                //var sw = new StreamWriter("TraceLog.txt");
+                //sw.AutoFlush = true;
+                //var tw = TextWriter.Synchronized(sw);
+                //var twtl = new TextWriterTraceListener(tw, Development.Logger.TraceSource.Name);
+                //Trace.Listeners.Add(twtl);
+
+                var appTrace = Development.Logger.TraceSource;
+                appTrace.Listeners.Remove("Default");
+                var twtl = new TextWriterTraceListener("TraceLog.txt", "LogFile");
+                appTrace.Listeners.Add(twtl);
+                Development.Logger.SetLevel(SourceLevels.All);
+                Development.Logger.Trace(System.Environment.NewLine + new string('=', 80));
+
+                //Development.Logger.SetLevel(SourceLevels.All);
+                //var twtl = new TextWriterTraceListener("TraceLog.txt", Development.Logger.TraceSource.Name);
+                //Trace.Listeners.Add(twtl);
+                //Trace.AutoFlush = true;
+                //Trace.WriteLine(System.Environment.NewLine + new string('=', 80));
+#endif
             }
             catch (Exception ex)
             {

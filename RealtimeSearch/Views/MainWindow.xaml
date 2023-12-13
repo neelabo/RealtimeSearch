@@ -228,14 +228,14 @@
                                     </CheckBox.Style>
                                 </CheckBox>
 
-                                <Image DockPanel.Dock="Left" Source="{Binding FileInfo,  Converter={StaticResource FileInfoToIconConverter}}" Width="16" Margin="0,0,4,0"/>
+                                <Image DockPanel.Dock="Left" Source="{Binding Converter={StaticResource FileInfoToIconConverter}}" Width="16" Margin="0,0,4,0"/>
                                 <TextBlock x:Name="FileNameTextBlock" Text="{Binding Name}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
                             </DockPanel>
                         </DataTemplate>
 
                         <local:FileSizeConverter x:Key="FileSizeConverter"/>
                         <DataTemplate x:Key="ItemSizeTemplate">
-                            <TextBlock Text="{Binding FileInfo.Size, Converter={StaticResource FileSizeConverter}}" HorizontalAlignment="Right"/>
+                            <TextBlock Text="{Binding Size, Converter={StaticResource FileSizeConverter}}" HorizontalAlignment="Right"/>
                         </DataTemplate>
 
                     </ListView.Resources>
@@ -252,19 +252,19 @@
                                 <GridViewColumnHeader Content="名前" Tag="."/>
                             </GridViewColumn>
 
-                            <GridViewColumn Header="更新日時" Width="96" DisplayMemberBinding="{Binding FileInfo.LastWriteTime, StringFormat=yyyy/MM/dd HH:mm}" />
+                            <GridViewColumn Header="更新日時" Width="96" DisplayMemberBinding="{Binding LastWriteTime, StringFormat=yyyy/MM/dd HH:mm}" />
                             
                             <GridViewColumn Width="96" >
-                                <GridViewColumnHeader Content="種類" Tag="FileInfo.Extension" />
+                                <GridViewColumnHeader Content="種類" Tag="Extension" />
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                            <TextBlock Text="{Binding FileInfo, Converter={StaticResource FileInfoToTypeNameConverter}}" />
+                                            <TextBlock Text="{Binding Converter={StaticResource FileInfoToTypeNameConverter}}" />
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
 
                             <GridViewColumn Width="96" CellTemplate="{StaticResource ItemSizeTemplate}" >
-                                <GridViewColumnHeader Content="サイズ" Tag="FileInfo.Size" />
+                                <GridViewColumnHeader Content="サイズ" Tag="Size" />
                             </GridViewColumn>
 
                             <GridViewColumn Header="フォルダー" Width="96" DisplayMemberBinding="{Binding DirectoryName}" />

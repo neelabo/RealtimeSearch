@@ -44,7 +44,7 @@ namespace NeeLaboratory.RealtimeSearch
             return null;
         }
 
-        public void Execute(IEnumerable<NodeContent> files)
+        public void Execute(IEnumerable<FileItem> files)
         {
             try
             {
@@ -67,7 +67,7 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        public void Execute(IEnumerable<NodeContent> files, int programId)
+        public void Execute(IEnumerable<FileItem> files, int programId)
         {
             try
             {
@@ -80,7 +80,7 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        private void Execute(IEnumerable<NodeContent> files, ExternalProgram program)
+        private void Execute(IEnumerable<FileItem> files, ExternalProgram program)
         {
             if (program.IsMultiArgumentEnabled)
             {
@@ -90,12 +90,12 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 foreach (var file in files)
                 {
-                    ExecuteProgram(new List<NodeContent>() { file }, program);
+                    ExecuteProgram(new List<FileItem>() { file }, program);
                 }
             }
         }
 
-        private void ExecuteProgram(IEnumerable<NodeContent> files, ExternalProgram program)
+        private void ExecuteProgram(IEnumerable<FileItem> files, ExternalProgram program)
         {
             if (program.ProgramType == ExternalProgramType.Normal)
             {
@@ -122,7 +122,7 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        private static string ReplaceKeyword(string s, IEnumerable<NodeContent> files)
+        private static string ReplaceKeyword(string s, IEnumerable<FileItem> files)
         {
             if (files.Count() == 1)
             {
@@ -150,7 +150,7 @@ namespace NeeLaboratory.RealtimeSearch
             return s;
         }
 
-        public void ExecuteDefault(IEnumerable<NodeContent> files)
+        public void ExecuteDefault(IEnumerable<FileItem> files)
         {
             try
             {

@@ -1,5 +1,4 @@
-﻿using NeeLaboratory.IO.Search.FileNode;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
@@ -10,7 +9,7 @@ namespace NeeLaboratory.RealtimeSearch
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is FileInfo file)
+            if (value is FileItem file)
             {
                 return ShellFileResource.CreateTypeName(file.Path, file.IsDirectory);
             }

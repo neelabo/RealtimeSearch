@@ -259,12 +259,12 @@ namespace NeeLaboratory.RealtimeSearch
             _keyword.SetValue(keyword, 200);
         }
 
-        public void CopyFilesToClipboard(List<NodeContent> files)
+        public void CopyFilesToClipboard(List<FileItem> files)
         {
             ClipboardTools.SetFileDropList(files.Select(e => e.Path).ToArray());
         }
 
-        public void CopyNameToClipboard(NodeContent file)
+        public void CopyNameToClipboard(FileItem file)
         {
             var text = file.IsDirectory
                 ? System.IO.Path.GetFileName(file.Path)
@@ -281,10 +281,10 @@ namespace NeeLaboratory.RealtimeSearch
 
         public void Rreflesh(string path)
         {
-            _search.Reflesh(path);
+            _search.Refresh(path);
         }
 
-        public void OpenProperty(NodeContent item)
+        public void OpenProperty(FileItem item)
         {
             try
             {
@@ -296,7 +296,7 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        public void Delete(IList<NodeContent> items)
+        public void Delete(IList<FileItem> items)
         {
             if (items.Count == 0) return;
 
@@ -320,7 +320,7 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
-        public void Rename(NodeContent file, string newValue)
+        public void Rename(FileItem file, string newValue)
         {
             var folder = System.IO.Path.GetDirectoryName(file.Path) ?? "";
             var oldValue = System.IO.Path.GetFileName(file.Path);
@@ -349,17 +349,17 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
-        public void Execute(IEnumerable<NodeContent> files)
+        public void Execute(IEnumerable<FileItem> files)
         {
             _programs.Execute(files);
         }
 
-        public void Execute(IEnumerable<NodeContent> files, int programId)
+        public void Execute(IEnumerable<FileItem> files, int programId)
         {
             _programs.Execute(files, programId);
         }
 
-        public void ExecuteDefault(IEnumerable<NodeContent> files)
+        public void ExecuteDefault(IEnumerable<FileItem> files)
         {
             _programs.ExecuteDefault(files);
         }

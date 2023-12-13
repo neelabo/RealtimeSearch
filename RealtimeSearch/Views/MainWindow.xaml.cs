@@ -123,9 +123,9 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void ListViewItem_MouseDoubleClick(object? sender, MouseButtonEventArgs e)
         {
-            if (((ListViewItem?)sender)?.Content is not NodeContent file) return;
+            if (((ListViewItem?)sender)?.Content is not FileItem file) return;
 
-            _vm.Execute(new List<NodeContent>() { file });
+            _vm.Execute(new List<FileItem>() { file });
         }
 
         private async void Keyword_KeyDown(object? sender, KeyEventArgs e)
@@ -173,7 +173,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         #region Rename
 
-        private void PopupRenameTextBox(NodeContent item)
+        private void PopupRenameTextBox(FileItem item)
         {
             if (item == null) return;
 
@@ -200,7 +200,7 @@ namespace NeeLaboratory.RealtimeSearch
             //Debug.WriteLine($"{ev.OldValue} => {ev.NewValue}");
             if (e.OldValue != e.NewValue)
             {
-                if (this.ResultListView.SelectedItem is NodeContent file)
+                if (this.ResultListView.SelectedItem is FileItem file)
                 {
                     _vm.Rename(file, e.NewValue);
                 }
@@ -247,7 +247,6 @@ namespace NeeLaboratory.RealtimeSearch
         private void PreviewMouseMove_Event(object? sender, MouseEventArgs e)
         {
             var s = sender as ListViewItem;
-            //var pn = s?.Content as NodeContent;
 
             if (_dragDowned != null && _dragDowned == s && e.LeftButton == MouseButtonState.Pressed)
             {
@@ -262,7 +261,7 @@ namespace NeeLaboratory.RealtimeSearch
                         var paths = new List<string>();
                         for (int i = 0; i < this.ResultListView.SelectedItems.Count; ++i)
                         {
-                            var path = (this.ResultListView.SelectedItems[i] as NodeContent)?.Path;
+                            var path = (this.ResultListView.SelectedItems[i] as FileItem)?.Path;
                             if (path != null)
                             {
                                 paths.Add(path);
@@ -331,7 +330,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void Property_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            if ((target as ListView)?.SelectedItem is NodeContent file)
+            if ((target as ListView)?.SelectedItem is FileItem file)
             {
                 _vm.OpenProperty(file);
             }
@@ -354,7 +353,7 @@ namespace NeeLaboratory.RealtimeSearch
             var items = (target as ListView)?.SelectedItems;
             if (items != null && items.Count > 0)
             {
-                _vm.Delete(items.Cast<NodeContent>().ToList());
+                _vm.Delete(items.Cast<FileItem>().ToList());
             }
         }
 
@@ -363,7 +362,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             var listView = target as ListView;
 
-            if (listView?.SelectedItem is NodeContent item)
+            if (listView?.SelectedItem is FileItem item)
             {
                 PopupRenameTextBox(item);
             }
@@ -385,7 +384,7 @@ namespace NeeLaboratory.RealtimeSearch
 
             if (items == null) return;
 
-            var nodes = items.OfType<NodeContent>();
+            var nodes = items.OfType<FileItem>();
             if (!nodes.Any()) return;
 
             switch (executeType)
@@ -439,7 +438,7 @@ namespace NeeLaboratory.RealtimeSearch
 
             foreach (var item in items)
             {
-                if (item is NodeContent file && (System.IO.File.Exists(file.Path) || System.IO.Directory.Exists(file.Path)))
+                if (item is FileItem file && (System.IO.File.Exists(file.Path) || System.IO.Directory.Exists(file.Path)))
                 {
                     var startInfo = new ProcessStartInfo("explorer.exe", "/select,\"" + file.Path + "\"") { UseShellExecute = false };
                     Process.Start(startInfo);
@@ -453,13 +452,13 @@ namespace NeeLaboratory.RealtimeSearch
             var items = (target as ListView)?.SelectedItems;
             if (items is null) return;
 
-            _vm.CopyFilesToClipboard(items.Cast<NodeContent>().ToList());
+            _vm.CopyFilesToClipboard(items.Cast<FileItem>().ToList());
         }
 
         // ファイル名のコピー
         private void CopyName_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            if ((target as ListView)?.SelectedItem is NodeContent file)
+            if ((target as ListView)?.SelectedItem is FileItem file)
             {
                 _vm.CopyNameToClipboard(file);
             }
