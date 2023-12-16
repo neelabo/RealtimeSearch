@@ -36,7 +36,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             _appConfig = appConfig;
 
-            _searchEngine = new FileSearchEngine(_appConfig, true, true);
+            _searchEngine = new FileSearchEngine(_appConfig);
             ReIndex();
 
             _appConfig.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
@@ -115,7 +115,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         public void ReIndex()
         {
-            _searchEngine.SetSearchAreas(_appConfig.SearchAreas.Select(e => e.Path).ToList());
+            _searchEngine.SetSearchAreas(_appConfig.SearchAreas);
         }
 
         /// <summary>
@@ -139,6 +139,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         public async Task SearchAsync(string keyword, bool isForce)
         {
+
             if (string.IsNullOrWhiteSpace(keyword))
             {
                 _lastSearchKeyword = keyword;

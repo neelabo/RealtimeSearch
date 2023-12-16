@@ -9,7 +9,6 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 
 
 namespace NeeLaboratory.IO.Nodes
@@ -440,6 +439,21 @@ namespace NeeLaboratory.IO.Nodes
             _jobEngine.Enqueue(new FileSystemJob(this, FileSystemAction.Renamed, args));
         }
 
+        /// <summary>
+        /// 全てのコマンドの完了待機
+        /// </summary>
+        public async Task WaitAsync(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            if (_disposedValue) throw new ObjectDisposedException(this.GetType().FullName);
+
+            var command = new NoProcessJob();
+            _jobEngine.Enqueue(command);
+
+            await command.WaitAsync(token);
+        }
+
+
         [Conditional("LOCAL_DEBUG")]
         private void Trace(string s, params object[] args)
         {
@@ -465,6 +479,20 @@ namespace NeeLaboratory.IO.Nodes
                 await _tree.FileSystemActionAsync(_action, _eventArgs, token);
             }
         }
+
+        private class NoProcessJob : JobBase
+        {
+            protected override async Task ExecuteAsync(CancellationToken token)
+            {
+                await Task.CompletedTask;
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                 base.Dispose(disposing);
+            }
+        }
+
 
         public enum FileSystemAction
         {

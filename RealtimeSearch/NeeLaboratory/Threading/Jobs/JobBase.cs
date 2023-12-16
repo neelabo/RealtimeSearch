@@ -129,12 +129,28 @@ namespace NeeLaboratory.Threading.Jobs
         /// </summary>
         public async Task WaitAsync()
         {
-            await _complete.WaitHandle.AsTask();
+            if (_disposedValue) return;
+            try
+            {
+                await _complete.WaitHandle.AsTask();
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
         }
 
         public async Task WaitAsync(CancellationToken token)
         {
-            await _complete.WaitHandle.AsTask().WaitAsync(token);
+            if (_disposedValue) return;
+            try
+            {
+                await _complete.WaitHandle.AsTask().WaitAsync(token);
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
         }
 
 

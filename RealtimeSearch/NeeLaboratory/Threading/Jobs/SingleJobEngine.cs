@@ -247,6 +247,16 @@ namespace NeeLaboratory.Threading.Jobs
             }
         }
 
+
+        /// <summary>
+        /// TODO: 全てのJOBの完了を待機
+        /// </summary>
+        public async Task WaitAsync(CancellationToken token)
+        {
+            await Task.CompletedTask;
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// JOBで発生した例外の処理
         /// </summary>
@@ -318,6 +328,7 @@ namespace NeeLaboratory.Threading.Jobs
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
         #endregion
     }
 

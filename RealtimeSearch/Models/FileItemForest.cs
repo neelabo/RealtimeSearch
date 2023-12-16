@@ -1,10 +1,12 @@
 ﻿//#define LOCAL_DEBUG
 using NeeLaboratory.ComponentModel;
+using NeeLaboratory.IO.Search.FileNode;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using static NeeLaboratory.RealtimeSearch.FileItemTree;
@@ -14,14 +16,12 @@ namespace NeeLaboratory.RealtimeSearch
 {
     public class FileItemForest : IFileItemTree, IDisposable
     {
-        private readonly EnumerationOptions _enumerationOptions;
         private List<FileItemTree> _trees = new();
         private bool _disposedValue;
 
 
-        public FileItemForest(EnumerationOptions enumerationOptions)
+        public FileItemForest()
         {
-            _enumerationOptions = enumerationOptions;
         }
 
 
@@ -29,16 +29,17 @@ namespace NeeLaboratory.RealtimeSearch
         public event EventHandler<FileTreeContentChangedEventArgs>? RemoveContentChanged;
 
 
-        public void UpdateTrees(IEnumerable<string> paths )
+        public void SetSearchAreas(IEnumerable<NodeArea> areas)
         {
-            var filedPaths = ValidatePathCollection(paths);
+            var oldies = _trees;
 
-            var trees = filedPaths.Select(path => _trees.FirstOrDefault(e => e.Path == path) ?? CreateTree(path, _enumerationOptions)).ToList();
-            var removes = _trees.Except(trees);
+            var fixedAreas = ValidatePathCollection(areas);
+            var trees = fixedAreas.Select(area => oldies.FirstOrDefault(e => e.Area == area) ?? CreateTree(area)).ToList();
+            var removes = oldies.Except(trees);
 
             _trees = trees;
 
-            foreach(var tree in removes)
+            foreach (var tree in removes)
             {
                 RemoveTree(tree);
             }
@@ -51,9 +52,16 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        private FileItemTree CreateTree(string path, EnumerationOptions enumerationOptions)
+        public void AddSearchAreas(IEnumerable<NodeArea> areas)
         {
-            var tree = new FileItemTree(path, _enumerationOptions);
+            var trees = _trees;
+            SetSearchAreas(trees.Select(e => e.Area).Concat(areas));
+        }
+
+
+        private FileItemTree CreateTree(NodeArea area)
+        {
+            var tree = new FileItemTree(area);
             tree.AddContentChanged += Tree_AddContentChanged;
             tree.RemoveContentChanged += Tree_RemoveContentChanged;
             return tree;
@@ -80,21 +88,25 @@ namespace NeeLaboratory.RealtimeSearch
         /// <summary>
         /// 親子関係のないパス
         /// </summary>
-        /// <param name="paths"></param>
+        /// <param name="areas"></param>
         /// <returns></returns>
-        private List<string> ValidatePathCollection(IEnumerable<string> paths)
+        private List<NodeArea> ValidatePathCollection(IEnumerable<NodeArea> areas)
         {
-            return paths.Where(e => !paths.Any(x => IsPathChild(e, x))).ToList();
+            return areas.Where(e => !areas.Any(x => x.Contains(e))).ToList();
         }
 
+
+#if false
         /// <summary>
         /// pathA は pathB の子であるか？
         /// </summary>
         /// <param name="pathA"></param>
         /// <param name="pathB"></param>
         /// <returns></returns>
-        private bool IsPathChild(string pathA, string pathB)
+        private bool IsPathChild(NodeArea pathA, NodeArea pathB)
         {
+            if (pathA == pathB) return false;
+
             var a = FixDirectoryPath(pathA);
             var b = FixDirectoryPath(pathB);
             if (a.Length <= b.Length) return false;
@@ -105,6 +117,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             return path.TrimEnd('\\') + '\\';
         }
+#endif
 
         protected virtual void Dispose(bool disposing)
         {
@@ -171,6 +184,16 @@ namespace NeeLaboratory.RealtimeSearch
                 }
             }
         }
+
+        public async Task WaitAsync(CancellationToken token)
+        {
+            var options = new ParallelOptions { MaxDegreeOfParallelism = 2 };
+            await Parallel.ForEachAsync(_trees, options, async (tree, token) =>
+            {
+                await tree.WaitAsync(token);
+            });
+        }
+
     }
 
 }

@@ -25,9 +25,13 @@ namespace NeeLaboratory.RealtimeSearch
         public double Width { get; set; }
     }
 
+    public interface ISearchContext : INotifyPropertyChanged
+    {
+        bool AllowFolder { get; set; }
+    }
 
 
-    public class AppConfig : BindableBase
+    public class AppConfig : BindableBase, ISearchContext
     {
 
         private bool _isMonitorClipboard;

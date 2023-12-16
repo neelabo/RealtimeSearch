@@ -1,4 +1,5 @@
 ﻿//#define LOCAL_DEBUG
+using NeeLaboratory.IO;
 using NeeLaboratory.IO.Nodes;
 using System;
 using System.Collections;
@@ -6,13 +7,18 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using NodeArea = NeeLaboratory.IO.Search.FileNode.NodeArea;
+
 
 namespace NeeLaboratory.RealtimeSearch
 {
     public class FileItemTree : FileTree, IFileItemTree
     {
-        public FileItemTree(string path, EnumerationOptions enumerationOptions) : base(path, enumerationOptions)
+        private NodeArea _area;
+
+        public FileItemTree(NodeArea area) : base(area.Path, CreateEnumerationOptions(area))
         {
+            _area = area;
         }
 
 
@@ -30,6 +36,17 @@ namespace NeeLaboratory.RealtimeSearch
             public FileItem FileItem { get; }
         }
 
+
+        public NodeArea Area => _area;
+
+        private static EnumerationOptions CreateEnumerationOptions(NodeArea area)
+        {
+            var allowHidden = true;
+            var options = IOExtensions.CreateEnumerationOptions(area.IncludeSubdirectories, allowHidden);
+            return options;
+        }
+
+
         protected override void AttachContent(Node? node, FileSystemInfo file)
         {
             if (node == null) return;
@@ -43,7 +60,7 @@ namespace NeeLaboratory.RealtimeSearch
         protected override void DetachContent(Node? node)
         {
             if (node == null) return;
-            
+
             var fileItem = node.Content as FileItem;
             node.Content = null;
             if (fileItem is not null)
