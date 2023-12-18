@@ -12,6 +12,9 @@ namespace NeeLaboratory.RealtimeSearch
     {
         event EventHandler<FileTreeContentChangedEventArgs>? AddContentChanged;
         event EventHandler<FileTreeContentChangedEventArgs>? RemoveContentChanged;
+        event EventHandler<FileTreeContentChangedEventArgs>? RenameContentChanged;
+
+        int Count { get; }
 
         Task InitializeAsync(CancellationToken token);
         Task<IDisposable> LockAsync(CancellationToken token);

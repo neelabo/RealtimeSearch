@@ -1,4 +1,5 @@
 ﻿//#define LOCAL_DEBUG
+
 using NeeLaboratory.IO;
 using NeeLaboratory.IO.Nodes;
 using System;
@@ -24,16 +25,24 @@ namespace NeeLaboratory.RealtimeSearch
 
         public event EventHandler<FileTreeContentChangedEventArgs>? AddContentChanged;
         public event EventHandler<FileTreeContentChangedEventArgs>? RemoveContentChanged;
+        public event EventHandler<FileTreeContentChangedEventArgs>? RenameContentChanged;
 
 
         public class FileTreeContentChangedEventArgs : EventArgs
         {
             public FileTreeContentChangedEventArgs(FileItem fileItem)
+                : this(fileItem, null)
+            {
+            }
+
+            public FileTreeContentChangedEventArgs(FileItem fileItem, FileItem? oldFileItem)
             {
                 FileItem = fileItem;
+                OldFileItem = oldFileItem;
             }
 
             public FileItem FileItem { get; }
+            public FileItem? OldFileItem { get; }
         }
 
 
@@ -70,6 +79,19 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
+        protected override void RenameContent(Node? node, FileSystemInfo file)
+        {
+            if (node == null) return;
+
+            var oldFileItem = node.Content as FileItem;
+            if (oldFileItem?.Path == file.FullName) return;
+
+            var fileItem = new FileItem(file);
+            node.Content = fileItem;
+            Trace($"Rename: {oldFileItem} => {fileItem}");
+            RenameContentChanged?.Invoke(this, new FileTreeContentChangedEventArgs(fileItem, oldFileItem));
+        }
+
         protected override void OnUpdateContent(Node? node, bool isRecursive)
         {
             if (node is null) return;
@@ -78,14 +100,12 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 foreach (var n in node.Walk())
                 {
-                    DetachContent(n);
-                    AttachContent(n, CreateFileInfo(n.FullName));
+                    RenameContent(n, CreateFileInfo(n.FullName));
                 }
             }
             else
             {
-                DetachContent(node);
-                AttachContent(node, CreateFileInfo(node.FullName));
+                RenameContent(node, CreateFileInfo(node.FullName));
             }
         }
 

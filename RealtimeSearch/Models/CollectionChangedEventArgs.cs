@@ -18,6 +18,7 @@ namespace NeeLaboratory.RealtimeSearch
     {
         Add,
         Remove,
+        Replace,
     }
 
 }

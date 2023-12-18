@@ -13,7 +13,9 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
+        public event EventHandler<RenamedEventArgs>? Renaming;
         public event EventHandler<RenamedEventArgs>? Renamed;
+        public event EventHandler<RenamedEventArgs>? Failed;
 
 
         public string Error
@@ -58,12 +60,14 @@ namespace NeeLaboratory.RealtimeSearch
             // 名前変更実行
             try
             {
+                Renaming?.Invoke(this, new RenamedEventArgs(WatcherChangeTypes.Renamed, folder, newName, oldName));
                 FileSystem.Rename(src, dst);
                 Renamed?.Invoke(this, new RenamedEventArgs(WatcherChangeTypes.Renamed, folder, newName, oldName));
             }
             catch (Exception ex)
             {
                 Error = $"名前の変更に失敗しました。\n\n{ex.Message}";
+                Failed?.Invoke(this, new RenamedEventArgs(WatcherChangeTypes.Renamed, folder, newName, oldName));
                 return null;
             }
 

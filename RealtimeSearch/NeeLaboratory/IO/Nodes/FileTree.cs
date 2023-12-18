@@ -1,4 +1,5 @@
 ﻿//#define LOCAL_DEBUG
+
 using NeeLaboratory.Threading;
 using NeeLaboratory.Threading.Jobs;
 using System.Diagnostics;
@@ -27,6 +28,7 @@ namespace NeeLaboratory.IO.Nodes
         private bool _initialized;
         private bool _disposedValue;
         private readonly AsyncLock _asyncLock = new();
+        private int _count;
 
 
         /// <summary>
@@ -55,6 +57,11 @@ namespace NeeLaboratory.IO.Nodes
 
 
         public string Path => _path;
+
+        /// <summary>
+        /// おおよその総数。非同期に加算されるため不正確
+        /// </summary>
+        public int Count => _count;
 
 
         protected virtual void Dispose(bool disposing)
@@ -220,6 +227,7 @@ namespace NeeLaboratory.IO.Nodes
 
             var fileNodes = entries.OfType<FileInfo>().Select(s => CreateNode(parent, s));
             parent.Children = directoryNodes.Concat(fileNodes).ToList();
+            Interlocked.Add(ref _count, parent.Children.Count);
             return parent;
         }
 
@@ -353,6 +361,10 @@ namespace NeeLaboratory.IO.Nodes
         }
 
         protected virtual void DetachContent(Node? node)
+        {
+        }
+
+        protected virtual void RenameContent(Node? node, FileSystemInfo file)
         {
         }
 

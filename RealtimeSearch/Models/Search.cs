@@ -230,7 +230,7 @@ namespace NeeLaboratory.RealtimeSearch
             if (_searchEngine.State == SearchCommandEngineState.Collect)
             {
                 //return $"{_searchEngine.NodeCountMaybe:#,0} 個のインデックス作成中...";
-                return $"Indexing in progress...";
+                return $"Indexing... ({_searchEngine.Tree.Count})";
             }
             else if (_searchEngine.State == SearchCommandEngineState.Search)
             {

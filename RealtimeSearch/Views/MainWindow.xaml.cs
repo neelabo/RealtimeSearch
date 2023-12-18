@@ -173,6 +173,9 @@ namespace NeeLaboratory.RealtimeSearch
 
         #region Rename
 
+        // NOTE: 名前変更によって選択解除されてしまうことがあるので編集前に選択番号を記憶しておく
+        private int _renameIndex;
+
         private void PopupRenameTextBox(FileItem item)
         {
             if (item == null) return;
@@ -189,6 +192,7 @@ namespace NeeLaboratory.RealtimeSearch
                 };
                 rename.Closing += Rename_Closing;
                 rename.Closed += Rename_Closed;
+                _renameIndex = this.ResultListView.SelectedIndex;
 
                 this.RenameManager.Open(rename);
                 _vm.IsRenaming = true;
@@ -218,14 +222,18 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 RenameNext(e.Navigate);
             }
+            else
+            {
+                this.ResultListView.SelectedIndex = _renameIndex;
+            }
         }
 
         private void RenameNext(int delta)
         {
-            if (this.ResultListView.SelectedIndex < 0) return;
+            if (_renameIndex < 0) return;
 
             // 選択項目を1つ移動
-            this.ResultListView.SelectedIndex = (this.ResultListView.SelectedIndex + this.ResultListView.Items.Count + delta) % this.ResultListView.Items.Count;
+            this.ResultListView.SelectedIndex = (_renameIndex + this.ResultListView.Items.Count + delta) % this.ResultListView.Items.Count;
             this.ResultListView.UpdateLayout();
 
             // リネーム発動

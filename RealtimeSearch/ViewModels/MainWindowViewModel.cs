@@ -52,7 +52,8 @@ namespace NeeLaboratory.RealtimeSearch
             _history = new History();
 
             _fileRename = new FileRename();
-            _fileRename.Renamed += (s, e) => _search.Rename(e.OldFullPath, e.FullPath);
+            //_fileRename.Renaming += (s, e) => _search.Rename(e.OldFullPath, e.FullPath);
+            //_fileRename.Failed += (s, e) => _search.Rename(e.FullPath, e.OldFullPath);
             _fileRename.AddPropertyChanged(nameof(_fileRename.Error), FileIO_ErrorChanged);
 
             _programs = new ExternalProgramCollection(_appConfig);

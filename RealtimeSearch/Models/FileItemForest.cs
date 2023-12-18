@@ -27,6 +27,10 @@ namespace NeeLaboratory.RealtimeSearch
 
         public event EventHandler<FileTreeContentChangedEventArgs>? AddContentChanged;
         public event EventHandler<FileTreeContentChangedEventArgs>? RemoveContentChanged;
+        public event EventHandler<FileTreeContentChangedEventArgs>? RenameContentChanged;
+
+
+        public int Count => _trees.Sum(t => t.Count);
 
 
         public void SetSearchAreas(IEnumerable<NodeArea> areas)
@@ -64,6 +68,7 @@ namespace NeeLaboratory.RealtimeSearch
             var tree = new FileItemTree(area);
             tree.AddContentChanged += Tree_AddContentChanged;
             tree.RemoveContentChanged += Tree_RemoveContentChanged;
+            tree.RenameContentChanged += Tree_RenameContentChanged;
             return tree;
         }
 
@@ -71,6 +76,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             tree.AddContentChanged -= Tree_AddContentChanged;
             tree.RemoveContentChanged -= Tree_RemoveContentChanged;
+            tree.RenameContentChanged -= Tree_RenameContentChanged;
             tree.Dispose();
         }
 
@@ -84,6 +90,10 @@ namespace NeeLaboratory.RealtimeSearch
             RemoveContentChanged?.Invoke(this, e);
         }
 
+        private void Tree_RenameContentChanged(object? sender, FileTreeContentChangedEventArgs e)
+        {
+            RenameContentChanged?.Invoke(this, e);
+        }
 
         /// <summary>
         /// 親子関係のないパス
