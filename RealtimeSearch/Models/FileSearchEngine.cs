@@ -1,8 +1,11 @@
 ﻿//#define LOCAL_DEBUG
+using NeeLaboratory.Generators;
 using NeeLaboratory.IO;
 using NeeLaboratory.IO.Search;
 using NeeLaboratory.IO.Search.FileNode;
 using NeeLaboratory.IO.Search.FileSearch;
+using NeeLaboratory.Threading;
+using NeeLaboratory.Threading.Jobs;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,13 +13,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using static System.Formats.Asn1.AsnWriter;
 
 
 namespace NeeLaboratory.RealtimeSearch
 {
 
-    public class FileSearchEngine : IDisposable
+    [NotifyPropertyChanged]
+    public partial class FileSearchEngine : INotifyPropertyChanged, IDisposable
     {
         // TODO: cache を無効化
         public static Searcher DefaultSearcher = new Searcher(new FileSearchContext(SearchValueCacheFactory.CreateWithoutCache()));
@@ -24,8 +27,13 @@ namespace NeeLaboratory.RealtimeSearch
         private readonly ISearchContext _context;
         private readonly Searcher _searcher;
         private readonly FileItemForest _tree;
+        private CancellationTokenSource? _indexCancellationTokenSource;
         private CancellationTokenSource? _searchCancellationTokenSource;
         private bool _disposedValue;
+
+        private readonly SingleJobEngine _jobEngine;
+        private AsyncLock _collectLock = new();
+        private SearchCommandEngineState _state;
 
 
         public FileSearchEngine(ISearchContext context)
@@ -38,6 +46,9 @@ namespace NeeLaboratory.RealtimeSearch
             _tree = new FileItemForest();
             _searcher = new Searcher(new FileSearchContext(SearchValueCacheFactory.Create()));
             UpdateSearchProperties();
+
+            _jobEngine = new SingleJobEngine(nameof(FileSearchEngine));
+            _jobEngine.StartEngine();
 
             _context.PropertyChanged += SearchContext_PropertyChanged;
         }
@@ -52,16 +63,23 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        //public bool IncludeSubdirectories { get; }
 
-        //public bool AllowHidden { get; }
+        [Subscribable]
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+
 
         public bool IsBusy { get; private set; }
 
 
         public IFileItemTree Tree => _tree;
 
-        public SearchCommandEngineState State { get; private set; }
+        public SearchCommandEngineState State
+        {
+            get { return _state; }
+            private set { SetProperty(ref _state, value); }
+        }
+
 
         protected virtual void Dispose(bool disposing)
         {
@@ -94,11 +112,13 @@ namespace NeeLaboratory.RealtimeSearch
         public void AddSearchAreas(params NodeArea[] areas)
         {
             _tree.AddSearchAreas(areas);
+            _ = IndexAsync(CancellationToken.None);
         }
 
         public void SetSearchAreas(IEnumerable<NodeArea> areas)
         {
             _tree.SetSearchAreas(areas);
+            _ = IndexAsync(CancellationToken.None);
         }
 
 
@@ -122,7 +142,37 @@ namespace NeeLaboratory.RealtimeSearch
             _searchCancellationTokenSource?.Cancel();
         }
 
-        public async Task<FileSearchResultWatcher> SearchAsync(string keyword, CancellationToken token)
+
+        public async Task IndexAsync(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+
+            _indexCancellationTokenSource?.Cancel();
+            _indexCancellationTokenSource?.Dispose();
+            _indexCancellationTokenSource = new CancellationTokenSource();
+
+            var job = new FileIndexJob(this);
+            _jobEngine.Enqueue(job);
+            //await job.WaitAsync(_indexCancellationTokenSource.Token);
+        }
+
+        public async Task IndexInnerAsync(CancellationToken token)
+        {
+            State = SearchCommandEngineState.Collect;
+            try
+            {
+                await _tree.WaitAsync(token);
+                await _tree.InitializeAsync(token);
+            }
+            finally
+            {
+                State = SearchCommandEngineState.Idle;
+            }
+        }
+
+
+        public async Task<SearchResult<FileItem>> SearchAsync(string keyword, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -131,27 +181,34 @@ namespace NeeLaboratory.RealtimeSearch
             _searchCancellationTokenSource?.Dispose();
             _searchCancellationTokenSource = new CancellationTokenSource();
 
-            IsBusy = true;
-            var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token, _searchCancellationTokenSource.Token);
-
             try
             {
-                State = SearchCommandEngineState.Collect;
+                IsBusy = true;
+                var job = new FileSearchJob(this, keyword);
+                _jobEngine.Enqueue(job);
+                await job.WaitAsync(_searchCancellationTokenSource.Token);
+                return job.Result;
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
 
-                await _tree.WaitAsync(CancellationToken.None);
+        private async Task<SearchResult<FileItem>> SearchInnerAsync(string keyword, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
 
-                await _tree.InitializeAsync(token);
-
+            State = SearchCommandEngineState.Search;
+            try
+            {
                 using (await _tree.LockAsync(token))
                 {
                     // 検索
-                    State = SearchCommandEngineState.Search;
                     var entries = _tree.CollectFileItems();
-                    var items = await Task.Run(() => _searcher.Search(keyword, entries, tokenSource.Token).ToList());
-
-                    // 監視開始
-                    var watcher = new FileSearchResultWatcher(this, new SearchResult<FileItem>(keyword, items.Cast<FileItem>()));
-                    return watcher;
+                    var items = await Task.Run(() => _searcher.Search(keyword, entries, token).ToList());
+                    return new SearchResult<FileItem>(keyword, items.Cast<FileItem>());
                 }
             }
             catch (OperationCanceledException)
@@ -160,23 +217,19 @@ namespace NeeLaboratory.RealtimeSearch
             }
             catch (Exception ex)
             {
-                var watcher = new FileSearchResultWatcher(this, new SearchResult<FileItem>(keyword, null, ex));
-                return watcher;
+                return new SearchResult<FileItem>(keyword, null, ex);
             }
             finally
             {
-                tokenSource.Dispose();
-                IsBusy = false;
                 State = SearchCommandEngineState.Idle;
             }
         }
 
-
         public async Task<List<FileItem>> SearchAsync(string keyword, IEnumerable<FileItem> entries, CancellationToken token)
         {
+            // NOTE: 非依存なので独立して処理可能
             return await Task.Run(() => _searcher.Search(keyword, entries, token).Cast<FileItem>().ToList());
         }
-
 
         #region Multi-Search
 
@@ -257,10 +310,52 @@ namespace NeeLaboratory.RealtimeSearch
             public FileSearchResultWatcher? Result { get; set; }
         }
 
-
         #endregion
 
+        private class FileIndexJob : JobBase
+        {
+            private readonly FileSearchEngine _engine;
+
+            public FileIndexJob(FileSearchEngine engine)
+            {
+                _engine = engine;
+            }
+
+            protected override async Task ExecuteAsync(CancellationToken token)
+            {
+                await _engine.IndexInnerAsync(token);
+            }
+        }
+
+        private class FileSearchJob : JobBase
+        {
+            private readonly FileSearchEngine _engine;
+            private readonly string _keyword;
+
+            public FileSearchJob(FileSearchEngine engine, string keyword)
+            {
+                _engine = engine;
+                _keyword = keyword;
+                Result = new SearchResult<FileItem>(_keyword, null);
+            }
+
+            public SearchResult<FileItem> Result { get; set; }
+
+            protected override async Task ExecuteAsync(CancellationToken token)
+            {
+                try
+                {
+                    Result = await _engine.SearchInnerAsync(_keyword, token);
+                }
+                catch (Exception ex)
+                {
+                    Result = new SearchResult<FileItem>(_keyword, null, ex);
+                }
+            }
+        }
 
     }
+
+
 
 }

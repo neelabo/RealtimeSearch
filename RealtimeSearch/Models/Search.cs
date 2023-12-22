@@ -18,8 +18,8 @@ namespace NeeLaboratory.RealtimeSearch
 {
     public class Search : BindableBase
     {
+        private int _busyCount;
         private bool _isBusy;
-        private bool _isBusyVisibled;
         private string _information = "";
         private readonly AppConfig _appConfig;
         private readonly DispatcherTimer _timer;
@@ -27,6 +27,7 @@ namespace NeeLaboratory.RealtimeSearch
         private CancellationTokenSource _searchCancellationTokenSource = new();
         private FileSearchResultWatcher? _searchResult;
         private string _lastSearchKeyword = "";
+        private string _message = "";
 
 
         /// <summary>
@@ -37,6 +38,7 @@ namespace NeeLaboratory.RealtimeSearch
             _appConfig = appConfig;
 
             _searchEngine = new FileSearchEngine(_appConfig);
+            _searchEngine.PropertyChanged += SearchEngine_PropertyChanged;
             ReIndex();
 
             _appConfig.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
@@ -49,6 +51,7 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
+
         /// <summary>
         /// 結果変更イベント
         /// </summary>
@@ -58,33 +61,8 @@ namespace NeeLaboratory.RealtimeSearch
         public bool IsBusy
         {
             get { return _isBusy; }
-            set
-            {
-                if (_isBusy != value)
-                {
-                    _isBusy = value;
-
-                    if (_isBusy)
-                    {
-                        _timer.Start();
-                    }
-                    else
-                    {
-                        _timer.Stop();
-                        IsBusyVisibled = false;
-                    }
-
-                    RaisePropertyChanged();
-                }
-            }
+            set { SetProperty(ref _isBusy, value); }
         }
-
-        public bool IsBusyVisibled
-        {
-            get { return _isBusyVisibled; }
-            set { if (_isBusyVisibled != value) { _isBusyVisibled = value; RaisePropertyChanged(); } }
-        }
-
         public string Information
         {
             get { return _information; }
@@ -105,6 +83,17 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
+        private void SearchEngine_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(FileSearchEngine.State))
+            {
+                Debug.WriteLine($"State: {_searchEngine.State}");
+                SetMessage("");
+                _timer.IsEnabled = _searchEngine.State != SearchCommandEngineState.Idle;
+                //IsBusyVisible = _searchEngine.State == SearchCommandEngineState.Search;
+            }
+        }
+
         private void SearchAreas_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             ReIndex();
@@ -115,7 +104,16 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         public void ReIndex()
         {
+            var keyword = SearchResult?.Keyword;
+            SearchResult = null;
+
             _searchEngine.SetSearchAreas(_appConfig.SearchAreas);
+
+            // 再検索
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                _ = SearchAsync(keyword, true);
+            }
         }
 
         /// <summary>
@@ -132,6 +130,17 @@ namespace NeeLaboratory.RealtimeSearch
         public void Rename(string src, string dst)
         {
             _searchEngine.Tree.RequestRename(src, dst);
+        }
+
+
+        private void IncrementBusyCount()
+        {
+            IsBusy = Interlocked.Increment(ref _busyCount) > 0;
+        }
+
+        private void DecrementBusyCount()
+        {
+            IsBusy = Interlocked.Decrement(ref _busyCount) > 0;
         }
 
         /// <summary>
@@ -153,29 +162,31 @@ namespace NeeLaboratory.RealtimeSearch
 
             _lastSearchKeyword = keyword;
 
+            // 同時に実行可能なのは1検索のみ。以前の検索はキャンセルして新しい検索コマンドを発行
+            _searchCancellationTokenSource.Cancel();
+            _searchCancellationTokenSource = new CancellationTokenSource();
+
+            IncrementBusyCount();
             try
             {
-                IsBusy = true;
+                SetMessage("");
 
                 // キーワード検証
                 _searchEngine.Analyze(keyword);
 
-                // 同時に実行可能なのは1検索のみ。以前の検索はキャンセルして新しい検索コマンドを発行
-                _searchCancellationTokenSource.Cancel();
-                _searchCancellationTokenSource = new CancellationTokenSource();
                 var searchResult = await _searchEngine.SearchAsync(keyword, _searchCancellationTokenSource.Token);
                 if (searchResult.Exception != null)
                 {
                     throw searchResult.Exception;
                 }
 
-                SearchResult = searchResult;
+                SearchResult = new FileSearchResultWatcher(_searchEngine, searchResult);
                 SearchResultChanged?.Invoke(this, EventArgs.Empty);
 
                 // 複数スレッドからコレクション操作できるようにする
                 BindingOperations.EnableCollectionSynchronization(SearchResult.Items, new object());
 
-                Information = $"{SearchResult.Items.Count:#,0} 個の項目";
+                SetMessage($"{SearchResult.Items.Count:#,0} 個の項目");
 
                 // 項目変更監視
                 SearchResult.Items.CollectionChanged += (s, e) => SearchResultChanged?.Invoke(s, e);
@@ -189,57 +200,62 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 if (e is SearchKeywordRegularExpressionException ex1)
                 {
-                    Information = "正規表現エラー: " + ex1.InnerException?.Message;
+                    SetMessage("正規表現エラー: " + ex1.InnerException?.Message);
                 }
                 else if (e is SearchKeywordDateTimeException ex2)
                 {
-                    Information = "日時指定が不正です";
+                    SetMessage("日時指定が不正です");
                 }
                 else if (e is SearchKeywordBooleanException ex3)
                 {
-                    Information = "フラグ指定が不正です";
+                    SetMessage("フラグ指定が不正です");
                 }
                 else if (e is SearchKeywordOptionException ex4)
                 {
-                    Information = "不正なオプションです: " + ex4.Option;
+                    SetMessage("不正なオプションです: " + ex4.Option);
                 }
                 else
                 {
-                    Information = e.Message;
+                    SetMessage(e.Message);
                 }
             }
             catch (Exception e)
             {
-                Information = e.Message;
+                SetMessage(e.Message);
                 throw;
             }
             finally
             {
-                IsBusy = false;
+                DecrementBusyCount();
             }
+        }
+
+
+        private void SetMessage(string message)
+        {
+            _message = message;
+            UpdateInformation();
         }
 
         private void ProgressTimer_Tick(object? sender, EventArgs e)
         {
-            Information = GetSearchEngineProgress();
-            IsBusyVisibled = true;
+            UpdateInformation();
+            Debug.WriteLine($"Information = {Information}");
         }
 
-        private string GetSearchEngineProgress()
+        private void UpdateInformation()
         {
-            if (_searchEngine.State == SearchCommandEngineState.Collect)
+            Information = _searchEngine.State switch
             {
-                //return $"{_searchEngine.NodeCountMaybe:#,0} 個のインデックス作成中...";
-                return $"Indexing... ({_searchEngine.Tree.Count})";
-            }
-            else if (_searchEngine.State == SearchCommandEngineState.Search)
-            {
-                return $"Searching...";
-            }
-            else
-            {
-                return $"Processing....";
-            }
+                SearchCommandEngineState.Idle
+                    => _message,
+                SearchCommandEngineState.Collect
+                    => $"Indexing... ({_searchEngine.Tree.Count})",
+                SearchCommandEngineState.Search
+                    => $"Searching...",
+                _
+                    => ""
+            }; ;
         }
 
     }

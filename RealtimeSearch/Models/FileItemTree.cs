@@ -48,13 +48,12 @@ namespace NeeLaboratory.RealtimeSearch
 
         public NodeArea Area => _area;
 
+
         private static EnumerationOptions CreateEnumerationOptions(NodeArea area)
         {
-            var allowHidden = true;
-            var options = IOExtensions.CreateEnumerationOptions(area.IncludeSubdirectories, allowHidden);
+            var options = IOExtensions.CreateEnumerationOptions(area.IncludeSubdirectories, FileAttributes.None);
             return options;
         }
-
 
         protected override void AttachContent(Node? node, FileSystemInfo file)
         {

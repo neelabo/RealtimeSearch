@@ -31,9 +31,12 @@ namespace NeeLaboratory.RealtimeSearch
             _engine = engine;
             _result = result;
 
-            _engine.Tree.AddContentChanged += Tree_AddContentChanged;
-            _engine.Tree.RemoveContentChanged += Tree_RemoveContentChanged;
-            _engine.Tree.RenameContentChanged += Tree_RenameContentChanged;
+            if (!string.IsNullOrWhiteSpace(result.Keyword))
+            {
+                _engine.Tree.AddContentChanged += Tree_AddContentChanged;
+                _engine.Tree.RemoveContentChanged += Tree_RemoveContentChanged;
+                _engine.Tree.RenameContentChanged += Tree_RenameContentChanged;
+            }
         }
 
 
@@ -43,6 +46,7 @@ namespace NeeLaboratory.RealtimeSearch
         public event EventHandler<CollectionChangedEventArgs<FileItem>>? CollectionChanged;
 
 
+        // TODO: 大量のリクエストが同時に気たときにタスクが爆発する。一定間隔でまとめて処理するように！
         // TODO: 投げっぱなし非同期なので例外処理をここで行う
         private async void Tree_AddContentChanged(object? sender, FileItemTree.FileTreeContentChangedEventArgs e)
         {
@@ -127,7 +131,7 @@ namespace NeeLaboratory.RealtimeSearch
                 {
                     _engine.Tree.AddContentChanged -= Tree_AddContentChanged;
                     _engine.Tree.RemoveContentChanged -= Tree_RemoveContentChanged;
-                    _engine.Tree.RenameContentChanged += Tree_RenameContentChanged;
+                    _engine.Tree.RenameContentChanged -= Tree_RenameContentChanged;
                 }
 
                 _disposedValue = true;

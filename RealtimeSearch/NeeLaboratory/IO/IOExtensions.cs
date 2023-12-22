@@ -25,13 +25,13 @@ namespace NeeLaboratory.IO
         /// 一般的な？ EnumerationOption を作成する
         /// </summary>
         /// <param name="recursiveSubDirectories">サブフォルダーを含める</param>
-        /// <param name="allowHidden">隠しファイルを含める</param>
+        /// <param name="attributesToSkip">スキップ属性</param>
         /// <returns></returns>
-        public static EnumerationOptions CreateEnumerationOptions(bool recursiveSubDirectories, bool allowHidden)
+        public static EnumerationOptions CreateEnumerationOptions(bool recursiveSubDirectories, FileAttributes attributesToSkip)
         {
             return new EnumerationOptions()
             {
-                AttributesToSkip = FileAttributes.System | FileAttributes.ReparsePoint | FileAttributes.Temporary | (allowHidden ? 0 : FileAttributes.Hidden),
+                AttributesToSkip = attributesToSkip,
                 IgnoreInaccessible = true,
                 RecurseSubdirectories = recursiveSubDirectories,
             };

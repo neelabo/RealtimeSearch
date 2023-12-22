@@ -41,7 +41,7 @@ namespace NeeLaboratory.IO.Nodes
         /// <exception cref="DirectoryNotFoundException">ディレクトリが見つからない</exception>
         public FileTree(string path, EnumerationOptions enumerationOptions) : base(path)
         {
-            if (string.Compare(path, System.IO.Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase) != 0) throw new ArgumentException($"Not an absolute path: {path}");
+            if (string.Compare(path, System.IO.Path.GetFullPath(path).Trim('\\'), StringComparison.OrdinalIgnoreCase) != 0) throw new ArgumentException($"Not an absolute path: {path}");
             if (!Directory.Exists(path)) throw new DirectoryNotFoundException($"Directory not found: {path}");
 
             _path = path;

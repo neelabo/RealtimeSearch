@@ -280,7 +280,7 @@
                         <Style TargetType="Grid">
                             <Setter Property="Visibility" Value="{Binding Path=ResultMessage, Converter={StaticResource StringToVisibility}}"/>
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Search.IsBusyVisibled}" Value="True">
+                                <DataTrigger Binding="{Binding Search.IsBusy}" Value="True">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -295,7 +295,7 @@
                 <!-- Busy Message -->
                 <Grid x:Name="BusyMessage" 
                     HorizontalAlignment="Center" VerticalAlignment="Top" Margin="10,50,10,10"  Background="White"
-                    Visibility="{Binding Search.IsBusyVisibled, Converter={StaticResource BoolToVisibility}}">
+                    Visibility="{Binding Search.IsBusy, Converter={StaticResource BoolToVisibility}}">
                     <StackPanel Orientation="Horizontal" Margin="10">
                         <Grid Width="34"/>
                         <TextBlock x:Name="textBlock_Busy" Text="処理中です" Foreground="Gray"/>
