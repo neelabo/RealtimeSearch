@@ -205,7 +205,7 @@ namespace RealtimeSearchUnitTest
             var result = await engine.SearchAsync(".txt", CancellationToken.None);
             var resultCount = result.Items.Count;
 
-            //var watcher = new SearchResultWatcher(engine, result);
+            using var watcher = new FileSearchResultWatcher(engine, result);
 
             // ƒtƒ@ƒCƒ‹’Ç‰Á ...
             using (FileStream stream = File.Create(_fileAppend1)) { }
