@@ -5,7 +5,6 @@ using Xunit;
 using Xunit.Sdk;
 using NeeLaboratory.RealtimeSearch;
 using NeeLaboratory.IO.Search.FileNode;
-using NeeLaboratory.IO.Search.FileSearch;
 using System.Diagnostics;
 using System.IO;
 using Xunit.Abstractions;
