@@ -42,6 +42,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         private GridViewColumnHeader? _lastHeaderClicked = null;
         private ListSortDirection _lastDirection = ListSortDirection.Ascending;
+        private bool _initialized;
 
 
         public MainWindow()
@@ -97,6 +98,13 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void Window_Loaded(object? sender, RoutedEventArgs e)
         {
+        }
+
+        private void Window_ContentRendered(object sender, EventArgs e)
+        {
+            if (_initialized) return;
+            _initialized = true;
+
             _vm.Loaded();
             _vm.StartClipboardWatch(this);
         }
@@ -604,5 +612,6 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
         #endregion
+
     }
 }

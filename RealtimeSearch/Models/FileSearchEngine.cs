@@ -225,10 +225,10 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        public async Task<List<FileItem>> SearchAsync(string keyword, IEnumerable<FileItem> entries, CancellationToken token)
+        public List<FileItem> Search(string keyword, IEnumerable<FileItem> entries, CancellationToken token)
         {
             // NOTE: 非依存なので独立して処理可能
-            return await Task.Run(() => _searcher.Search(keyword, entries, token).Cast<FileItem>().ToList());
+            return _searcher.Search(keyword, entries, token).Cast<FileItem>().ToList();
         }
 
         #region Multi-Search

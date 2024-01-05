@@ -39,7 +39,6 @@ namespace NeeLaboratory.RealtimeSearch
 
             _searchEngine = new FileSearchEngine(_appConfig);
             _searchEngine.PropertyChanged += SearchEngine_PropertyChanged;
-            ReIndex();
 
             _appConfig.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
 

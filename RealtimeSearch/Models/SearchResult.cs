@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Windows.Data;
 
 namespace NeeLaboratory.RealtimeSearch
 {
@@ -36,6 +37,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             Keyword = keyword;
             Items = new ObservableCollection<T>(items ?? Array.Empty<T>());
+            BindingOperations.EnableCollectionSynchronization(Items, new object());
             Exception = exception;
         }
 

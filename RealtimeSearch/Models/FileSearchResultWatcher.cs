@@ -1,5 +1,6 @@
-﻿//#define LOCAL_DEBUG
+﻿#define LOCAL_DEBUG
 
+using NeeLaboratory.Threading.Jobs;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -20,6 +21,8 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         private readonly SearchResult<FileItem> _result;
 
+        private SlimJobEngine _jobEngine;
+
 
         /// <summary>
         /// コンストラクタ
@@ -30,6 +33,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             _engine = engine;
             _result = result;
+            _jobEngine = new SlimJobEngine(nameof(FileSearchResultWatcher));
 
             if (!string.IsNullOrWhiteSpace(result.Keyword))
             {
@@ -48,15 +52,15 @@ namespace NeeLaboratory.RealtimeSearch
 
         // TODO: 大量のリクエストが同時に気たときにタスクが爆発する。一定間隔でまとめて処理するように！
         // TODO: 投げっぱなし非同期なので例外処理をここで行う
-        private async void Tree_AddContentChanged(object? sender, FileItemTree.FileTreeContentChangedEventArgs e)
+        private void Tree_AddContentChanged(object? sender, FileItemTree.FileTreeContentChangedEventArgs e)
         {
             if (_disposedValue) return;
 
-            var entries = new List<FileItem>() { e.FileItem };
-            var items = await _engine.SearchAsync(_result.Keyword, entries, CancellationToken.None);
-
-            await App.Current.Dispatcher.BeginInvoke(() =>
+            _jobEngine.InvokeAsync(() =>
             {
+                var entries = new List<FileItem>() { e.FileItem };
+                var items = _engine.Search(_result.Keyword, entries, CancellationToken.None);
+
                 foreach (var item in items)
                 {
                     Trace($"Add: {item.Path}");
@@ -71,11 +75,14 @@ namespace NeeLaboratory.RealtimeSearch
         {
             if (_disposedValue) return;
 
-            App.Current.Dispatcher.BeginInvoke(() =>
+            _jobEngine.InvokeAsync(() =>
             {
                 Trace($"Remove: {e.FileItem.Path}");
-                _result.Items.Remove(e.FileItem);
-                CollectionChanged?.Invoke(this, new CollectionChangedEventArgs<FileItem>(CollectionChangedAction.Remove, e.FileItem));
+                var isRemoved = _result.Items.Remove(e.FileItem);
+                if (isRemoved)
+                {
+                    CollectionChanged?.Invoke(this, new CollectionChangedEventArgs<FileItem>(CollectionChangedAction.Remove, e.FileItem));
+                }
             });
         }
 
@@ -85,13 +92,19 @@ namespace NeeLaboratory.RealtimeSearch
             if (_disposedValue) return;
             if (e.OldFileItem is null) return;
 
-            App.Current.Dispatcher.BeginInvoke(() =>
+            _jobEngine.InvokeAsync(() =>
             {
                 var index = _result.Items.IndexOf(e.OldFileItem);
-                if (index < 0) return;
-                Trace($"Rename: {e.OldFileItem.Path} => {e.FileItem.Path}");
-                _result.Items[index] = e.FileItem;
-                CollectionChanged?.Invoke(this, new CollectionChangedEventArgs<FileItem>(CollectionChangedAction.Replace, e.FileItem));
+                if (index >= 0)
+                {
+                    Trace($"Rename: {e.OldFileItem.Path} => {e.FileItem.Path}");
+                    _result.Items[index] = e.FileItem;
+                    CollectionChanged?.Invoke(this, new CollectionChangedEventArgs<FileItem>(CollectionChangedAction.Replace, e.FileItem));
+                }
+                else
+                {
+                    Tree_AddContentChanged(sender, e);
+                }
             });
         }
 
@@ -132,6 +145,7 @@ namespace NeeLaboratory.RealtimeSearch
                     _engine.Tree.AddContentChanged -= Tree_AddContentChanged;
                     _engine.Tree.RemoveContentChanged -= Tree_RemoveContentChanged;
                     _engine.Tree.RenameContentChanged -= Tree_RenameContentChanged;
+                    _jobEngine.Dispose();
                 }
 
                 _disposedValue = true;

@@ -136,7 +136,7 @@ namespace NeeLaboratory.RealtimeSearch
             get { return _appConfig.AllowFolder; }
             set { _appConfig.AllowFolder = value; }
         }
-
+        
 
 
         [Conditional("DEBUG")]
@@ -171,6 +171,8 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 _messenger.Send(this, new ShowSettingWindowMessage());
             }
+
+            _search.ReIndex();
         }
 
         private void ShowMessageBox(string message)

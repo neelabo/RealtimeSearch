@@ -12,7 +12,7 @@
     d:DesignWidth="800"
     UseLayoutRounding="True"
     Topmost="{Binding IsTopmost}"
-    Loaded="Window_Loaded" Closing="Window_Closing" Closed="Window_Closed">
+    Loaded="Window_Loaded" ContentRendered="Window_ContentRendered" Closing="Window_Closing" Closed="Window_Closed">
 
 
     <Window.Resources>

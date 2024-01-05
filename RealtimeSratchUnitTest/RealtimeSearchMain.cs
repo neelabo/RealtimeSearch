@@ -27,6 +27,7 @@ namespace RealtimeSearchUnitTest
 
         private static readonly string _fileAppend1 = @"TestFolders\SubFolder1\append1.txt";
         private static readonly string _fileAppend2 = @"TestFolders\SubFolder1\append2.bin";
+        private static readonly string _fileAppend1Ex = @"TestFolders\SubFolder1\append1.tmp";
         private static readonly string _fileAppend2Ex = @"TestFolders\SubFolder1\append2.txt";
 
         private readonly ITestOutputHelper _output;
@@ -52,6 +53,7 @@ namespace RealtimeSearchUnitTest
             // 不要ファイル削除
             if (File.Exists(_fileAppend1)) File.Delete(_fileAppend1);
             if (File.Exists(_fileAppend2)) File.Delete(_fileAppend2);
+            if (File.Exists(_fileAppend1Ex)) File.Delete(_fileAppend1Ex);
             if (File.Exists(_fileAppend2Ex)) File.Delete(_fileAppend2Ex);
 
             // エンジン初期化
@@ -215,7 +217,13 @@ namespace RealtimeSearchUnitTest
             Assert.True(result.Items.Count == resultCount + 1);
 
 
-            // 名前変更
+            // 名前変更、検索結果を変更
+            var fileAppend1Ex = Path.ChangeExtension(_fileAppend1, ".tmp");
+            File.Move(_fileAppend1, fileAppend1Ex);
+            await Task.Delay(100);
+            Assert.True(result.Items.Count == resultCount + 1); // 結果から削除しない
+
+            // 名前変更、検索結果に追加
             var fileAppend2Ex = Path.ChangeExtension(_fileAppend2, ".txt");
             File.Move(_fileAppend2, fileAppend2Ex);
             await Task.Delay(100);
@@ -231,7 +239,7 @@ namespace RealtimeSearchUnitTest
             Assert.Equal(1, item.Size);
 
             // ファイル削除...
-            File.Delete(_fileAppend1);
+            File.Delete(fileAppend1Ex);
             File.Delete(fileAppend2Ex);
             await Task.Delay(100);
             await engine.Tree.WaitAsync(CancellationToken.None);

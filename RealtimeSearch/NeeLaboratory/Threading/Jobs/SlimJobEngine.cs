@@ -50,17 +50,26 @@ namespace NeeLaboratory.Threading.Jobs
         }
 
 
-        public SlimJobOperation InvokeAsync(Action callback, CancellationToken cancellationToken)
+        public SlimJobOperation InvokeAsync(Action action)
         {
-            var job = new SlimJob(callback, cancellationToken);
+            return InvokeAsync(action, CancellationToken.None);
+        }
+
+        public SlimJobOperation InvokeAsync(Action action, CancellationToken cancellationToken)
+        {
+            var job = new SlimJob(action, cancellationToken);
             Enqueue(job);
             return new SlimJobOperation(job);
         }
 
-
-        public SlimJobOperation<TResult> InvokeAsync<TResult>(Func<TResult> callback, CancellationToken cancellationToken)
+        public SlimJobOperation<TResult> InvokeAsync<TResult>(Func<TResult> action)
         {
-            var job = new SlimJob<TResult>(callback, cancellationToken);
+            return InvokeAsync(action, CancellationToken.None);
+        }
+
+        public SlimJobOperation<TResult> InvokeAsync<TResult>(Func<TResult> action, CancellationToken cancellationToken)
+        {
+            var job = new SlimJob<TResult>(action, cancellationToken);
             Enqueue(job);
             return new SlimJobOperation<TResult>(job);
         }
@@ -119,6 +128,8 @@ namespace NeeLaboratory.Threading.Jobs
                 }
                 _queue.Clear();
             }
+
+            Debug.WriteLine($"Thread.Completed: {Thread.CurrentThread.ManagedThreadId}");
         }
     }
 
