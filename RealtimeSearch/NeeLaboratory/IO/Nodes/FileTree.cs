@@ -21,14 +21,14 @@ namespace NeeLaboratory.IO.Nodes
     {
         private readonly string _path;
         private FileSystemWatcher? _fileSystemWatcher;
-        private readonly SingleJobEngine _jobEngine;
+        private readonly SlimJobEngine _jobEngine;
         private readonly EnumerationOptions _enumerationOptions;
         private readonly bool _recurseSubdirectories;
         private readonly string _searchPattern;
         private bool _initialized;
         private bool _disposedValue;
-        private readonly AsyncLock _asyncLock = new();
         private int _count;
+        private readonly SemaphoreSlim _semaphore = new(1, 1);
 
 
         /// <summary>
@@ -46,8 +46,7 @@ namespace NeeLaboratory.IO.Nodes
 
             _path = path;
 
-            _jobEngine = new SingleJobEngine(nameof(FileTree));
-            _jobEngine.StartEngine();
+            _jobEngine = new SlimJobEngine(nameof(FileTree));
 
             _searchPattern = "*";
             _recurseSubdirectories = enumerationOptions.RecurseSubdirectories;
@@ -97,7 +96,7 @@ namespace NeeLaboratory.IO.Nodes
         /// <returns></returns>
         public async Task<IDisposable> LockAsync(CancellationToken token)
         {
-            return await _asyncLock.LockAsync(token);
+            return await _semaphore.LockAsync(token);
         }
 
         /// <summary>
@@ -109,55 +108,53 @@ namespace NeeLaboratory.IO.Nodes
         {
             if (_disposedValue) return;
 
-            // NOTE: JobEngine の寿命とリンク
-            var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token, _jobEngine.CancellationToken);
-            var linkedToken = linkedTokenSource.Token;
+            await _jobEngine.InvokeAsync(() => Initialize(token));
+        }
 
-            using (await _asyncLock.LockAsync(linkedToken))
+        private void Initialize(CancellationToken token)
+        {
+            if (_disposedValue) return;
+
+            if (_initialized) return;
+
+            using var lockToken = _semaphore.Lock(token);
+
+            InitializeWatcher(_recurseSubdirectories);
+
+            Trace($"Initialize: ...");
+
+            var sw = Stopwatch.StartNew();
+
+            try
             {
-                if (_initialized) return;
-                InitializeWatcher(_recurseSubdirectories);
-
-                Trace($"Initialize: ...");
-
-                await Task.Run(async () =>
+                Trunk.ClearChildren();
+                if (_recurseSubdirectories)
                 {
-                    var sw = Stopwatch.StartNew();
+                    CreateChildrenRecursive(Trunk, new DirectoryInfo(Trunk.FullName), token);
+                }
+                else
+                {
+                    CreateChildrenTop(Trunk, new DirectoryInfo(Trunk.FullName), token);
+                }
 
-                    try
-                    {
-                        Trunk.ClearChildren();
-                        if (_recurseSubdirectories)
-                        {
-                            CreateChildrenRecursive(Trunk, new DirectoryInfo(Trunk.FullName), token);
-                        }
-                        else
-                        {
-                            CreateChildrenTop(Trunk, new DirectoryInfo(Trunk.FullName), token);
-                        }
+                sw.Stop();
+                Debug.WriteLine($"Initialize: {sw.ElapsedMilliseconds} ms, Count={Trunk.WalkChildren().Count()}");
+                //Trunk.Dump();
 
-                        sw.Stop();
-                        Debug.WriteLine($"Initialize: {sw.ElapsedMilliseconds} ms, Count={Trunk.WalkChildren().Count()}");
-                        //Trunk.Dump();
-
-                        Validate();
-                        _initialized = true;
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        Debug.WriteLine($"Initialize: Canceled.");
-                    }
-                    catch (AggregateException ae)
-                    {
-                        var ignoreExceptions = ae.Flatten().InnerExceptions.Where(ex => ex is not OperationCanceledException);
-                        if (ignoreExceptions.Any())
-                        {
-                            throw new AggregateException(ignoreExceptions);
-                        }
-                    }
-
-                    await Task.CompletedTask;
-                });
+                Validate();
+                _initialized = true;
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.WriteLine($"Initialize: Canceled.");
+            }
+            catch (AggregateException ae)
+            {
+                var ignoreExceptions = ae.Flatten().InnerExceptions.Where(ex => ex is not OperationCanceledException);
+                if (ignoreExceptions.Any())
+                {
+                    throw new AggregateException(ignoreExceptions);
+                }
             }
         }
 
@@ -244,47 +241,13 @@ namespace NeeLaboratory.IO.Nodes
             return node;
         }
 
-        /// <summary>
-        /// 構造変更処理
-        /// </summary>
-        /// <param name="action"></param>
-        /// <param name="e"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        public async Task FileSystemActionAsync(FileSystemAction action, FileSystemEventArgs e, CancellationToken token)
-        {
-            using (await _asyncLock.LockAsync(token))
-            {
-                if (!_initialized) throw new InvalidOperationException("Not initialized");
-                try
-                {
-                    switch (action)
-                    {
-                        case FileSystemAction.Created:
-                            Add(e.FullPath, token);
-                            break;
-                        case FileSystemAction.Renamed:
-                            Rename(e.FullPath, ((RenamedEventArgs)e).OldFullPath, token);
-                            break;
-                        case FileSystemAction.Deleted:
-                            Remove(e.FullPath, token);
-                            break;
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"FileTree.FileSystemActionAsync: {action}, {e.FullPath}");
-                    Debug.WriteLine(ex.Message);
-                }
-            }
-        }
-
+        // TODO: 名前がよろしくない。 CancellationToken がないと別機能になる
         private void Add(string path, CancellationToken token)
         {
+            if (_disposedValue) return;
+
+            using var lockToken = _semaphore.Lock(token);
+
             var info = CreateFileInfo(path);
             if ((info.Attributes & _enumerationOptions.AttributesToSkip) != 0)
             {
@@ -311,8 +274,13 @@ namespace NeeLaboratory.IO.Nodes
             Validate();
         }
 
+        // TODO: 名前がよろしくない。 CancellationToken がないと別機能になる
         private void Rename(string path, string oldPath, CancellationToken token)
         {
+            if (_disposedValue) return;
+
+            using var lockToken = _semaphore.Lock(token);
+
             var node = Find(oldPath);
             if (node is null)
             {
@@ -336,8 +304,13 @@ namespace NeeLaboratory.IO.Nodes
             Validate();
         }
 
+        // TODO: 名前がよろしくない。 CancellationToken がないと別機能になる
         private void Remove(string path, CancellationToken token)
         {
+            if (_disposedValue) return;
+
+            using var lockToken = _semaphore.Lock(token);
+
             var node = Remove(path);
             if (node is null)
             {
@@ -421,19 +394,19 @@ namespace NeeLaboratory.IO.Nodes
         private void Watcher_Created(object sender, FileSystemEventArgs e)
         {
             Trace($"Watcher created: {e.FullPath}");
-            _jobEngine.Enqueue(new FileSystemJob(this, FileSystemAction.Created, e));
+            _jobEngine.InvokeAsync(() => Add(e.FullPath, CancellationToken.None));
         }
 
         private void Watcher_Deleted(object sender, FileSystemEventArgs e)
         {
             Trace($"Watcher deleted: {e.FullPath}");
-            _jobEngine.Enqueue(new FileSystemJob(this, FileSystemAction.Deleted, e));
+            _jobEngine.InvokeAsync(() => Remove(e.FullPath, CancellationToken.None));
         }
 
         private void Watcher_Renamed(object? sender, RenamedEventArgs e)
         {
             Trace($"Watcher renamed: {e.OldFullPath} => {e.Name}");
-            _jobEngine.Enqueue(new FileSystemJob(this, FileSystemAction.Renamed, e));
+            _jobEngine.InvokeAsync(() => Rename(e.FullPath, e.OldFullPath, CancellationToken.None));
         }
 
         private void Watcher_Changed(object? sender, FileSystemEventArgs e)
@@ -446,9 +419,8 @@ namespace NeeLaboratory.IO.Nodes
         {
             var directory = System.IO.Path.GetDirectoryName(src) ?? "";
             if (directory != System.IO.Path.GetDirectoryName(dst)) throw new ArgumentException("The directories are different.");
-            
-            var args = new RenamedEventArgs(WatcherChangeTypes.Renamed, directory, System.IO.Path.GetFileName(dst), System.IO.Path.GetFileName(src));
-            _jobEngine.Enqueue(new FileSystemJob(this, FileSystemAction.Renamed, args));
+
+            _jobEngine.InvokeAsync(() => Rename(dst, src, CancellationToken.None));
         }
 
         /// <summary>
@@ -459,10 +431,7 @@ namespace NeeLaboratory.IO.Nodes
             token.ThrowIfCancellationRequested();
             if (_disposedValue) throw new ObjectDisposedException(this.GetType().FullName);
 
-            var command = new NoProcessJob();
-            _jobEngine.Enqueue(command);
-
-            await command.WaitAsync(token);
+            await _jobEngine.InvokeAsync(() => { }, token);
         }
 
 
@@ -471,46 +440,5 @@ namespace NeeLaboratory.IO.Nodes
         {
             Debug.WriteLine($"{nameof(FileTree)}: {string.Format(s, args)}");
         }
-
-
-        public class FileSystemJob : JobBase
-        {
-            private readonly FileTree _tree;
-            private readonly FileSystemAction _action;
-            private readonly FileSystemEventArgs _eventArgs;
-
-            public FileSystemJob(FileTree tree, FileSystemAction action, FileSystemEventArgs eventArgs)
-            {
-                _tree = tree;
-                _action = action;
-                _eventArgs = eventArgs;
-            }
-
-            protected override async Task ExecuteAsync(CancellationToken token)
-            {
-                await _tree.FileSystemActionAsync(_action, _eventArgs, token);
-            }
-        }
-
-        private class NoProcessJob : JobBase
-        {
-            protected override async Task ExecuteAsync(CancellationToken token)
-            {
-                await Task.CompletedTask;
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-                 base.Dispose(disposing);
-            }
-        }
-
-
-        public enum FileSystemAction
-        {
-            Created,
-            Deleted,
-            Renamed,
-        };
     }
 }

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 namespace NeeLaboratory.Threading.Jobs
 {
+    // TODO: GetAwaiter を await したときの例外は投げられているか？
     public class SlimJobOperation
     {
         protected readonly SlimJob _job;

@@ -213,7 +213,7 @@ namespace RealtimeSearchUnitTest
             using (FileStream stream = File.Create(_fileAppend2)) { }
 
             await Task.Delay(100);
-            Assert.True(result.Items.Count == resultCount + 1);
+            Assert.Equal(resultCount + 1, result.Items.Count);
 
 
             // 名前変更、検索結果を変更
