@@ -327,7 +327,12 @@ namespace NeeLaboratory.RealtimeSearch
         {
             var folder = System.IO.Path.GetDirectoryName(file.Path) ?? "";
             var oldValue = System.IO.Path.GetFileName(file.Path);
-            _fileRename.Rename(folder, oldValue, newValue);
+            var newFullName = _fileRename.Rename(folder, oldValue, newValue);
+            if (newFullName != null)
+            {
+                // FileSystemWatcher より先にノードツリーに即時反映
+                _search.Rename(file.Path, newFullName);
+            }
         }
 
 

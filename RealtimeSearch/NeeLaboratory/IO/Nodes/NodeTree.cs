@@ -126,6 +126,17 @@ namespace NeeLaboratory.IO.Nodes
 
 
         [Conditional("DEBUG")]
+        public void Dump()
+        {
+            Debug.WriteLine($"NodeTree: {_root.FullName}");
+            foreach (var node in _root.WalkChildren())
+            {
+                Debug.WriteLine(node.FullName);
+            }
+            Debug.WriteLine(".");
+        }
+
+        [Conditional("DEBUG")]
         public void Validate()
         {
             Debug.Assert(_root.Parent is null);
@@ -139,8 +150,6 @@ namespace NeeLaboratory.IO.Nodes
                 Debug.Assert(!string.IsNullOrEmpty(node.Name));
                 Debug.Assert(node.Children is null || !node.Children.GroupBy(i => i).SelectMany(g => g.Skip(1)).Any());
             }
-
-
         }
     }
 

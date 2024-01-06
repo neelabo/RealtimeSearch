@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -67,6 +68,24 @@ namespace NeeLaboratory.RealtimeSearch
             this.Deactivated += (s, e) => this.RenameManager.Stop();
 
             RestoreListViewMemento(App.AppConfig.ListViewColumnMemento);
+
+#if false
+            // 実験
+            {
+                var x = "𠀁";
+                var regex1 = new Regex(@"[\u0020-\u024F-[\P{L}]]");
+                var regex2 = new Regex(@"[\u0250-\uFFFF\P{L}]");
+                for (int i = 0x0020; i<0x1000; i++)
+                {
+                    var isMatch1 = regex1.IsMatch(((char)i).ToString());
+                    var mark1 = isMatch1 ? "o" : "x";
+                    var isMatch2 = regex2.IsMatch(((char)i).ToString());
+                    var mark2 = isMatch2 ? "o" : "x";
+                    Debug.WriteLine($"{i:X4}: {mark1}{mark2}: {(char)i}");
+                    Debug.Assert(isMatch1 != isMatch2);
+                }
+            }
+#endif
         }
 
 

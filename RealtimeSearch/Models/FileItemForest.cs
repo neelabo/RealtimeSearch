@@ -185,13 +185,11 @@ namespace NeeLaboratory.RealtimeSearch
 
         public void RequestRename(string src, string dst)
         {
+            Trace.WriteLine($"RequestRename: {src} -> {dst}");
             var trees = _trees;
             foreach (var tree in trees)
             {
-                if (tree.Find(src) != null)
-                {
-                    tree.RequestRename(src, dst);
-                }
+                tree.RequestRename(src, dst);
             }
         }
 
