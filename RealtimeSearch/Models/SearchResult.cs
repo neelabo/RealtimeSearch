@@ -29,6 +29,10 @@ namespace NeeLaboratory.RealtimeSearch
     public class SearchResult<T> : ISearchResult<T>
         where T : ISearchItem
     {
+        public SearchResult(string keyword) : this(keyword, Array.Empty<T>(), null)
+        {
+        }
+
         public SearchResult(string keyword, IEnumerable<T>? items) : this(keyword, items, null)
         {
         }

@@ -16,9 +16,12 @@ namespace NeeLaboratory.RealtimeSearch
 
         int Count { get; }
 
+        void Initialize(CancellationToken token);
         Task InitializeAsync(CancellationToken token);
         Task<IDisposable> LockAsync(CancellationToken token);
         IEnumerable<FileItem> CollectFileItems();
+
+        void Wait(CancellationToken token);
         Task WaitAsync(CancellationToken token);
 
         void RequestRename(string src, string dst);

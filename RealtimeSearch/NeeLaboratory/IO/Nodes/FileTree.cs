@@ -94,6 +94,11 @@ namespace NeeLaboratory.IO.Nodes
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
+        public IDisposable Lock(CancellationToken token)
+        {
+            return _semaphore.Lock(token);
+        }
+
         public async Task<IDisposable> LockAsync(CancellationToken token)
         {
             return await _semaphore.LockAsync(token);
@@ -108,10 +113,16 @@ namespace NeeLaboratory.IO.Nodes
         {
             if (_disposedValue) return;
 
-            await _jobEngine.InvokeAsync(() => Initialize(token));
+            await _jobEngine.InvokeAsync(() => InitializeInner(token));
         }
 
-        private void Initialize(CancellationToken token)
+        public void Initialize(CancellationToken token)
+        {
+            if (_disposedValue) return;
+            _jobEngine.Invoke(() => InitializeInner(token));
+        }
+
+        private void InitializeInner(CancellationToken token)
         {
             if (_disposedValue) return;
 
@@ -245,6 +256,7 @@ namespace NeeLaboratory.IO.Nodes
         private void Add(string path, CancellationToken token)
         {
             if (_disposedValue) return;
+            if (!_initialized) return;
 
             using var lockToken = _semaphore.Lock(token);
 
@@ -278,6 +290,7 @@ namespace NeeLaboratory.IO.Nodes
         private void Rename(string path, string oldPath, CancellationToken token)
         {
             if (_disposedValue) return;
+            if (!_initialized) return;
 
             using var lockToken = _semaphore.Lock(token);
 
@@ -308,6 +321,7 @@ namespace NeeLaboratory.IO.Nodes
         private void Remove(string path, CancellationToken token)
         {
             if (_disposedValue) return;
+            if (!_initialized) return;
 
             using var lockToken = _semaphore.Lock(token);
 
@@ -359,6 +373,7 @@ namespace NeeLaboratory.IO.Nodes
         {
             try
             {
+                TerminateWatcher();
                 _fileSystemWatcher = new FileSystemWatcher
                 {
                     Path = _path,
@@ -421,6 +436,17 @@ namespace NeeLaboratory.IO.Nodes
             if (directory != System.IO.Path.GetDirectoryName(dst)) throw new ArgumentException("The directories are different.");
 
             _jobEngine.InvokeAsync(() => Rename(dst, src, CancellationToken.None));
+        }
+
+        /// <summary>
+        /// 全てのコマンドの完了待機
+        /// </summary>
+        public void Wait(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            if (_disposedValue) throw new ObjectDisposedException(this.GetType().FullName);
+
+            _jobEngine.InvokeAsync(() => { }, token).Wait(token);
         }
 
         /// <summary>

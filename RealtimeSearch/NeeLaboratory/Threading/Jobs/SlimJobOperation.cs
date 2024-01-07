@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NeeLaboratory.Threading.Jobs
@@ -30,6 +31,11 @@ namespace NeeLaboratory.Threading.Jobs
         public bool Abort()
         {
             return _job.Abort();
+        }
+
+        public void Wait(CancellationToken token)
+        {
+            _job.AsTask().Wait(token);
         }
     }
 

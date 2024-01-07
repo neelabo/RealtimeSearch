@@ -30,7 +30,7 @@ namespace NeeLaboratory.RealtimeSearch
         private CancellationTokenSource? _searchCancellationTokenSource;
         private bool _disposedValue;
 
-        private readonly SingleJobEngine _jobEngine;
+        private readonly SlimJobEngine _jobEngine;
         private AsyncLock _collectLock = new();
         private SearchCommandEngineState _state;
 
@@ -46,8 +46,7 @@ namespace NeeLaboratory.RealtimeSearch
             _searcher = new Searcher(new FileSearchContext(SearchValueCacheFactory.Create()));
             UpdateSearchProperties();
 
-            _jobEngine = new SingleJobEngine(nameof(FileSearchEngine));
-            _jobEngine.StartEngine();
+            _jobEngine = new SlimJobEngine(nameof(FileSearchEngine));
 
             _context.PropertyChanged += SearchContext_PropertyChanged;
         }
@@ -151,9 +150,29 @@ namespace NeeLaboratory.RealtimeSearch
             _indexCancellationTokenSource?.Dispose();
             _indexCancellationTokenSource = new CancellationTokenSource();
 
-            var job = new FileIndexJob(this);
-            _jobEngine.Enqueue(job);
-            //await job.WaitAsync(_indexCancellationTokenSource.Token);
+            //var job = new FileIndexJob(this);
+            //_jobEngine.Enqueue(job);
+
+            var job = _jobEngine.InvokeAsync(() => IndexInner(token));
+            await job;
+            if (job.Exception is not null)
+            {
+                throw job.Exception;
+            }
+        }
+
+        private void IndexInner(CancellationToken token)
+        {
+            State = SearchCommandEngineState.Collect;
+            try
+            {
+                _tree.Wait(token);
+                _tree.Initialize(token);
+            }
+            finally
+            {
+                State = SearchCommandEngineState.Idle;
+            }
         }
 
         public async Task IndexInnerAsync(CancellationToken token)
@@ -183,16 +202,54 @@ namespace NeeLaboratory.RealtimeSearch
             try
             {
                 IsBusy = true;
-                var job = new FileSearchJob(this, keyword);
-                _jobEngine.Enqueue(job);
-                await job.WaitAsync(_searchCancellationTokenSource.Token);
-                return job.Result;
+                //var job = new FileSearchJob(this, keyword);
+                //_jobEngine.Enqueue(job);
+                //await job.WaitAsync(_searchCancellationTokenSource.Token);
+                //return job.Result;
+
+                var job =  _jobEngine.InvokeAsync(() => SearchInner(keyword, token));
+                await job;
+                if (job.Exception is not null)
+                {
+                    throw job.Exception;
+                }
+                return job.Result ?? new SearchResult<FileItem>(keyword);
             }
             finally
             {
                 IsBusy = false;
             }
         }
+
+        private SearchResult<FileItem> SearchInner(string keyword, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+
+            State = SearchCommandEngineState.Search;
+            try
+            {
+                using (_tree.Lock(token))
+                {
+                    var entries = _tree.CollectFileItems();
+                    var items = _searcher.Search(keyword, entries, token).ToList();
+                    return new SearchResult<FileItem>(keyword, items.Cast<FileItem>());
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                return new SearchResult<FileItem>(keyword, null, ex);
+            }
+            finally
+            {
+                State = SearchCommandEngineState.Idle;
+            }
+        }
+
 
         private async Task<SearchResult<FileItem>> SearchInnerAsync(string keyword, CancellationToken token)
         {
@@ -311,6 +368,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         #endregion
 
+#if false
         private class FileIndexJob : JobBase
         {
             private readonly FileSearchEngine _engine;
@@ -352,9 +410,9 @@ namespace NeeLaboratory.RealtimeSearch
                 }
             }
         }
+#endif
 
     }
-
 
 
 }

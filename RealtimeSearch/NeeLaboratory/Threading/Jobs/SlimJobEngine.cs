@@ -49,6 +49,28 @@ namespace NeeLaboratory.Threading.Jobs
             GC.SuppressFinalize(this);
         }
 
+        public void Invoke(Action action)
+        {
+            Invoke(action, CancellationToken.None);
+        }
+
+        public void Invoke(Action action, CancellationToken cancellationToken)
+        {
+            var operation =  InvokeAsync(action, cancellationToken);
+            operation.Wait(cancellationToken);
+        }
+
+        public TResult? Invoke<TResult>(Func<TResult> action)
+        {
+            return Invoke(action, CancellationToken.None);
+        }
+
+        public TResult? Invoke<TResult>(Func<TResult> action, CancellationToken cancellationToken)
+        {
+            var operation = InvokeAsync(action, cancellationToken);
+            operation.Wait(cancellationToken);
+            return operation.Result;
+        }
 
         public SlimJobOperation InvokeAsync(Action action)
         {

@@ -151,6 +151,15 @@ namespace NeeLaboratory.RealtimeSearch
             GC.SuppressFinalize(this);
         }
 
+        public void Initialize(CancellationToken token)
+        {
+            var options = new ParallelOptions { MaxDegreeOfParallelism = 2 };
+            Parallel.ForEach(_trees, options, tree =>
+            {
+                tree.Initialize(token);
+            });
+        }
+
         public async Task InitializeAsync(CancellationToken token)
         {
             var options = new ParallelOptions { MaxDegreeOfParallelism = 2 };
@@ -158,6 +167,17 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 await tree.InitializeAsync(token);
             });
+        }
+
+        public IDisposable Lock(CancellationToken token)
+        {
+            var trees = _trees;
+            var disposables = new DisposableCollection();
+            foreach (var tree in trees)
+            {
+                disposables.Add(tree.Lock(token));
+            }
+            return disposables;
         }
 
         public async Task<IDisposable> LockAsync(CancellationToken token)
@@ -190,6 +210,15 @@ namespace NeeLaboratory.RealtimeSearch
             foreach (var tree in trees)
             {
                 tree.RequestRename(src, dst);
+            }
+        }
+
+        public void Wait(CancellationToken token)
+        {
+            var trees = _trees;
+            foreach (var tree in trees)
+            {
+                tree.Wait(token);
             }
         }
 
