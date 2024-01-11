@@ -153,7 +153,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         public void Initialize(CancellationToken token)
         {
-            var options = new ParallelOptions { MaxDegreeOfParallelism = 2 };
+            var options = new ParallelOptions { CancellationToken = token };
             Parallel.ForEach(_trees, options, tree =>
             {
                 tree.Initialize(token);
@@ -162,7 +162,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         public async Task InitializeAsync(CancellationToken token)
         {
-            var options = new ParallelOptions { MaxDegreeOfParallelism = 2 };
+            var options = new ParallelOptions { CancellationToken = token };
             await Parallel.ForEachAsync(_trees, options, async (tree, token) =>
             {
                 await tree.InitializeAsync(token);
@@ -224,7 +224,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         public async Task WaitAsync(CancellationToken token)
         {
-            var options = new ParallelOptions { MaxDegreeOfParallelism = 2 };
+            var options = new ParallelOptions { CancellationToken = token };
             await Parallel.ForEachAsync(_trees, options, async (tree, token) =>
             {
                 await tree.WaitAsync(token);

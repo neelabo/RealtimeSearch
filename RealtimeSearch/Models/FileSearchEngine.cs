@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -166,8 +167,11 @@ namespace NeeLaboratory.RealtimeSearch
             State = SearchCommandEngineState.Collect;
             try
             {
+                //var sw = Stopwatch.StartNew();
                 _tree.Wait(token);
                 _tree.Initialize(token);
+                //sw.Stop();
+                //Debug.WriteLine($"ForestInitialize: {sw.ElapsedMilliseconds} ms");
             }
             finally
             {

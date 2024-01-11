@@ -132,7 +132,7 @@ namespace NeeLaboratory.IO.Nodes
 
             InitializeWatcher(_recurseSubdirectories);
 
-            Trace($"Initialize: ...");
+            Trace($"Initialize {_path}: ...");
 
             var sw = Stopwatch.StartNew();
 
@@ -149,15 +149,19 @@ namespace NeeLaboratory.IO.Nodes
                 }
 
                 sw.Stop();
-                Debug.WriteLine($"Initialize: {sw.ElapsedMilliseconds} ms, Count={Trunk.WalkChildren().Count()}");
+                Debug.WriteLine($"Initialize {_path}: {sw.ElapsedMilliseconds} ms, Count={Trunk.WalkChildren().Count()}");
                 //Trunk.Dump();
 
+                sw.Start();
                 Validate();
+                sw.Stop();
+                Debug.WriteLine($"Validate {_path}: {sw.ElapsedMilliseconds} ms");
+
                 _initialized = true;
             }
             catch (OperationCanceledException)
             {
-                Debug.WriteLine($"Initialize: Canceled.");
+                Debug.WriteLine($"Initialize {_path}: Canceled.");
             }
             catch (AggregateException ae)
             {
@@ -224,14 +228,19 @@ namespace NeeLaboratory.IO.Nodes
             token.ThrowIfCancellationRequested();
 
             // パラレルにしたほうが速いね
+#if true
             var directories = entries.OfType<DirectoryInfo>().ToList();
             var directoryNodes = new Node[directories.Count];
-
             var parallelOptions = new ParallelOptions() { CancellationToken = token };
             Parallel.ForEach(directories, parallelOptions, (s, state, index) =>
             {
                 directoryNodes[(int)index] = CreateChildrenRecursive(CreateNode(parent, s), s, token);
             });
+#else
+            var directoryNodes = entries.OfType<DirectoryInfo>()
+                .Select(e => CreateChildrenRecursive(CreateNode(parent, e), e, token))
+                .ToList();
+#endif
 
             var fileNodes = entries.OfType<FileInfo>().Select(s => CreateNode(parent, s));
             parent.Children = directoryNodes.Concat(fileNodes).ToList();
