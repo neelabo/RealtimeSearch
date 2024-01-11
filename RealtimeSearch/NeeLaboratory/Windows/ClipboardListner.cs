@@ -10,7 +10,7 @@ using System.Windows.Interop;
 
 namespace NeeLaboratory.RealtimeSearch
 {
-    public class ClipboardListner : IDisposable
+    public class ClipboardListener : IDisposable
     {
         private static class NativeMethods
         {
@@ -26,32 +26,22 @@ namespace NeeLaboratory.RealtimeSearch
 
         private readonly Window _window;
         private IntPtr _handle;
-
-        public event EventHandler<Window>? ClipboardUpdate;
-
-
-        private void NotifyClipboardUpdate()
-        {
-            if (ClipboardUpdate != null)
-            {
-                _window.Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    ClipboardUpdate(this, _window);
-                }));
-            }
-        }
+        private bool _disposedValue;
 
 
-        public ClipboardListner(Window window)
+        public ClipboardListener(Window window)
         {
             _window = window;
             Open();
         }
 
 
+        public event EventHandler<Window>? ClipboardUpdate;
+
+
         public void Open()
         {
-            if (_handle != IntPtr.Zero) throw new ApplicationException("ClipboardListner is already opened.");
+            if (_handle != IntPtr.Zero) throw new ApplicationException("ClipboardListener is already opened.");
 
             _handle = new WindowInteropHelper(_window).Handle;
 
@@ -71,7 +61,6 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             if (msg == WM_CLIPBOARDUPDATE)
@@ -82,10 +71,36 @@ namespace NeeLaboratory.RealtimeSearch
             return IntPtr.Zero;
         }
 
+        private void NotifyClipboardUpdate()
+        {
+            if (ClipboardUpdate is null) return;
+
+            _window.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                ClipboardUpdate?.Invoke(this, _window);
+            }));
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                }
+                Close();
+                _disposedValue = true;
+            }
+        }
+
+        ~ClipboardListener()
+        {
+            Dispose(disposing: false);
+        }
 
         public void Dispose()
         {
-            Close();
+            Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
     }

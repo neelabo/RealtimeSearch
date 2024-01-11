@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Interop;
 
 namespace NeeLaboratory.RealtimeSearch
@@ -28,7 +29,7 @@ namespace NeeLaboratory.RealtimeSearch
         #endregion NativeMethods
 
 
-        private ClipboardListner? _clipboardListner;
+        private ClipboardListener? _clipboardListener;
         private readonly AppConfig _setting;
 
 
@@ -40,29 +41,40 @@ namespace NeeLaboratory.RealtimeSearch
 
         public event EventHandler<ClipboardChangedEventArgs>? ClipboardChanged;
 
-        
+
         public void Start(Window window)
         {
             // クリップボード監視
-            _clipboardListner = new ClipboardListner(window);
-            _clipboardListner.ClipboardUpdate += ClipboardListner_DrawClipboard;
+            _clipboardListener = new ClipboardListener(window);
+            _clipboardListener.ClipboardUpdate += ClipboardListener_DrawClipboard;
         }
 
         public void Stop()
         {
             // クリップボード監視終了
-            _clipboardListner?.Dispose();
-            _clipboardListner = null;
+            _clipboardListener?.Dispose();
+            _clipboardListener = null;
         }
 
 
-        public async void ClipboardListner_DrawClipboard(object? sender, Window window)
+        public async void ClipboardListener_DrawClipboard(object? sender, Window window)
         {
+            //var obj = Clipboard.GetDataObject();
+            //Debug.WriteLine($"Capture: {string.Join(',', obj.GetFormats())}");
+
+            // 自分のアプリからコピーした場合の変更は除外する
             IntPtr activeWindow = NativeMethods.GetForegroundWindow();
             IntPtr thisWindow = new WindowInteropHelper(window).Handle;
             if (activeWindow == thisWindow)
             {
                 Debug.WriteLine("cannot use clipboard: window is active. (WIN32)");
+                return;
+            }
+
+            // Ctrl+V が押されているときはペースト動作に伴うクリップボード変更通知と判断し除外する
+            if (Keyboard.Modifiers == ModifierKeys.Control && (Keyboard.GetKeyStates(Key.V) & (KeyStates.Down | KeyStates.Toggled)) != 0)
+            {
+                Debug.WriteLine("paste action maybe.");
                 return;
             }
 
@@ -98,7 +110,7 @@ namespace NeeLaboratory.RealtimeSearch
                             ClipboardChanged?.Invoke(this, new ClipboardChangedEventArgs()
                             {
                                 Keyword = name ?? ""
-                            }); 
+                            });
                         }
                     }
                     return;
