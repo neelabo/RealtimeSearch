@@ -321,7 +321,7 @@ namespace NeeLaboratory.IO.Nodes
             Rename(oldPath, System.IO.Path.GetFileName(path));
 
             // コンテンツ更新
-            OnUpdateContent(node, true);
+            UpdateContent(node, true);
 
             Validate();
         }
@@ -352,6 +352,25 @@ namespace NeeLaboratory.IO.Nodes
             Validate();
         }
 
+        private void Update(string path, CancellationToken token)
+        {
+            if (_disposedValue) return;
+            if (!_initialized) return;
+
+            using var lockToken = _semaphore.Lock(token);
+
+            var node = Find(path);
+            if (node is null)
+            {
+                Trace($"Cannot Update: {path}");
+                return;
+            }
+
+            UpdateContent(node, false);
+
+            Trace($"Update: {path}");
+        }
+
         protected virtual void AttachContent(Node? node, FileSystemInfo file)
         {
         }
@@ -360,11 +379,7 @@ namespace NeeLaboratory.IO.Nodes
         {
         }
 
-        protected virtual void RenameContent(Node? node, FileSystemInfo file)
-        {
-        }
-
-        protected virtual void OnUpdateContent(Node? node, bool isRecursive)
+        protected virtual void UpdateContent(Node? node, bool isRecursive)
         {
         }
 
@@ -435,7 +450,8 @@ namespace NeeLaboratory.IO.Nodes
 
         private void Watcher_Changed(object? sender, FileSystemEventArgs e)
         {
-            // 情報更新？
+            Trace($"Watcher changed: {e.FullPath}");
+            _jobEngine.InvokeAsync(() => Update(e.FullPath, CancellationToken.None));
         }
 
         // 名前変更要求

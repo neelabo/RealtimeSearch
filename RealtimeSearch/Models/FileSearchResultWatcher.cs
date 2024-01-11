@@ -39,7 +39,7 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 _engine.Tree.AddContentChanged += Tree_AddContentChanged;
                 _engine.Tree.RemoveContentChanged += Tree_RemoveContentChanged;
-                _engine.Tree.RenameContentChanged += Tree_RenameContentChanged;
+                _engine.Tree.ContentChanged += Tree_ContentChanged;
             }
         }
 
@@ -87,7 +87,7 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
-        private void Tree_RenameContentChanged(object? sender, FileItemTree.FileTreeContentChangedEventArgs e)
+        private void Tree_ContentChanged(object? sender, FileItemTree.FileTreeContentChangedEventArgs e)
         {
             if (_disposedValue) return;
             if (e.OldFileItem is null) return;
@@ -97,7 +97,7 @@ namespace NeeLaboratory.RealtimeSearch
                 var index = _result.Items.IndexOf(e.OldFileItem);
                 if (index >= 0)
                 {
-                    Trace($"Rename: {e.OldFileItem.Path} => {e.FileItem.Path}");
+                    Trace($"Update: {e.OldFileItem.Path} => {e.FileItem.Path}");
                     _result.Items[index] = e.FileItem;
                     CollectionChanged?.Invoke(this, new CollectionChangedEventArgs<FileItem>(CollectionChangedAction.Replace, e.FileItem));
                 }
@@ -144,7 +144,7 @@ namespace NeeLaboratory.RealtimeSearch
                 {
                     _engine.Tree.AddContentChanged -= Tree_AddContentChanged;
                     _engine.Tree.RemoveContentChanged -= Tree_RemoveContentChanged;
-                    _engine.Tree.RenameContentChanged -= Tree_RenameContentChanged;
+                    _engine.Tree.ContentChanged -= Tree_ContentChanged;
                     _jobEngine.Dispose();
                 }
 

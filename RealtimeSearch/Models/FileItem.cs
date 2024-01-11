@@ -1,14 +1,17 @@
 ﻿//#define LOCAL_DEBUG
+using NeeLaboratory.Generators;
 using NeeLaboratory.IO.Search;
 using NeeLaboratory.IO.Search.FileNode;
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace NeeLaboratory.RealtimeSearch
 {
-    public class FileItem : ISearchItem, IComparable
+    [NotifyPropertyChanged]
+    public partial class FileItem : ISearchItem, IComparable, INotifyPropertyChanged
     {
         internal static class NativeMethods
         {
@@ -17,12 +20,18 @@ namespace NeeLaboratory.RealtimeSearch
             public static extern int StrCmpLogicalW(string psz1, string psz2);
         }
 
+
         private FileSystemInfo _info;
+
 
         public FileItem(FileSystemInfo fileSystemInfo)
         {
             _info = fileSystemInfo;
         }
+
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
 
         public FileSystemInfo FileSystemInfo => _info;
 
@@ -67,6 +76,11 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         public bool IsPushPin { get; set; }
 
+
+        public void RaiseAllPropertyChanged()
+        {
+            RaisePropertyChanged(null);
+        }
 
         public int CompareTo(object? obj)
         {

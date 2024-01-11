@@ -12,7 +12,7 @@ namespace NeeLaboratory.RealtimeSearch
     {
         event EventHandler<FileTreeContentChangedEventArgs>? AddContentChanged;
         event EventHandler<FileTreeContentChangedEventArgs>? RemoveContentChanged;
-        event EventHandler<FileTreeContentChangedEventArgs>? RenameContentChanged;
+        event EventHandler<FileTreeContentChangedEventArgs>? ContentChanged;
 
         int Count { get; }
 

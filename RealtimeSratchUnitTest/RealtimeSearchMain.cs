@@ -229,12 +229,14 @@ namespace RealtimeSearchUnitTest
             Assert.True(result.Items.Count == resultCount + 2);
 
             // 内容変更
+            var oldItem = result.Items.FirstOrDefault(e => e.Path == Path.GetFullPath(fileAppend2Ex));
             using (FileStream stream = File.Open(fileAppend2Ex, FileMode.Append))
             {
                 stream.WriteByte(0x00);
             }
             await Task.Delay(100);
             var item = result.Items.FirstOrDefault(e => e.Path == Path.GetFullPath(fileAppend2Ex));
+            Assert.NotEqual(oldItem, item);
             Assert.Equal(1, item.Size);
 
             // ファイル削除...

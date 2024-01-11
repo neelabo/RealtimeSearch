@@ -109,7 +109,6 @@ namespace NeeLaboratory.IO.Nodes
             return node;
         }
 
-
         public Node? Rename(string path, string name)
         {
             var node = Find(path);

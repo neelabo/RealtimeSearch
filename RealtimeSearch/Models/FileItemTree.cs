@@ -25,7 +25,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         public event EventHandler<FileTreeContentChangedEventArgs>? AddContentChanged;
         public event EventHandler<FileTreeContentChangedEventArgs>? RemoveContentChanged;
-        public event EventHandler<FileTreeContentChangedEventArgs>? RenameContentChanged;
+        public event EventHandler<FileTreeContentChangedEventArgs>? ContentChanged;
 
 
         public class FileTreeContentChangedEventArgs : EventArgs
@@ -59,6 +59,8 @@ namespace NeeLaboratory.RealtimeSearch
         {
             if (node == null) return;
 
+            Debug.Assert(node.FullName == file.FullName);
+
             var fileItem = new FileItem(file);
             node.Content = fileItem;
             Trace($"Add: {fileItem}");
@@ -78,33 +80,23 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        protected override void RenameContent(Node? node, FileSystemInfo file)
+        protected override void UpdateContent(Node? node, bool isRecursive)
         {
             if (node == null) return;
 
             var oldFileItem = node.Content as FileItem;
-            if (oldFileItem?.Path == file.FullName) return;
 
-            var fileItem = new FileItem(file);
+            var fileItem = new FileItem(CreateFileInfo(node.FullName));
             node.Content = fileItem;
-            Trace($"Rename: {oldFileItem} => {fileItem}");
-            RenameContentChanged?.Invoke(this, new FileTreeContentChangedEventArgs(fileItem, oldFileItem));
-        }
+            Trace($"Update: {fileItem}");
+            ContentChanged?.Invoke(this, new FileTreeContentChangedEventArgs(fileItem, oldFileItem));
 
-        protected override void OnUpdateContent(Node? node, bool isRecursive)
-        {
-            if (node is null) return;
+            if (!isRecursive || node.Children is null) return;
 
-            if (isRecursive)
+            // 子ノード更新
+            foreach (var n in node.Children)
             {
-                foreach (var n in node.Walk())
-                {
-                    RenameContent(n, CreateFileInfo(n.FullName));
-                }
-            }
-            else
-            {
-                RenameContent(node, CreateFileInfo(node.FullName));
+                UpdateContent(n, isRecursive);
             }
         }
 
