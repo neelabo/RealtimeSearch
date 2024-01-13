@@ -71,12 +71,15 @@ namespace NeeLaboratory.RealtimeSearch
                 return;
             }
 
+            // うまく動作しない時があるのでいったん無効化
+#if false
             // Ctrl+V が押されているときはペースト動作に伴うクリップボード変更通知と判断し除外する
             if (Keyboard.Modifiers == ModifierKeys.Control && (Keyboard.GetKeyStates(Key.V) & (KeyStates.Down | KeyStates.Toggled)) != 0)
             {
                 Debug.WriteLine("paste action maybe.");
                 return;
             }
+#endif
 
             // どうにも例外(CLIPBRD_E_CANT_OPEN)が発生してしまうのでリトライさせることにした
             for (int i = 0; i < 10; ++i)
