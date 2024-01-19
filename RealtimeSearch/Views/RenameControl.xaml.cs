@@ -166,8 +166,13 @@ namespace NeeLaboratory.RealtimeSearch
             Stop(true);
         }
 
-
         public void Stop(bool isSuccess = true)
+        {
+            _ = StopAsync(isSuccess);
+        }
+
+        // NOTE: 情報変更を表示に反映させる時間を作るために非同期化している
+        public async Task StopAsync(bool isSuccess)
         {
             var closing = Interlocked.Increment(ref _closing);
             if (closing > 1) return;
@@ -180,6 +185,9 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 _new = _old;
             }
+
+            // NOTE: テキスト切り替えを隠すため、TextBoxを閉じるのを遅らせる
+            await Task.Delay(100);
 
             Close?.Invoke(this, EventArgs.Empty);
         }

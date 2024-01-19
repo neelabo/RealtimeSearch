@@ -242,16 +242,14 @@ namespace NeeLaboratory.RealtimeSearch
         {
             _vm.IsRenaming = false;
 
-            var listViewItem = VisualTreeTools.FindAncestor<ListViewItem>(e.Target);
-            listViewItem?.Focus();
-
             if (e.Navigate != 0)
             {
                 RenameNext(e.Navigate);
             }
             else
             {
-                this.ResultListView.SelectedIndex = _renameIndex;
+                var listViewItem = (ListViewItem)(this.ResultListView.ItemContainerGenerator.ContainerFromItem(this.ResultListView.SelectedItem));
+                listViewItem?.Focus();
             }
         }
 

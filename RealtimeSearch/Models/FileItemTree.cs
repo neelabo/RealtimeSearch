@@ -61,8 +61,7 @@ namespace NeeLaboratory.RealtimeSearch
 
             Debug.Assert(node.FullName == file.FullName);
 
-            var fileItem = new FileItem(file);
-            node.Content = fileItem;
+            var fileItem = CreateFileItem(node);
             Trace($"Add: {fileItem}");
             AddContentChanged?.Invoke(this, new FileTreeContentChangedEventArgs(fileItem));
         }
@@ -84,12 +83,10 @@ namespace NeeLaboratory.RealtimeSearch
         {
             if (node == null) return;
 
-            var oldFileItem = node.Content as FileItem;
-
-            var fileItem = new FileItem(CreateFileInfo(node.FullName));
-            node.Content = fileItem;
+            var fileItem = GetFileItem(node);
+            fileItem.SetFileInfo(CreateFileInfo(node.FullName));
             Trace($"Update: {fileItem}");
-            ContentChanged?.Invoke(this, new FileTreeContentChangedEventArgs(fileItem, oldFileItem));
+            ContentChanged?.Invoke(this, new FileTreeContentChangedEventArgs(fileItem));
 
             if (!isRecursive || node.Children is null) return;
 
@@ -112,8 +109,13 @@ namespace NeeLaboratory.RealtimeSearch
                 return fileItem;
             }
 
+            return CreateFileItem(node);
+        }
+
+        private FileItem CreateFileItem(Node node)
+        {
             var info = CreateFileInfo(node.FullName);
-            fileItem = new FileItem(info);
+            var fileItem = new FileItem(info);
             node.Content = fileItem;
             return fileItem;
         }

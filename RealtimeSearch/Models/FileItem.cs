@@ -77,9 +77,30 @@ namespace NeeLaboratory.RealtimeSearch
         public bool IsPushPin { get; set; }
 
 
-        public void RaiseAllPropertyChanged()
+        /// <summary>
+        /// Update FileInfo
+        /// </summary>
+        /// <param name="fullName">Path</param>
+        public void SetFileInfo(string fullName)
         {
+            SetFileInfo(CreateFileInfo(fullName));
+        }
+
+        /// <summary>
+        /// Update FileInfo
+        /// </summary>
+        /// <param name="fileSystemInfo"></param>
+        public void SetFileInfo(FileSystemInfo fileSystemInfo)
+        {
+            _info = fileSystemInfo;
             RaisePropertyChanged(null);
+        }
+
+        public static FileSystemInfo CreateFileInfo(string path)
+        {
+            var attr = File.GetAttributes(path);
+            var file = (FileSystemInfo)(attr.HasFlag(FileAttributes.Directory) ? new DirectoryInfo(path) : new System.IO.FileInfo(path));
+            return file;
         }
 
         public int CompareTo(object? obj)

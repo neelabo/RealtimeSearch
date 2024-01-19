@@ -330,6 +330,10 @@ namespace NeeLaboratory.RealtimeSearch
             var newFullName = _fileRename.Rename(folder, oldValue, newValue);
             if (newFullName != null)
             {
+#if false
+                // FileSystemWatcher より先にFileItem だけ更新
+                file.SetFileInfo(newFullName);
+#endif
                 // FileSystemWatcher より先にノードツリーに即時反映
                 _search.Rename(file.Path, newFullName);
             }

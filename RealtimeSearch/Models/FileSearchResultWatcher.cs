@@ -89,23 +89,6 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void Tree_ContentChanged(object? sender, FileItemTree.FileTreeContentChangedEventArgs e)
         {
-            if (_disposedValue) return;
-            if (e.OldFileItem is null) return;
-
-            _jobEngine.InvokeAsync(() =>
-            {
-                var index = _result.Items.IndexOf(e.OldFileItem);
-                if (index >= 0)
-                {
-                    Trace($"Update: {e.OldFileItem.Path} => {e.FileItem.Path}");
-                    _result.Items[index] = e.FileItem;
-                    CollectionChanged?.Invoke(this, new CollectionChangedEventArgs<FileItem>(CollectionChangedAction.Replace, e.FileItem));
-                }
-                else
-                {
-                    Tree_AddContentChanged(sender, e);
-                }
-            });
         }
 
 
