@@ -56,9 +56,30 @@ namespace NeeLaboratory.RealtimeSearch
         {
             if (_disposedValue) return;
 
+            AddSearch(e.FileItem);
+        }
+
+        private void Tree_RemoveContentChanged(object? sender, FileItemTree.FileTreeContentChangedEventArgs e)
+        {
+            if (_disposedValue) return;
+
+            RemoveSearch(e.FileItem);
+        }
+
+        private void Tree_ContentChanged(object? sender, FileItemTree.FileTreeContentChangedEventArgs e)
+        {
+            if (_disposedValue) return;
+
+            AddSearch(e.FileItem);
+        }
+
+        private void AddSearch(FileItem fileItem)
+        {
             _jobEngine.InvokeAsync(() =>
             {
-                var entries = new List<FileItem>() { e.FileItem };
+                if (_result.Items.Contains(fileItem)) return;
+
+                var entries = new List<FileItem>() { fileItem };
                 var items = _engine.Search(_result.Keyword, entries, CancellationToken.None);
 
                 foreach (var item in items)
@@ -70,25 +91,19 @@ namespace NeeLaboratory.RealtimeSearch
             });
         }
 
-
-        private void Tree_RemoveContentChanged(object? sender, FileItemTree.FileTreeContentChangedEventArgs e)
+        private void RemoveSearch(FileItem fileItem)
         {
-            if (_disposedValue) return;
-
             _jobEngine.InvokeAsync(() =>
             {
-                Trace($"Remove: {e.FileItem.Path}");
-                var isRemoved = _result.Items.Remove(e.FileItem);
+                if (!_result.Items.Contains(fileItem)) return;
+
+                Trace($"Remove: {fileItem.Path}");
+                var isRemoved = _result.Items.Remove(fileItem);
                 if (isRemoved)
                 {
-                    CollectionChanged?.Invoke(this, new CollectionChangedEventArgs<FileItem>(CollectionChangedAction.Remove, e.FileItem));
+                    CollectionChanged?.Invoke(this, new CollectionChangedEventArgs<FileItem>(CollectionChangedAction.Remove, fileItem));
                 }
             });
-        }
-
-
-        private void Tree_ContentChanged(object? sender, FileItemTree.FileTreeContentChangedEventArgs e)
-        {
         }
 
 

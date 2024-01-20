@@ -236,7 +236,7 @@ namespace RealtimeSearchUnitTest
             }
             await Task.Delay(100);
             var item = result.Items.FirstOrDefault(e => e.Path == Path.GetFullPath(fileAppend2Ex));
-            Assert.NotEqual(oldItem, item);
+            Assert.Equal(oldItem, item);
             Assert.Equal(1, item.Size);
 
             // ファイル削除...
@@ -244,6 +244,7 @@ namespace RealtimeSearchUnitTest
             File.Delete(fileAppend2Ex);
             await Task.Delay(100);
             await engine.Tree.WaitAsync(CancellationToken.None);
+            await Task.Delay(100);
 
             // 戻ったカウント確認
             Assert.True(result.Items.Count == resultCount);
