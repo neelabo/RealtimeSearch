@@ -454,15 +454,6 @@ namespace NeeLaboratory.IO.Nodes
             _jobEngine.InvokeAsync(() => Update(e.FullPath, CancellationToken.None));
         }
 
-        // 名前変更要求
-        public void RequestRename(string src, string dst)
-        {
-            var directory = System.IO.Path.GetDirectoryName(src) ?? "";
-            if (directory != System.IO.Path.GetDirectoryName(dst)) throw new ArgumentException("The directories are different.");
-
-            _jobEngine.InvokeAsync(() => Rename(dst, src, CancellationToken.None));
-        }
-
         /// <summary>
         /// 全てのコマンドの完了待機
         /// </summary>

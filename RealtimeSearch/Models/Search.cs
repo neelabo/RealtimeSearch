@@ -123,14 +123,6 @@ namespace NeeLaboratory.RealtimeSearch
             throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// 名前変更
-        /// </summary>
-        public void Rename(string src, string dst)
-        {
-            _searchEngine.Tree.RequestRename(src, dst);
-        }
-
 
         private void IncrementBusyCount()
         {

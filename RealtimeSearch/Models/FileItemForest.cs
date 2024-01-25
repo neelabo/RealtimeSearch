@@ -203,16 +203,6 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        public void RequestRename(string src, string dst)
-        {
-            Trace.WriteLine($"RequestRename: {src} -> {dst}");
-            var trees = _trees;
-            foreach (var tree in trees)
-            {
-                tree.RequestRename(src, dst);
-            }
-        }
-
         public void Wait(CancellationToken token)
         {
             var trees = _trees;

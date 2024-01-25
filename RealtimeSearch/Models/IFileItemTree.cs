@@ -23,8 +23,6 @@ namespace NeeLaboratory.RealtimeSearch
 
         void Wait(CancellationToken token);
         Task WaitAsync(CancellationToken token);
-
-        void RequestRename(string src, string dst);
     }
 
 }
