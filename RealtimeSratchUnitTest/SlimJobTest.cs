@@ -35,6 +35,27 @@ namespace RealtimeSearchUnitTest
         }
 
         [Fact]
+        public async Task SumTest()
+        {
+            var dispatcher = new SlimJobEngine("test");
+
+            int a = 0;
+            var job1 = dispatcher.InvokeAsync(() => { Thread.Sleep(100);  a++; }, CancellationToken.None);
+            var job2 = dispatcher.InvokeAsync(() => { Thread.Sleep(100);  a++; }, CancellationToken.None);
+            var job3 = dispatcher.InvokeAsync(() => { Thread.Sleep(100);  a++; }, CancellationToken.None);
+            Assert.Equal(0, a);
+            await job3;
+            Assert.Equal(SlimJobStates.Completed, job1.State);
+            Assert.Equal(SlimJobStates.Completed, job2.State);
+            Assert.Equal(SlimJobStates.Completed, job3.State);
+            Assert.Null(job1.Exception);
+            Assert.Null(job2.Exception);
+            Assert.Null(job3.Exception);
+            Assert.Equal(3, a);
+        }
+
+
+        [Fact]
         public async Task HeavyJobTest()
         {
             using var dispatcher = new SlimJobEngine("test");
