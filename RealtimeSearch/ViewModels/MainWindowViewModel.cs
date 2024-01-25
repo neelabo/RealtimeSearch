@@ -28,7 +28,6 @@ namespace NeeLaboratory.RealtimeSearch
         private string _resultMessage = "";
         private bool _isRenaming;
         private ClipboardSearch? _clipboardSearch;
-        private readonly FileRename _fileRename;
         private readonly ExternalProgramCollection _programs;
 
 
@@ -50,11 +49,6 @@ namespace NeeLaboratory.RealtimeSearch
             _webSearch = new WebSearch(appConfig);
 
             _history = new History();
-
-            _fileRename = new FileRename();
-            //_fileRename.Renaming += (s, e) => _search.Rename(e.OldFullPath, e.FullPath);
-            //_fileRename.Failed += (s, e) => _search.Rename(e.FullPath, e.OldFullPath);
-            _fileRename.AddPropertyChanged(nameof(_fileRename.Error), FileIO_ErrorChanged);
 
             _programs = new ExternalProgramCollection(_appConfig);
             _programs.AddPropertyChanged(nameof(_programs.Error), Programs_ErrorChanged);
@@ -154,14 +148,6 @@ namespace NeeLaboratory.RealtimeSearch
 
             ShowMessageBox(_programs.Error);
             _programs.ClearError();
-        }
-
-        private void FileIO_ErrorChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(_fileRename.Error)) return;
-
-            ShowMessageBox(_fileRename.Error);
-            _fileRename.ClearError();
         }
 
         public void Loaded()
@@ -282,7 +268,7 @@ namespace NeeLaboratory.RealtimeSearch
             History.Add(keyword);
         }
 
-        public void Rreflesh(string path)
+        public void Refresh(string path)
         {
             _search.Refresh(path);
         }
@@ -322,20 +308,42 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-
         public void Rename(FileItem file, string newValue)
         {
             var folder = System.IO.Path.GetDirectoryName(file.Path) ?? "";
-            var oldValue = System.IO.Path.GetFileName(file.Path);
-            var newFullName = _fileRename.Rename(folder, oldValue, newValue);
-            if (newFullName != null)
+
+            var src = file.Path;
+            var dst = System.IO.Path.Combine(folder, newValue);
+
+            // directory merge?
+            if (file.IsDirectory && System.IO.Directory.Exists(dst))
             {
-#if false
-                // FileSystemWatcher より先にFileItem だけ更新
-                file.SetFileInfo(newFullName);
-#endif
-                // FileSystemWatcher より先にノードツリーに即時反映
-                _search.Rename(file.Path, newFullName);
+                var msg = $"この宛先には既に '{newValue}' フォルダーが存在します。\n\n同じ名前のファイルがある場合、かっこで囲まれた番号が付加され、区別されます。\n\nフォルダーを統合しますか？";
+                var messageBox = new ShowMessageBoxMessage(msg, "フォルダーの上書き確認", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+                _messenger.Send(this, messageBox);
+
+                if (messageBox.Result == MessageBoxResult.OK)
+                {
+                    try
+                    {
+                        FileSystem.MergeDirectory(src, dst);
+                    }
+                    catch (Exception ex)
+                    {
+                        _messenger.Send(this, new ShowMessageBoxMessage($"フォルダーの統合に失敗しました\n\n原因: {ex.Message}", MessageBoxImage.Error));
+                    }
+                }
+            }
+            else
+            {
+                try
+                {
+                    FileSystem.Rename(src, dst);
+                }
+                catch (Exception ex)
+                {
+                    _messenger.Send(this, new ShowMessageBoxMessage($"名前の変更に失敗しました\n\n原因: {ex.Message}", MessageBoxImage.Error));
+                }
             }
         }
 

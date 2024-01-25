@@ -162,16 +162,16 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
-        public static void Copy(Window owner, IEnumerable<string> paths, string dest)
+        public static void Copy(Window owner, IEnumerable<string> paths, string dst)
         {
             if (paths == null || !paths.Any()) throw new ArgumentException("Empty paths");
-            if (dest == null) throw new ArgumentNullException(nameof(dest));
+            if (dst == null) throw new ArgumentNullException(nameof(dst));
 
             NativeMethods.SHFILEOPSTRUCT shfos;
             shfos.hwnd = GetHWnd(owner);
             shfos.wFunc = NativeMethods.FileFuncFlags.FO_COPY;
             shfos.pFrom = string.Join("\0", paths) + "\0\0";
-            shfos.pTo = dest + "\0\0";
+            shfos.pTo = dst + "\0\0";
             shfos.fFlags = NativeMethods.FILEOP_FLAGS.FOF_ALLOWUNDO;
             shfos.fAnyOperationsAborted = true;
             shfos.hNameMappings = IntPtr.Zero;
@@ -180,18 +180,22 @@ namespace NeeLaboratory.RealtimeSearch
             SHFileOperation(ref shfos);
         }
 
+        public static void Move(Window owner, IEnumerable<string> paths, string dst)
+        {
+            Move(owner, paths, dst, OperationFlags.Default);
+        }
 
-        public static void Move(Window owner, IEnumerable<string> paths, string dest)
+        public static void Move(Window owner, IEnumerable<string> paths, string dst, OperationFlags flags)
         {
             if (paths == null || !paths.Any()) throw new ArgumentException("Empty paths");
-            if (dest == null) throw new ArgumentNullException(nameof(dest));
+            if (dst == null) throw new ArgumentNullException(nameof(dst));
 
             NativeMethods.SHFILEOPSTRUCT shfos;
             shfos.hwnd = GetHWnd(owner);
             shfos.wFunc = NativeMethods.FileFuncFlags.FO_MOVE;
             shfos.pFrom = string.Join("\0", paths) + "\0\0";
-            shfos.pTo = dest + "\0\0";
-            shfos.fFlags = NativeMethods.FILEOP_FLAGS.FOF_ALLOWUNDO;
+            shfos.pTo = dst + "\0\0";
+            shfos.fFlags = (NativeMethods.FILEOP_FLAGS)flags;
             shfos.fAnyOperationsAborted = true;
             shfos.hNameMappings = IntPtr.Zero;
             shfos.lpszProgressTitle = null;
@@ -199,6 +203,28 @@ namespace NeeLaboratory.RealtimeSearch
             SHFileOperation(ref shfos);
         }
 
+        public static void Rename(Window owner, string path, string dst)
+        {
+            Rename(owner, path, dst, OperationFlags.Default);
+        }
+
+        public static void Rename(Window owner, string path, string dst, OperationFlags flags)
+        {
+            if (string.IsNullOrEmpty(path)) throw new ArgumentException("Empty paths");
+            if (dst == null) throw new ArgumentNullException(nameof(dst));
+
+            NativeMethods.SHFILEOPSTRUCT shfos;
+            shfos.hwnd = GetHWnd(owner);
+            shfos.wFunc = NativeMethods.FileFuncFlags.FO_RENAME;
+            shfos.pFrom = path + "\0\0";
+            shfos.pTo = dst + "\0\0";
+            shfos.fFlags = (NativeMethods.FILEOP_FLAGS)flags;
+            shfos.fAnyOperationsAborted = true;
+            shfos.hNameMappings = IntPtr.Zero;
+            shfos.lpszProgressTitle = null;
+
+            SHFileOperation(ref shfos);
+        }
 
         public static void Delete(Window owner, IEnumerable<string> paths, bool wantNukeWarning)
         {
@@ -222,6 +248,17 @@ namespace NeeLaboratory.RealtimeSearch
 
             SHFileOperation(ref shfos);
         }
+
+
+        public enum OperationFlags
+        {
+            NoConfirmMkDir = NativeMethods.FILEOP_FLAGS.FOF_NOCONFIRMMKDIR,
+            AllowUndo = NativeMethods.FILEOP_FLAGS.FOF_ALLOWUNDO,
+            RenameOnCollision = NativeMethods.FILEOP_FLAGS.FOF_RENAMEONCOLLISION,
+
+            Default = NoConfirmMkDir | AllowUndo,
+        }
+
     }
 
 }

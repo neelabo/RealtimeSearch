@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -76,37 +77,62 @@ namespace NeeLaboratory.RealtimeSearch
 
         public static void Rename(string src, string dst)
         {
-            if (string.IsNullOrWhiteSpace(src) || string.IsNullOrWhiteSpace(dst)) throw new NotSupportedException();
+            if (string.IsNullOrWhiteSpace(src) || string.IsNullOrWhiteSpace(dst)) throw new ArgumentNullException();
+            if (Path.GetDirectoryName(src) != Path.GetDirectoryName(dst)) throw new ArgumentException("Different directories");
 
             if (src == dst) return;
 
-            if (Directory.Exists(src))
+            var srcInfo = FileItem.CreateFileSystemInfo(src);
+            if (!srcInfo.Exists)
             {
-                RenameDirectory(src, dst);
+                throw new FileNotFoundException(src);
             }
-            else
-            {
-                File.Move(src, dst);
-            }
+
+            ShellFileOperation.Rename(App.Current.MainWindow, src, dst, ShellFileOperation.OperationFlags.Default | ShellFileOperation.OperationFlags.RenameOnCollision);
         }
 
-        private static void RenameDirectory(string src, string dst)
+
+        public static void MergeDirectory(string src, string dst)
         {
-            if (!Directory.Exists(src)) throw new DirectoryNotFoundException();
+            // TODO: 親ディレクトリをその子ディレクトリにマージしようとしたときに例外を発生させる
 
-            if (src == dst) return;
+            if (string.IsNullOrWhiteSpace(src) || string.IsNullOrWhiteSpace(dst)) throw new ArgumentNullException();
 
-            if (string.Compare(src, dst, true) != 0)
+            Debug.WriteLine($"MergeDirectory: {src} -> {dst}");
+            var srcDirectory = new DirectoryInfo(src);
+            var dstDirectory = new DirectoryInfo(dst);
+
+            if (!srcDirectory.Exists)
             {
-                Directory.Move(src, dst);
+                throw new DirectoryNotFoundException($"Directory not found: {srcDirectory.FullName}");
             }
-            else
+
+            if (!dstDirectory.Exists)
             {
-                var isSuccess = NativeMethods.MoveFile(src, dst);
-                if (!isSuccess)
+                Debug.WriteLine($"Move.directory: {src} -> {dst}");
+                srcDirectory.MoveTo(dst);
+                return;
+            }
+
+            foreach (var file in srcDirectory.GetFiles())
+            {
+                var dstFullPath = Path.Combine(dst, FileSystem.CreateUniqueFileName(dst, file.Name));
+                Debug.WriteLine($"Move.file: {file.FullName} -> {dstFullPath}");
+                file.MoveTo(dstFullPath);
+            }
+
+
+            foreach (var directory in srcDirectory.GetDirectories())
+            {
+                var dstFullPath = Path.Combine(dst, directory.Name);
+                MergeDirectory(directory.FullName, dstFullPath);
+            }
+
+            if (srcDirectory.Exists)
+            {
+                if (srcDirectory.GetFileSystemInfos().Length == 0)
                 {
-                    int error = Marshal.GetLastWin32Error();
-                    throw new IOException($"Cannot rename directory ({error})");
+                    srcDirectory.Delete();
                 }
             }
         }

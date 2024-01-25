@@ -83,7 +83,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// <param name="fullName">Path</param>
         public void SetFileInfo(string fullName)
         {
-            SetFileInfo(CreateFileInfo(fullName));
+            SetFileInfo(CreateFileSystemInfo(fullName));
         }
 
         /// <summary>
@@ -96,11 +96,11 @@ namespace NeeLaboratory.RealtimeSearch
             RaisePropertyChanged(null);
         }
 
-        public static FileSystemInfo CreateFileInfo(string path)
+        public static FileSystemInfo CreateFileSystemInfo(string path)
         {
-            var attr = File.GetAttributes(path);
-            var file = (FileSystemInfo)(attr.HasFlag(FileAttributes.Directory) ? new DirectoryInfo(path) : new System.IO.FileInfo(path));
-            return file;
+            var directoryInfo = new DirectoryInfo(path);
+            if (directoryInfo.Exists) return directoryInfo;
+            return new FileInfo(path);
         }
 
         public int CompareTo(object? obj)
