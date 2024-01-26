@@ -1,6 +1,6 @@
 ﻿using NeeLaboratory.IO.Search;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.IO.Search.Files
 {
     public class FileSearchContext : SearchContext
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.IO.Search.Files
 {
     public class CollectionChangedEventArgs<T> : EventArgs
     {

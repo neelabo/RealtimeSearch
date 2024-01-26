@@ -8,16 +8,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using NodeArea = NeeLaboratory.IO.Search.FileNode.NodeArea;
+//using NodeArea = NeeLaboratory.IO.Search.FileNode.NodeArea;
 
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.IO.Search.Files
 {
     public class FileItemTree : FileTree, IFileItemTree
     {
-        private NodeArea _area;
+        private FileArea _area;
 
-        public FileItemTree(NodeArea area) : base(area.Path, CreateEnumerationOptions(area))
+        public FileItemTree(FileArea area) : base(area.Path, CreateEnumerationOptions(area))
         {
             _area = area;
         }
@@ -28,28 +28,10 @@ namespace NeeLaboratory.RealtimeSearch
         public event EventHandler<FileTreeContentChangedEventArgs>? ContentChanged;
 
 
-        public class FileTreeContentChangedEventArgs : EventArgs
-        {
-            public FileTreeContentChangedEventArgs(FileItem fileItem)
-                : this(fileItem, null)
-            {
-            }
-
-            public FileTreeContentChangedEventArgs(FileItem fileItem, FileItem? oldFileItem)
-            {
-                FileItem = fileItem;
-                OldFileItem = oldFileItem;
-            }
-
-            public FileItem FileItem { get; }
-            public FileItem? OldFileItem { get; }
-        }
+        public FileArea Area => _area;
 
 
-        public NodeArea Area => _area;
-
-
-        private static EnumerationOptions CreateEnumerationOptions(NodeArea area)
+        private static EnumerationOptions CreateEnumerationOptions(FileArea area)
         {
             var options = IOExtensions.CreateEnumerationOptions(area.IncludeSubdirectories, FileAttributes.None);
             return options;

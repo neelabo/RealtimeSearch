@@ -1,14 +1,13 @@
 ﻿//#define LOCAL_DEBUG
 using NeeLaboratory.Generators;
 using NeeLaboratory.IO.Search;
-using NeeLaboratory.IO.Search.FileNode;
 using System;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.IO.Search.Files
 {
     [NotifyPropertyChanged]
     public partial class FileItem : ISearchItem, IComparable, INotifyPropertyChanged

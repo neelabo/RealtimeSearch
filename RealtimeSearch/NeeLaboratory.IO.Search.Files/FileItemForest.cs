@@ -1,18 +1,15 @@
 ﻿//#define LOCAL_DEBUG
 using NeeLaboratory.ComponentModel;
-using NeeLaboratory.IO.Search.FileNode;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using static NeeLaboratory.RealtimeSearch.FileItemTree;
 
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.IO.Search.Files
 {
     public class FileItemForest : IFileItemTree, IDisposable
     {
@@ -33,7 +30,7 @@ namespace NeeLaboratory.RealtimeSearch
         public int Count => _trees.Sum(t => t.Count);
 
 
-        public void SetSearchAreas(IEnumerable<NodeArea> areas)
+        public void SetSearchAreas(IEnumerable<FileArea> areas)
         {
             var oldies = _trees;
 
@@ -56,14 +53,14 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        public void AddSearchAreas(IEnumerable<NodeArea> areas)
+        public void AddSearchAreas(IEnumerable<FileArea> areas)
         {
             var trees = _trees;
             SetSearchAreas(trees.Select(e => e.Area).Concat(areas));
         }
 
 
-        private FileItemTree CreateTree(NodeArea area)
+        private FileItemTree CreateTree(FileArea area)
         {
             var tree = new FileItemTree(area);
             tree.AddContentChanged += Tree_AddContentChanged;
@@ -100,7 +97,7 @@ namespace NeeLaboratory.RealtimeSearch
         /// </summary>
         /// <param name="areas"></param>
         /// <returns></returns>
-        private List<NodeArea> ValidatePathCollection(IEnumerable<NodeArea> areas)
+        private List<FileArea> ValidatePathCollection(IEnumerable<FileArea> areas)
         {
             return areas.Where(e => !areas.Any(x => x.Contains(e))).ToList();
         }

@@ -13,6 +13,7 @@ using System.Windows.Data;
 using System.IO;
 using System.Collections.Specialized;
 using NeeLaboratory.IO.Search;
+using NeeLaboratory.IO.Search.Files;
 
 namespace NeeLaboratory.RealtimeSearch
 {

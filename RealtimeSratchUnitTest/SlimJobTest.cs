@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿#nullable enable
+using Xunit;
 using System.Threading.Tasks;
 using System.Threading;
 using NeeLaboratory.Threading.Jobs;
@@ -134,8 +135,8 @@ namespace RealtimeSearchUnitTest
                 job = dispatcher.InvokeAsync(() => { count++; }, CancellationToken.None);
                 _ = dispatcher.InvokeAsync(() => { return 1; }, CancellationToken.None);
             }
-
-            await job;
+            Assert.NotNull(job);
+            await job!;
             Assert.Equal(1000, count);
 
             GC.Collect();

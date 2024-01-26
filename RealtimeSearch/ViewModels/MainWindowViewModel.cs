@@ -11,7 +11,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Collections.ObjectModel;
 using System.Linq;
-using NeeLaboratory.IO.Search.FileNode;
+using NeeLaboratory.IO.Search.Files;
 
 namespace NeeLaboratory.RealtimeSearch
 {

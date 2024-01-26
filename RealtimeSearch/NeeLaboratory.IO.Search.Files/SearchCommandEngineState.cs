@@ -1,4 +1,4 @@
-﻿namespace NeeLaboratory.RealtimeSearch
+﻿namespace NeeLaboratory.IO.Search.Files
 {
     /// <summary>
     /// コマンドエンジン状態

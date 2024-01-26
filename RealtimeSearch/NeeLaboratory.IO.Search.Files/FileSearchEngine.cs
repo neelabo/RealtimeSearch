@@ -2,7 +2,6 @@
 using NeeLaboratory.Generators;
 using NeeLaboratory.IO;
 using NeeLaboratory.IO.Search;
-using NeeLaboratory.IO.Search.FileNode;
 using NeeLaboratory.Threading;
 using NeeLaboratory.Threading.Jobs;
 using System;
@@ -15,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.IO.Search.Files
 {
 
     [NotifyPropertyChanged]
@@ -108,13 +107,13 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
-        public void AddSearchAreas(params NodeArea[] areas)
+        public void AddSearchAreas(params FileArea[] areas)
         {
             _tree.AddSearchAreas(areas);
             _ = IndexAsync(CancellationToken.None);
         }
 
-        public void SetSearchAreas(IEnumerable<NodeArea> areas)
+        public void SetSearchAreas(IEnumerable<FileArea> areas)
         {
             _tree.SetSearchAreas(areas);
             _ = IndexAsync(CancellationToken.None);

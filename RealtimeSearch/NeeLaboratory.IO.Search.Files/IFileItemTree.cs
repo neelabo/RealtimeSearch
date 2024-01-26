@@ -3,10 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using static NeeLaboratory.RealtimeSearch.FileItemTree;
 
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.IO.Search.Files
 {
     public interface IFileItemTree
     {
@@ -24,5 +23,4 @@ namespace NeeLaboratory.RealtimeSearch
         void Wait(CancellationToken token);
         Task WaitAsync(CancellationToken token);
     }
-
 }

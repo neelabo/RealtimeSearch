@@ -1,8 +1,7 @@
-﻿using NeeLaboratory.IO.Search.FileNode;
+﻿using NeeLaboratory.IO.Search.Files;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -25,11 +24,6 @@ namespace NeeLaboratory.RealtimeSearch
         public double Width { get; set; }
     }
 
-    public interface ISearchContext : INotifyPropertyChanged
-    {
-        bool AllowFolder { get; set; }
-    }
-
 
     public class AppConfig : BindableBase, ISearchContext
     {
@@ -42,7 +36,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         public AppConfig()
         {
-            SearchAreas = new ObservableCollection<NodeArea>();
+            SearchAreas = new ObservableCollection<FileArea>();
             IsMonitorClipboard = true;
             ExternalPrograms = new List<ExternalProgram>
             {
@@ -54,7 +48,7 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
 
-        public ObservableCollection<NodeArea> SearchAreas { get; set; }
+        public ObservableCollection<FileArea> SearchAreas { get; set; }
 
         public bool IsMonitorClipboard
         {

@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.IO.Search.Files
 {
     public class FileSearchResultWatcher : IDisposable, ISearchResult<FileItem>
     {
@@ -52,21 +52,21 @@ namespace NeeLaboratory.RealtimeSearch
 
         // TODO: 大量のリクエストが同時に気たときにタスクが爆発する。一定間隔でまとめて処理するように！
         // TODO: 投げっぱなし非同期なので例外処理をここで行う
-        private void Tree_AddContentChanged(object? sender, FileItemTree.FileTreeContentChangedEventArgs e)
+        private void Tree_AddContentChanged(object? sender, FileTreeContentChangedEventArgs e)
         {
             if (_disposedValue) return;
 
             AddSearch(e.FileItem);
         }
 
-        private void Tree_RemoveContentChanged(object? sender, FileItemTree.FileTreeContentChangedEventArgs e)
+        private void Tree_RemoveContentChanged(object? sender, FileTreeContentChangedEventArgs e)
         {
             if (_disposedValue) return;
 
             RemoveSearch(e.FileItem);
         }
 
-        private void Tree_ContentChanged(object? sender, FileItemTree.FileTreeContentChangedEventArgs e)
+        private void Tree_ContentChanged(object? sender, FileTreeContentChangedEventArgs e)
         {
             if (_disposedValue) return;
 

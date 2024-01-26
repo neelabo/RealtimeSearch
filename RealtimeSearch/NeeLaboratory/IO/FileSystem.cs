@@ -30,6 +30,18 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
         /// <summary>
+        /// FileSystemInfo 作成
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static FileSystemInfo CreateFileSystemInfo(string path)
+        {
+            var directoryInfo = new DirectoryInfo(path);
+            if (directoryInfo.Exists) return directoryInfo;
+            return new FileInfo(path);
+        }
+
+        /// <summary>
         /// 無効なファイル文字が含まれていないか調べる
         /// </summary>
         /// <param name="filename">調べる文字列</param>
@@ -82,7 +94,7 @@ namespace NeeLaboratory.RealtimeSearch
 
             if (src == dst) return;
 
-            var srcInfo = FileItem.CreateFileSystemInfo(src);
+            var srcInfo = CreateFileSystemInfo(src);
             if (!srcInfo.Exists)
             {
                 throw new FileNotFoundException(src);

@@ -1,10 +1,10 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Xunit;
 using Xunit.Sdk;
 using NeeLaboratory.RealtimeSearch;
-using NeeLaboratory.IO.Search.FileNode;
 using System.Diagnostics;
 using System.IO;
 using Xunit.Abstractions;
@@ -15,6 +15,7 @@ using System.Linq;
 using NeeLaboratory.IO.Search.Diagnostics;
 using System.Collections.ObjectModel;
 using Newtonsoft.Json.Linq;
+using NeeLaboratory.IO.Search.Files;
 
 namespace RealtimeSearchUnitTest
 {
@@ -39,7 +40,7 @@ namespace RealtimeSearchUnitTest
 
         public class TestSearchContext : ISearchContext
         {
-            public event PropertyChangedEventHandler PropertyChanged;
+            public event PropertyChangedEventHandler? PropertyChanged;
 
             public bool AllowFolder { get; set; } = true;
         }
@@ -58,7 +59,7 @@ namespace RealtimeSearchUnitTest
             // エンジン初期化
             var engine = new FileSearchEngine(new TestSearchContext());
             //SearchEngine.Logger.SetLevel(SourceLevels.All);
-            engine.AddSearchAreas(new NodeArea(_folderRoot, true), new NodeArea(_folderSub1, true), new NodeArea(_folderSub2, true));
+            engine.AddSearchAreas(new FileArea(_folderRoot, true), new FileArea(_folderSub1, true), new FileArea(_folderSub2, true));
             //engine.CommandEngineLogger.SetLevel(SourceLevels.All);
 
             return engine;
@@ -82,8 +83,8 @@ namespace RealtimeSearchUnitTest
             var engine = new FileSearchEngine(new TestSearchContext());
 
             // 検索パス設定
-            engine.AddSearchAreas(new NodeArea(_folderSub1, true));
-            engine.AddSearchAreas(new NodeArea(_folderRoot, true));
+            engine.AddSearchAreas(new FileArea(_folderSub1, true));
+            engine.AddSearchAreas(new FileArea(_folderRoot, true));
 
 
             // 検索１：通常検索
@@ -109,22 +110,22 @@ namespace RealtimeSearchUnitTest
             var engine = new FileSearchEngine(context);
 
             // パスの追加
-            engine.AddSearchAreas(new NodeArea(_folderRoot, false));
+            engine.AddSearchAreas(new FileArea(_folderRoot, false));
             await engine.Tree.InitializeAsync(CancellationToken.None);
             //engine.DumpTree(true);
             Assert.Equal(6, engine.Tree.CollectFileItems().Count());
 
-            engine.SetSearchAreas(new ObservableCollection<NodeArea>() { new NodeArea(_folderRoot, true) });
+            engine.SetSearchAreas(new ObservableCollection<FileArea>() { new FileArea(_folderRoot, true) });
             await engine.Tree.InitializeAsync(CancellationToken.None);
             //engine.DumpTree(true);
             Assert.Equal(12, engine.Tree.CollectFileItems().Count());
 
-            engine.SetSearchAreas(new ObservableCollection<NodeArea>() { new NodeArea(_folderRoot, true), new NodeArea(_folderSub1, true) });
+            engine.SetSearchAreas(new ObservableCollection<FileArea>() { new FileArea(_folderRoot, true), new FileArea(_folderSub1, true) });
             await engine.Tree.InitializeAsync(CancellationToken.None);
             Assert.Equal(12, engine.Tree.CollectFileItems().Count());
 
             // 変則エリア。NodeTreeの結合が発生
-            engine.SetSearchAreas(new ObservableCollection<NodeArea>() { new NodeArea(_folderRoot, false), new NodeArea(_folderSub1, true) });
+            engine.SetSearchAreas(new ObservableCollection<FileArea>() { new FileArea(_folderRoot, false), new FileArea(_folderSub1, true) });
             await engine.Tree.InitializeAsync(CancellationToken.None);
             DumpTree(engine);
             Assert.Equal(9, engine.Tree.CollectFileItems().Count());
@@ -236,8 +237,9 @@ namespace RealtimeSearchUnitTest
             }
             await Task.Delay(100);
             var item = result.Items.FirstOrDefault(e => e.Path == Path.GetFullPath(fileAppend2Ex));
+            Assert.NotNull(item);
             Assert.Equal(oldItem, item);
-            Assert.Equal(1, item.Size);
+            Assert.Equal(1, item?.Size);
 
             // ファイル削除...
             File.Delete(fileAppend1Ex);
