@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NeeLaboratory.SourceGenerat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NeeLaboratory.Runtime", "NeeLaboratory\NeeLaboratory.Runtime\NeeLaboratory.Runtime.csproj", "{360BA5D9-B8E7-4379-8CEF-A5ACB3218B60}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test Projects", "Test Projects", "{00F65A8B-9BDA-4E4A-8695-7351C01C0485}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -192,6 +194,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{52C6CFB9-F94E-4533-A46B-DA6AAB51C8A1} = {00F65A8B-9BDA-4E4A-8695-7351C01C0485}
+		{DC0C6003-3C50-4D80-A123-FA6DE3423094} = {00F65A8B-9BDA-4E4A-8695-7351C01C0485}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {44EA5564-CEEB-47FD-B807-F19770FEF8BC}
