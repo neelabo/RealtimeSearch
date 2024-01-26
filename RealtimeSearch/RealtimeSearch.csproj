@@ -22,6 +22,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\NeeLaboratory.IO.Search.Files\NeeLaboratory.IO.Search.Files.csproj" />
     <ProjectReference Include="..\NeeLaboratory\NeeLaboratory.SourceGenerator\NeeLaboratory.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\NeeLaboratory\NeeLaboratory.Runtime\NeeLaboratory.Runtime.csproj" />
     <ProjectReference Include="..\NeeLaboratory.IO.Search\NeeLaboratory.IO.Search\NeeLaboratory.IO.Search.csproj" />

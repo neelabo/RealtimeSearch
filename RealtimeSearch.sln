@@ -27,6 +27,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NeeLaboratory.Runtime", "Ne
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test Projects", "Test Projects", "{00F65A8B-9BDA-4E4A-8695-7351C01C0485}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeeLaboratory.IO.Search.Files", "NeeLaboratory.IO.Search.Files\NeeLaboratory.IO.Search.Files.csproj", "{511ADE4D-DE82-40C9-9679-AEF3779C95D7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -191,6 +193,26 @@ Global
 		{360BA5D9-B8E7-4379-8CEF-A5ACB3218B60}.Release|x64.Build.0 = Release|Any CPU
 		{360BA5D9-B8E7-4379-8CEF-A5ACB3218B60}.Release|x86.ActiveCfg = Release|Any CPU
 		{360BA5D9-B8E7-4379-8CEF-A5ACB3218B60}.Release|x86.Build.0 = Release|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Debug|ARM.Build.0 = Debug|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Debug|x64.Build.0 = Debug|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Debug|x86.Build.0 = Debug|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Release|ARM.ActiveCfg = Release|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Release|ARM.Build.0 = Release|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Release|ARM64.Build.0 = Release|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Release|x64.ActiveCfg = Release|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Release|x64.Build.0 = Release|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Release|x86.ActiveCfg = Release|Any CPU
+		{511ADE4D-DE82-40C9-9679-AEF3779C95D7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

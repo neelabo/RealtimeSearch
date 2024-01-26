@@ -10,9 +10,9 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using NeeLaboratory.Collections;
 
-
-namespace NeeLaboratory.IO.Nodes
+namespace NeeLaboratory.IO.Search.Files
 {
     /// <summary>
     /// ファイル監視付きファイルツリー
@@ -386,7 +386,7 @@ namespace NeeLaboratory.IO.Nodes
         protected FileSystemInfo CreateFileInfo(string path)
         {
             var attr = File.GetAttributes(path);
-            var file = (FileSystemInfo)(attr.HasFlag(FileAttributes.Directory) ? new DirectoryInfo(path) : new System.IO.FileInfo(path));
+            var file = (FileSystemInfo)(attr.HasFlag(FileAttributes.Directory) ? new DirectoryInfo(path) : new FileInfo(path));
             return file;
         }
 
@@ -460,7 +460,7 @@ namespace NeeLaboratory.IO.Nodes
         public void Wait(CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-            if (_disposedValue) throw new ObjectDisposedException(this.GetType().FullName);
+            if (_disposedValue) throw new ObjectDisposedException(GetType().FullName);
 
             _jobEngine.InvokeAsync(() => { }, token).Wait(token);
         }
@@ -471,7 +471,7 @@ namespace NeeLaboratory.IO.Nodes
         public async Task WaitAsync(CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-            if (_disposedValue) throw new ObjectDisposedException(this.GetType().FullName);
+            if (_disposedValue) throw new ObjectDisposedException(GetType().FullName);
 
             await _jobEngine.InvokeAsync(() => { }, token);
         }

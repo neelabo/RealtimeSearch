@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 
 
-namespace NeeLaboratory.IO.Nodes
+namespace NeeLaboratory.Collections
 {
     /// <summary>
     /// パス木構造のみ管理

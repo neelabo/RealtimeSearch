@@ -2,30 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Windows.Data;
 
 namespace NeeLaboratory.IO.Search.Files
 {
-    public interface ISearchResult<T>
-        where T : ISearchItem
-    {
-        /// <summary>
-        /// 検索キーワード
-        /// </summary>
-        string Keyword { get; }
-
-        /// <summary>
-        /// 検索結果
-        /// </summary>
-        ObservableCollection<T> Items { get; }
-
-        /// <summary>
-        /// 検索失敗時の例外
-        /// </summary>
-        Exception? Exception { get; }
-    }
-
-
     public class SearchResult<T> : ISearchResult<T>
         where T : ISearchItem
     {
@@ -41,7 +20,6 @@ namespace NeeLaboratory.IO.Search.Files
         {
             Keyword = keyword;
             Items = new ObservableCollection<T>(items ?? Array.Empty<T>());
-            BindingOperations.EnableCollectionSynchronization(Items, new object());
             Exception = exception;
         }
 

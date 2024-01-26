@@ -1,7 +1,7 @@
 ﻿//#define LOCAL_DEBUG
 
+using NeeLaboratory.Collections;
 using NeeLaboratory.IO;
-using NeeLaboratory.IO.Nodes;
 using System;
 using System.Collections;
 using System.Collections.Generic;

@@ -173,11 +173,14 @@ namespace NeeLaboratory.RealtimeSearch
                     throw searchResult.Exception;
                 }
 
+                // 複数スレッドからコレクション操作できるようにする
+                BindingOperations.EnableCollectionSynchronization(searchResult.Items, new object());
+
                 SearchResult = new FileSearchResultWatcher(_searchEngine, searchResult);
                 SearchResultChanged?.Invoke(this, EventArgs.Empty);
 
                 // 複数スレッドからコレクション操作できるようにする
-                BindingOperations.EnableCollectionSynchronization(SearchResult.Items, new object());
+                //BindingOperations.EnableCollectionSynchronization(SearchResult.Items, new object());
 
                 SetMessage($"{SearchResult.Items.Count:#,0} 個の項目");
 

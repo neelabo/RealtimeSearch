@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace NeeLaboratory.IO.Nodes
+namespace NeeLaboratory.Collections
 {
     public class Node
     {
@@ -38,7 +38,7 @@ namespace NeeLaboratory.IO.Nodes
         public void ClearChildren()
         {
             if (Children is null) return;
-            foreach(var child in Children)
+            foreach (var child in Children)
             {
                 child.Parent = null;
             }
@@ -77,7 +77,7 @@ namespace NeeLaboratory.IO.Nodes
                 Children = new List<Node>();
             }
 
-            this.Children.Add(node);
+            Children.Add(node);
             node.Parent = this;
             return node;
         }
