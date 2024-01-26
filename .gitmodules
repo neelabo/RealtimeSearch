@@ -1,3 +1,6 @@
 [submodule "NeeLaboratory.IO.Search"]
 	path = NeeLaboratory.IO.Search
 	url = https://neelabo@bitbucket.org/neelabo/neelaboratory.io.search.git
+[submodule "NeeLaboratory"]
+	path = NeeLaboratory
+	url = https://neelabo@bitbucket.org/neelabo/neelaboratory.git
