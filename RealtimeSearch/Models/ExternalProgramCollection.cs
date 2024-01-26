@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
+using NeeLaboratory.ComponentModel;
 using NeeLaboratory.IO.Search.Files;
 
 namespace NeeLaboratory.RealtimeSearch

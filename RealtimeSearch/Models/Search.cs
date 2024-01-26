@@ -14,6 +14,7 @@ using System.IO;
 using System.Collections.Specialized;
 using NeeLaboratory.IO.Search;
 using NeeLaboratory.IO.Search.Files;
+using NeeLaboratory.ComponentModel;
 
 namespace NeeLaboratory.RealtimeSearch
 {
