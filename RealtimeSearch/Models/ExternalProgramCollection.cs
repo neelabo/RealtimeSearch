@@ -6,7 +6,7 @@ using System.Windows;
 using NeeLaboratory.ComponentModel;
 using NeeLaboratory.IO.Search.Files;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.Models
 {
     public class ExternalProgramCollection : BindableBase
     {

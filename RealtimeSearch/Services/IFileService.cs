@@ -1,4 +1,4 @@
-﻿namespace NeeLaboratory.RealtimeSearch
+﻿namespace NeeLaboratory.RealtimeSearch.Services
 {
     public interface IFileService
     {

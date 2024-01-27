@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Windows;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.Windows
 {
     [ImmutableObject(true)]
     [JsonConverter(typeof(JsonWindowPlaceConverter))]
@@ -57,19 +57,19 @@ namespace NeeLaboratory.RealtimeSearch
 
         public WindowPlacement WithIsFullScreeen(bool isFullScreen)
         {
-            return new WindowPlacement(this.WindowState, this.Left, this.Top, this.Width, this.Height, isFullScreen);
+            return new WindowPlacement(WindowState, Left, Top, Width, Height, isFullScreen);
         }
 
         public WindowPlacement WithState(WindowState state)
         {
-            var isFullScreen = state == WindowState.Maximized && this.IsFullScreen;
-            return new WindowPlacement(state, this.Left, this.Top, this.Width, this.Height, isFullScreen);
+            var isFullScreen = state == WindowState.Maximized && IsFullScreen;
+            return new WindowPlacement(state, Left, Top, Width, Height, isFullScreen);
         }
 
         public WindowPlacement WithState(WindowState state, bool isFullScreen)
         {
             isFullScreen = state == WindowState.Maximized && isFullScreen;
-            return new WindowPlacement(state, this.Left, this.Top, this.Width, this.Height, isFullScreen);
+            return new WindowPlacement(state, Left, Top, Width, Height, isFullScreen);
         }
 
         public override string ToString()
@@ -80,13 +80,13 @@ namespace NeeLaboratory.RealtimeSearch
 
         public static WindowPlacement Parse(string? s)
         {
-            if (string.IsNullOrWhiteSpace(s)) return WindowPlacement.None;
+            if (string.IsNullOrWhiteSpace(s)) return None;
 
             var tokens = s.Split(',');
             if (tokens.Length != 5)
             {
                 Debug.WriteLine($"WindowPlacement.Parse(): InvalidCast: {s}");
-                return WindowPlacement.None;
+                return None;
             }
 
             bool isFullScreen;
@@ -98,7 +98,7 @@ namespace NeeLaboratory.RealtimeSearch
             }
             else
             {
-                windowState = (WindowState)(Enum.Parse(typeof(WindowState), tokens[0]));
+                windowState = (WindowState)Enum.Parse(typeof(WindowState), tokens[0]);
                 isFullScreen = false;
             }
 
@@ -118,7 +118,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             public override WindowPlacement Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
-                return WindowPlacement.Parse(reader.GetString());
+                return Parse(reader.GetString());
             }
 
             public override void Write(Utf8JsonWriter writer, WindowPlacement value, JsonSerializerOptions options)

@@ -11,7 +11,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.Windows
 {
     // TODO: AeroSnap保存ON/OFFフラグ。WindowPlacementOptionフラグ？
     public static class WindowPlacementTools
@@ -21,13 +21,13 @@ namespace NeeLaboratory.RealtimeSearch
         internal static class NativeMethods
         {
             [DllImport("user32.dll")]
-            public static extern bool SetWindowPlacement(IntPtr hWnd, [In] ref WINDOWPLACEMENT lpwndpl);
+            public static extern bool SetWindowPlacement(nint hWnd, [In] ref WINDOWPLACEMENT lpwndpl);
 
             [DllImport("user32.dll")]
-            public static extern bool GetWindowPlacement(IntPtr hWnd, out WINDOWPLACEMENT lpwndpl);
+            public static extern bool GetWindowPlacement(nint hWnd, out WINDOWPLACEMENT lpwndpl);
 
             [DllImport("user32.dll", SetLastError = true)]
-            public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
+            public static extern bool GetWindowRect(nint hwnd, out RECT lpRect);
 
 
             [Serializable]
@@ -95,8 +95,8 @@ namespace NeeLaboratory.RealtimeSearch
 
                 public POINT(int x, int y)
                 {
-                    this.X = x;
-                    this.Y = y;
+                    X = x;
+                    Y = y;
                 }
 
                 public override string ToString()
@@ -127,10 +127,10 @@ namespace NeeLaboratory.RealtimeSearch
 
                 public RECT(int left, int top, int right, int bottom)
                 {
-                    this.Left = left;
-                    this.Top = top;
-                    this.Right = right;
-                    this.Bottom = bottom;
+                    Left = left;
+                    Top = top;
+                    Right = right;
+                    Bottom = bottom;
                 }
 
                 public int Width
@@ -194,20 +194,20 @@ namespace NeeLaboratory.RealtimeSearch
             }
 
             [DllImport("user32.dll")]
-            public static extern IntPtr MonitorFromRect([In] ref RECT lprc, uint dwFlags);
+            public static extern nint MonitorFromRect([In] ref RECT lprc, uint dwFlags);
 
             public const uint MONITOR_MONITOR_DEFAULTTONULL = 0x00000000;
             public const uint MONITOR_MONITOR_DEFAULTTOPRIMARY = 0x00000001;
             public const uint MONITOR_DEFAULTTONEAREST = 0x00000002;
 
             [DllImport("user32.dll", CharSet = CharSet.Auto)]
-            public static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFOEX lpmi);
+            public static extern bool GetMonitorInfo(nint hMonitor, ref MONITORINFOEX lpmi);
 
             [StructLayout(LayoutKind.Sequential)]
             public struct APPBARDATA
             {
                 public int cbSize; // initialize this field using: Marshal.SizeOf(typeof(APPBARDATA));
-                public IntPtr hWnd;
+                public nint hWnd;
                 public uint uCallbackMessage;
                 public uint uEdge;
                 public RECT rc;
@@ -215,7 +215,7 @@ namespace NeeLaboratory.RealtimeSearch
             }
 
             [DllImport("shell32.dll")]
-            public static extern IntPtr SHAppBarMessage(uint dwMessage, [In] ref APPBARDATA pData);
+            public static extern nint SHAppBarMessage(uint dwMessage, [In] ref APPBARDATA pData);
 
             public const uint ABM_NEW = 0;
             public const uint ABM_REMOVE = 1;
@@ -243,7 +243,7 @@ namespace NeeLaboratory.RealtimeSearch
         public static WindowPlacement StoreWindowPlacement(Window window, bool withAeroSnap)
         {
             var hwnd = new WindowInteropHelper(window).Handle;
-            if (hwnd == IntPtr.Zero) throw new InvalidOperationException();
+            if (hwnd == nint.Zero) throw new InvalidOperationException();
 
             ////if (!(window is IDpiScaleProvider dpiProvider)) throw new ArgumentException($"need window has IDpiProvider.");
 
@@ -278,12 +278,12 @@ namespace NeeLaboratory.RealtimeSearch
 
 
         // from http://oldworldgarage.web.fc2.com/programing/tip0006_RestoreWindow.html
-        private static NativeMethods.RECT GetAeroPlacement(IntPtr hwnd)
+        private static NativeMethods.RECT GetAeroPlacement(nint hwnd)
         {
             NativeMethods.GetWindowRect(hwnd, out NativeMethods.RECT rect);
 
             // ウィンドウのあるモニターハンドルを取得
-            IntPtr hMonitor = NativeMethods.MonitorFromRect(ref rect, NativeMethods.MONITOR_DEFAULTTONEAREST);
+            nint hMonitor = NativeMethods.MonitorFromRect(ref rect, NativeMethods.MONITOR_DEFAULTTONEAREST);
 
             // モニター情報取得
             //var monitorInfo = new NativeMethods.MONITORINFOEX();
@@ -295,16 +295,16 @@ namespace NeeLaboratory.RealtimeSearch
             var appBarData = new NativeMethods.APPBARDATA
             {
                 cbSize = Marshal.SizeOf(typeof(NativeMethods.APPBARDATA)),
-                hWnd = IntPtr.Zero
+                hWnd = nint.Zero
             };
             NativeMethods.SHAppBarMessage(NativeMethods.ABM_GETTASKBARPOS, ref appBarData);
-            IntPtr hMonitorWithTaskBar = NativeMethods.MonitorFromRect(ref appBarData.rc, NativeMethods.MONITOR_DEFAULTTONEAREST);
+            nint hMonitorWithTaskBar = NativeMethods.MonitorFromRect(ref appBarData.rc, NativeMethods.MONITOR_DEFAULTTONEAREST);
 
             // ウィンドウとタスクバーが同じモニターにある？
             if (hMonitor == hMonitorWithTaskBar)
             {
                 // 常に表示？
-                if (NativeMethods.SHAppBarMessage(NativeMethods.ABM_GETAUTOHIDEBAR, ref appBarData) == IntPtr.Zero)
+                if (NativeMethods.SHAppBarMessage(NativeMethods.ABM_GETAUTOHIDEBAR, ref appBarData) == nint.Zero)
                 {
                     // 座標補正
                     NativeMethods.SHAppBarMessage(NativeMethods.ABM_GETTASKBARPOS, ref appBarData);

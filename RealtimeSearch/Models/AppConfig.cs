@@ -1,5 +1,6 @@
 ﻿using NeeLaboratory.ComponentModel;
 using NeeLaboratory.IO.Search.Files;
+using NeeLaboratory.RealtimeSearch.Windows;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,7 +18,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Xml;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.Models
 {
     public class ListViewColumnMemento
     {

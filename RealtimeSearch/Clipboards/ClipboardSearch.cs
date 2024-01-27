@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using NeeLaboratory.RealtimeSearch.Models;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.Clipboards
 {
     public class ClipboardChangedEventArgs : EventArgs
     {
@@ -23,7 +24,7 @@ namespace NeeLaboratory.RealtimeSearch
         private static class NativeMethods
         {
             [DllImport("user32.dll", CharSet = CharSet.Auto)]
-            public static extern IntPtr GetForegroundWindow();
+            public static extern nint GetForegroundWindow();
         }
 
         #endregion NativeMethods
@@ -63,8 +64,8 @@ namespace NeeLaboratory.RealtimeSearch
             //Debug.WriteLine($"Capture: {string.Join(',', obj.GetFormats())}");
 
             // 自分のアプリからコピーした場合の変更は除外する
-            IntPtr activeWindow = NativeMethods.GetForegroundWindow();
-            IntPtr thisWindow = new WindowInteropHelper(window).Handle;
+            nint activeWindow = NativeMethods.GetForegroundWindow();
+            nint thisWindow = new WindowInteropHelper(window).Handle;
             if (activeWindow == thisWindow)
             {
                 Debug.WriteLine("cannot use clipboard: window is active. (WIN32)");
@@ -118,7 +119,7 @@ namespace NeeLaboratory.RealtimeSearch
                     }
                     return;
                 }
-                catch (System.Runtime.InteropServices.COMException ex)
+                catch (COMException ex)
                 {
                     Debug.WriteLine(ex.Message);
                     await Task.Delay(100);

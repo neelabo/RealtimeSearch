@@ -16,7 +16,7 @@ using NeeLaboratory.IO.Search;
 using NeeLaboratory.IO.Search.Files;
 using NeeLaboratory.ComponentModel;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.Models
 {
     public class Search : BindableBase
     {

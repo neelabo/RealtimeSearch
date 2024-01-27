@@ -8,24 +8,24 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.Clipboards
 {
     public class ClipboardListener : IDisposable
     {
         private static class NativeMethods
         {
             [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-            internal extern static void AddClipboardFormatListener(IntPtr hwnd);
+            internal extern static void AddClipboardFormatListener(nint hwnd);
 
             [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-            internal extern static void RemoveClipboardFormatListener(IntPtr hwnd);
+            internal extern static void RemoveClipboardFormatListener(nint hwnd);
         }
 
         //private const int WM_CLOSE = 0x0010;
         private const int WM_CLIPBOARDUPDATE = 0x031D;
 
         private readonly Window _window;
-        private IntPtr _handle;
+        private nint _handle;
         private bool _disposedValue;
 
 
@@ -41,7 +41,7 @@ namespace NeeLaboratory.RealtimeSearch
 
         public void Open()
         {
-            if (_handle != IntPtr.Zero) throw new ApplicationException("ClipboardListener is already opened.");
+            if (_handle != nint.Zero) throw new ApplicationException("ClipboardListener is already opened.");
 
             _handle = new WindowInteropHelper(_window).Handle;
 
@@ -54,21 +54,21 @@ namespace NeeLaboratory.RealtimeSearch
 
         public void Close()
         {
-            if (_handle != IntPtr.Zero)
+            if (_handle != nint.Zero)
             {
                 NativeMethods.RemoveClipboardFormatListener(_handle);
-                _handle = IntPtr.Zero;
+                _handle = nint.Zero;
             }
         }
 
-        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        private nint WndProc(nint hwnd, int msg, nint wParam, nint lParam, ref bool handled)
         {
             if (msg == WM_CLIPBOARDUPDATE)
             {
                 NotifyClipboardUpdate();
             }
 
-            return IntPtr.Zero;
+            return nint.Zero;
         }
 
         private void NotifyClipboardUpdate()

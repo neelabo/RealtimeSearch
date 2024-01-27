@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text.RegularExpressions;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.Models
 {
     public class WebSearch
     {

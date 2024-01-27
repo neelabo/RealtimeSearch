@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Xml.Linq;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.Services
 {
     /// <summary>
     /// アプリ全体の設定

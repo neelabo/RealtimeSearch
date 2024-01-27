@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Windows;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.Clipboards
 {
     public static class ClipboardTools
     {

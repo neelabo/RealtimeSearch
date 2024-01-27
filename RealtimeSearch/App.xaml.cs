@@ -4,6 +4,8 @@
 // http://opensource.org/licenses/mit-license.php
 
 using NeeLaboratory.IO.Search.Diagnostics;
+using NeeLaboratory.RealtimeSearch.Models;
+using NeeLaboratory.RealtimeSearch.Services;
 using System;
 using System.Collections.Generic;
 using System.Configuration;

@@ -1,4 +1,5 @@
 ﻿using NeeLaboratory.IO.Search.Files;
+using NeeLaboratory.RealtimeSearch.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

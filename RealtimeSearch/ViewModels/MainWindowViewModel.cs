@@ -14,6 +14,10 @@ using System.Linq;
 using NeeLaboratory.IO.Search.Files;
 using NeeLaboratory.ComponentModel;
 using NeeLaboratory.Windows.Input;
+using NeeLaboratory.RealtimeSearch.Models;
+using NeeLaboratory.RealtimeSearch.Clipboards;
+using NeeLaboratory.RealtimeSearch.Windows;
+using NeeLaboratory.Threading;
 
 namespace NeeLaboratory.RealtimeSearch
 {
@@ -24,7 +28,7 @@ namespace NeeLaboratory.RealtimeSearch
         private Search _search;
         private readonly WebSearch _webSearch;
         private string _inputKeyword = "";
-        private readonly DelayValue<string> _keyword;
+        private readonly DispatcherDelayValue<string> _keyword;
         private readonly string _defaultWindowTitle;
         private readonly History _history;
         private string _resultMessage = "";
@@ -42,7 +46,7 @@ namespace NeeLaboratory.RealtimeSearch
 
             _defaultWindowTitle = App.AppInfo.ProductName;
 
-            _keyword = new DelayValue<string>("");
+            _keyword = new DispatcherDelayValue<string>("");
             _keyword.ValueChanged += async (s, e) => await SearchAsync(false);
 
             _search = new Search(appConfig);
