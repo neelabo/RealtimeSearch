@@ -26,6 +26,13 @@ namespace NeeLaboratory.RealtimeSearch
         public static readonly RoutedCommand OpenCommand1 = new("OpenCommand1", typeof(MainWindow));
         public static readonly RoutedCommand OpenCommand2 = new("OpenCommand2", typeof(MainWindow));
         public static readonly RoutedCommand OpenCommand3 = new("OpenCommand3", typeof(MainWindow));
+        public static readonly RoutedCommand OpenCommand4 = new("OpenCommand4", typeof(MainWindow));
+        public static readonly RoutedCommand OpenCommand5 = new("OpenCommand5", typeof(MainWindow));
+        public static readonly RoutedCommand OpenCommand6 = new("OpenCommand6", typeof(MainWindow));
+        public static readonly RoutedCommand OpenCommand7 = new("OpenCommand7", typeof(MainWindow));
+        public static readonly RoutedCommand OpenCommand8 = new("OpenCommand8", typeof(MainWindow));
+        public static readonly RoutedCommand OpenCommand9 = new("OpenCommand9", typeof(MainWindow));
+        public static readonly RoutedCommand OpenCommandX = new("OpenCommandX", typeof(MainWindow));
         public static readonly RoutedCommand OpenCommandDefault = new("OpenCommandDefault", typeof(MainWindow));
         public static readonly RoutedCommand CopyCommand = new("CopyCommand", typeof(MainWindow));
         public static readonly RoutedCommand OpenPlaceCommand = new("OpenPlaceCommand", typeof(MainWindow));
@@ -36,6 +43,20 @@ namespace NeeLaboratory.RealtimeSearch
         public static readonly RoutedCommand WebSearchCommand = new("WebSearchCommand", typeof(MainWindow));
         public static readonly RoutedCommand PropertyCommand = new("PropertyCommand", typeof(MainWindow));
         public static readonly RoutedCommand ToggleAllowFolderCommand = new("ToggleAllowFolderCommand", typeof(MainWindow));
+        public static readonly RoutedCommand OpenSettingCommand = new("OpenSettingCommand", typeof(MainWindow));
+
+        public static readonly List<RoutedCommand> OpenCommandCollection = new()
+        {
+            OpenCommand1,
+            OpenCommand2,
+            OpenCommand3,
+            OpenCommand4,
+            OpenCommand5,
+            OpenCommand6,
+            OpenCommand7,
+            OpenCommand8,
+            OpenCommand9,
+        };
 
         private readonly MainWindowViewModel _vm;
 
@@ -182,7 +203,7 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        private void SettingButton_Click(object? sender, RoutedEventArgs e)
+        private void OpenSettingCommand_Executed(object target, ExecutedRoutedEventArgs e)
         {
             ShowSettingWindow();
         }
@@ -328,6 +349,24 @@ namespace NeeLaboratory.RealtimeSearch
             OpenCommand3.InputGestures.Add(new KeyGesture(Key.D3, ModifierKeys.Control));
             this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand3, OpenEx3_Executed));
 
+            OpenCommand4.InputGestures.Add(new KeyGesture(Key.D4, ModifierKeys.Control));
+            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand4, OpenEx4_Executed));
+
+            OpenCommand5.InputGestures.Add(new KeyGesture(Key.D5, ModifierKeys.Control));
+            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand5, OpenEx5_Executed));
+
+            OpenCommand6.InputGestures.Add(new KeyGesture(Key.D6, ModifierKeys.Control));
+            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand6, OpenEx6_Executed));
+
+            OpenCommand7.InputGestures.Add(new KeyGesture(Key.D7, ModifierKeys.Control));
+            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand7, OpenEx7_Executed));
+
+            OpenCommand8.InputGestures.Add(new KeyGesture(Key.D8, ModifierKeys.Control));
+            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand8, OpenEx8_Executed));
+
+            OpenCommand9.InputGestures.Add(new KeyGesture(Key.D9, ModifierKeys.Control));
+            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand9, OpenEx9_Executed));
+
             OpenCommandDefault.InputGestures.Add(new KeyGesture(Key.Enter, ModifierKeys.Control));
             this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommandDefault, OpenDefault_Executed));
 
@@ -355,6 +394,8 @@ namespace NeeLaboratory.RealtimeSearch
             this.ResultListView.CommandBindings.Add(new CommandBinding(PropertyCommand, Property_Executed));
 
             this.CommandBindings.Add(new CommandBinding(ToggleAllowFolderCommand, ToggleAllowFolder_Executed));
+
+            this.CommandBindings.Add(new CommandBinding(OpenSettingCommand, OpenSettingCommand_Executed));
         }
 
         private async void ToggleAllowFolder_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -451,9 +492,49 @@ namespace NeeLaboratory.RealtimeSearch
             Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 3);
         }
 
+        private void OpenEx4_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 4);
+        }
+
+        private void OpenEx5_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 5);
+        }
+
+        private void OpenEx6_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 6);
+        }
+
+        private void OpenEx7_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 7);
+        }
+
+        private void OpenEx8_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 8);
+        }
+
+        private void OpenEx9_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 9);
+        }
+
         private void Open_Executed(object target, ExecutedRoutedEventArgs e)
         {
             Open_Executed(target, e, ExecuteType.ExternalPrograms);
+        }
+
+        private void OpenX_Executed(object target, ExecutedRoutedEventArgs e)
+        { 
+            int programId = 0;
+            if (e.Parameter is int value)
+            {
+                programId = value;
+            }
+            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, programId);
         }
 
         // ファイルを開く(既定)
@@ -631,5 +712,40 @@ namespace NeeLaboratory.RealtimeSearch
 
         #endregion
 
+        private void ContextMenu_Opening(object sender, ContextMenuEventArgs e)
+        {
+            var frameworkElement = sender as FrameworkElement;
+            var contextMenu = frameworkElement?.ContextMenu;
+            if (contextMenu is null) return;
+
+            contextMenu.Items.Clear();
+            contextMenu.Items.Add(new MenuItem() { Header = "開く(_O)", Command = OpenCommand });
+            contextMenu.Items.Add(new MenuItem() { Header = "既定のアプリで開く", Command = OpenCommandDefault });
+            contextMenu.Items.Add(new Separator());
+            for (int i = 0; i < _vm.Programs.Count; i++)
+            {
+                var program = _vm.Programs[i];
+                if (i < OpenCommandCollection.Count)
+                {
+                    contextMenu.Items.Add(new MenuItem() { Header = program.Name, Command = OpenCommandCollection[i] });
+               }
+                else
+                {
+                    contextMenu.Items.Add(new MenuItem() { Header = program.Name, Command = OpenCommandX, CommandParameter = i });
+                }
+            }
+            contextMenu.Items.Add(new Separator());
+            contextMenu.Items.Add(new MenuItem() { Header = "ファイルの場所を開く(_I)", Command = OpenPlaceCommand });
+            contextMenu.Items.Add(new Separator());
+            contextMenu.Items.Add(new MenuItem() { Header = "ファイルをコピーする(_C)", Command = CopyCommand });
+            contextMenu.Items.Add(new MenuItem() { Header = "名前をコピーする", Command = CopyNameCommand });
+            contextMenu.Items.Add(new Separator());
+            contextMenu.Items.Add(new MenuItem() { Header = "削除(_D)", Command = DeleteCommand });
+            contextMenu.Items.Add(new Separator());
+            contextMenu.Items.Add(new MenuItem() { Header = "名前の変更(_M)", Command = RenameCommand });
+            contextMenu.Items.Add(new Separator());
+            contextMenu.Items.Add(new MenuItem() { Header = "プロパティ(_R)", Command = PropertyCommand });
+        }
     }
+
 }

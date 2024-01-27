@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:NeeLaboratory.RealtimeSearch"
         mc:Ignorable="d"
-        Title="設定" Height="340" Width="460">
+        Title="設定" Height="480" Width="640">
 
     <Window.Resources>
         <Style TargetType="FrameworkElement" x:Key="Phrase">
@@ -20,7 +20,33 @@
 
     <Grid>
 
-        <TabControl>
+        <TabControl TabStripPlacement="Left">
+            
+            <TabItem Header="設定">
+                <StackPanel Margin="4">
+
+                    <TextBlock Text="設定" Style="{StaticResource Header}"/>
+                    <StackPanel Style="{StaticResource Phrase}">
+                        <CheckBox  Margin="2"  IsChecked="{Binding Setting.AllowFolder}" VerticalAlignment="Center" Content="フォルダーを含める"/>
+                        <CheckBox  Margin="2"   IsChecked="{Binding Setting.IsMonitorClipboard}" VerticalAlignment="Center" Content="クリップボードを監視" ToolTip="クリップボードを監視し、コピーされたテキストで即座に検索を開始します"/>
+                        <CheckBox  Margin="2"  IsChecked="{Binding Setting.IsTopmost}" VerticalAlignment="Center" Content="常に手前に表示"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Web検索" Style="{StaticResource Header}"/>
+                    <StackPanel Style="{StaticResource Phrase}">
+                        <DockPanel Margin="2,2,2,5" LastChildFill="True">
+                            <TextBlock MinWidth="80" Text="URL :" VerticalAlignment="Center" Margin="2"/>
+                            <TextBox Text="{Binding Setting.WebSearchFormat}" Margin="2" ToolTip="$(query) が検索キーワードに置換されます"/>
+                        </DockPanel>
+                    </StackPanel>
+
+
+
+                </StackPanel>
+
+
+            </TabItem>
+            
             <TabItem Header="検索">
                 <DockPanel x:Name="BaseControl" Margin="8" >
 
@@ -41,7 +67,11 @@
                         </DockPanel>
 
                         <Grid>
-                            <ListBox x:Name="SearchPathList" Margin="0,2,0,4" ItemsSource="{Binding CollectionViewSource.View}"  SelectedItem="{Binding SelectedArea}" AllowDrop="True" PreviewDragOver="ListBox_PreviewDragOver" Drop="ListBox_Drop">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="89*"/>
+                                <ColumnDefinition Width="284*"/>
+                            </Grid.ColumnDefinitions>
+                            <ListBox x:Name="SearchPathList" Margin="0,2,0,4" ItemsSource="{Binding CollectionViewSource.View}"  SelectedItem="{Binding SelectedArea}" AllowDrop="True" PreviewDragOver="ListBox_PreviewDragOver" Drop="ListBox_Drop" Grid.ColumnSpan="2">
                                 <ListBox.ContextMenu>
                                     <ContextMenu x:Name="contextMenu01">
                                         <MenuItem Header="追加" Command="{x:Static local:SettingWindow.AddCommand}"/>
@@ -56,7 +86,7 @@
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                            <TextBlock Text="検索するフォルダを登録してください" HorizontalAlignment="Center" Margin="0,40" Foreground="Gray">
+                            <TextBlock Text="検索するフォルダを登録してください" HorizontalAlignment="Left" Margin="98,40,0,40" Foreground="Gray" Grid.Column="1">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -74,48 +104,48 @@
                 </DockPanel>
             </TabItem>
 
-            <TabItem Header="設定">
-                <StackPanel Margin="4">
-
-                    <TextBlock Text="設定" Style="{StaticResource Header}"/>
-                    <StackPanel Style="{StaticResource Phrase}">
-                        <CheckBox  Margin="2"   IsChecked="{Binding Setting.IsMonitorClipboard}" VerticalAlignment="Center" Content="クリップボードを監視" ToolTip="クリップボードを監視し、コピーされたテキストで即座に検索を開始します"/>
-                        <CheckBox  Margin="2"  IsChecked="{Binding Setting.IsTopmost}" VerticalAlignment="Center" Content="常に手前に表示"/>
-                    </StackPanel>
-
-                    <TextBlock Text="Web検索" Style="{StaticResource Header}"/>
-                    <StackPanel Style="{StaticResource Phrase}">
-                        <DockPanel Margin="2,2,2,5" LastChildFill="True">
-                            <TextBlock MinWidth="80" Text="URL :" VerticalAlignment="Center" Margin="2"/>
-                            <TextBox Text="{Binding Setting.WebSearchFormat}" Margin="2" ToolTip="$(query) が検索キーワードに置換されます"/>
-                        </DockPanel>
-                    </StackPanel>
-
-
-
-                </StackPanel>
-
-
-            </TabItem>
-
             <TabItem Header="外部アプリ">
+                
+                <DockPanel>
 
-                <ScrollViewer Margin="5">
+                    <local:ExternalProgramSettingControl DockPanel.Dock="Bottom" Margin="5"
+                                                         DataContext="{Binding ElementName=ExternalProgramListBox, Path=SelectedItem}"
+                                                         Header="{Binding Name}" Program="{Binding}" />
 
+                    <DockPanel x:Name="ExternalProgramPanel">
 
-                    <StackPanel>
-                        <local:ExternalProgramSettingControl Header="外部アプリ設定１" Program="{Binding Setting.ExternalPrograms[0]}"/>
-                        <local:ExternalProgramSettingControl Header="外部アプリ設定２" Program="{Binding Setting.ExternalPrograms[1]}"/>
-                        <local:ExternalProgramSettingControl Header="外部アプリ設定３" Program="{Binding Setting.ExternalPrograms[2]}"/>
-                    </StackPanel>
-                </ScrollViewer>
+                        <StackPanel  DockPanel.Dock="Top" Orientation="Horizontal" Margin="5">
+                            <Button Style="{StaticResource IconButton}" Command="{x:Static local:SettingWindow.AddExternalProgramCommand}" Width="20" Height="20" >
+                                <Image Width="16" Height="16" Source="{StaticResource ic_add_circle_outline_24px}"/>
+                            </Button>
+                        </StackPanel>
 
-                <!--
-                    Program="{Binding Setting.ExternalPrograms[0]}"/>
-                    <local:ExternalProgramSettingControl Header="外部アプリ設定２" />
-                    Program="{Binding Setting.ExternalPrograms[0]}"/>
-                    -->
+                        <ListBox x:Name="ExternalProgramListBox" ItemsSource="{Binding Setting.ExternalPrograms}" HorizontalContentAlignment="Stretch">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                        <TextBlock Text="{Binding Program}" Foreground="Gray" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
 
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="ContextMenu">
+                                        <Setter.Value>
+                                            <ContextMenu>
+                                                <MenuItem Header="削除(_D)" Command="{x:Static local:SettingWindow.DeleteExternalProgramCommand}" />
+                                            </ContextMenu>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+
+                    </DockPanel>
+
+                </DockPanel>
 
             </TabItem>
         </TabControl>

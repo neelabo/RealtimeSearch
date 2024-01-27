@@ -3,6 +3,7 @@ using NeeLaboratory.RealtimeSearch.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -67,6 +68,10 @@ namespace NeeLaboratory.RealtimeSearch
         public static readonly RoutedCommand AddCommand = new("AddCommand", typeof(SettingWindow));
         public static readonly RoutedCommand DelCommand = new("DelCommand", typeof(SettingWindow));
 
+        public static readonly RoutedCommand AddExternalProgramCommand = new("AddExternalProgramCommand", typeof(SettingWindow));
+        public static readonly RoutedCommand DeleteExternalProgramCommand = new("DeleteExternalProgramCommand", typeof(SettingWindow));
+
+
         public AppConfig Setting { get; private set; }
 
 
@@ -111,12 +116,22 @@ namespace NeeLaboratory.RealtimeSearch
 
             SearchPathList.Focus();
 
+            // add ExternalProgram
+            AddExternalProgramCommand.InputGestures.Clear();
+            AddExternalProgramCommand.InputGestures.Add(new KeyGesture(Key.Insert));
+            ExternalProgramPanel.CommandBindings.Add(new CommandBinding(AddExternalProgramCommand, AddExternalProgramCommand_Executed));
+
+            DeleteExternalProgramCommand.InputGestures.Clear();
+            DeleteExternalProgramCommand.InputGestures.Add(new KeyGesture(Key.Delete));
+            ExternalProgramListBox.CommandBindings.Add(new CommandBinding(DeleteExternalProgramCommand, DeleteExternalProgramCommand_Executed, (s, e) => e.CanExecute = true));
+
             this.contextMenu01.UpdateInputGestureText();
         }
 
 
         private void AddCommand_Executed(object target, ExecutedRoutedEventArgs e)
         {
+
             AddPathWithDialog();
         }
 
@@ -134,6 +149,33 @@ namespace NeeLaboratory.RealtimeSearch
         private void DelCommand_CanExecute(object target, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = SelectedArea != null;
+        }
+
+
+        private void AddExternalProgramCommand_Executed(object target, ExecutedRoutedEventArgs e)
+        {
+            var item = new ExternalProgram();
+            Setting.ExternalPrograms.Add(item);
+            Setting.ValidateExternalProgramsIndex();
+            this.ExternalProgramListBox.ScrollIntoView(item);
+            this.ExternalProgramListBox.SelectedItem = item;
+        }
+
+        private void DeleteExternalProgramCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (sender is not ListBox listBox) return;
+
+            var item = listBox.SelectedItem as ExternalProgram;
+            if (item is null) return;
+
+            var selectedIndex = listBox.SelectedIndex;
+            Setting.ExternalPrograms.Remove(item);
+            Setting.ValidateExternalProgramsIndex();
+
+            listBox.SelectedIndex = Math.Min(selectedIndex, Setting.ExternalPrograms.Count - 1);
+            listBox.ScrollIntoView(listBox.SelectedItem);
+            var listBoxItem = (ListBoxItem?)listBox.ItemContainerGenerator.ContainerFromItem(listBox.SelectedItem);
+            listBoxItem?.Focus();
         }
 
 

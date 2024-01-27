@@ -165,7 +165,11 @@ namespace NeeLaboratory.RealtimeSearch.Models
                 SetMessage("");
 
                 // キーワード検証
-                _searchEngine.Analyze(keyword);
+                var keys = _searchEngine.Analyze(keyword);
+                if (!keys.Any())
+                {
+                    return;
+                }
 
                 var searchResult = await _searchEngine.SearchAsync(keyword, _searchCancellationTokenSource.Token);
                 if (searchResult.Exception != null)

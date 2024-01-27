@@ -40,13 +40,13 @@ namespace NeeLaboratory.RealtimeSearch.Models
         {
             SearchAreas = new ObservableCollection<FileArea>();
             IsMonitorClipboard = true;
-            ExternalPrograms = new List<ExternalProgram>
+            ExternalPrograms = new ObservableCollection<ExternalProgram>
             {
                 new ExternalProgram(),
-                new ExternalProgram(),
-                new ExternalProgram()
             };
             WebSearchFormat = "https://www.google.co.jp/search?q=$(query)";
+
+            Validate();
         }
 
 
@@ -78,7 +78,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
         public string WebSearchFormat { set; get; }
 
-        public List<ExternalProgram> ExternalPrograms { set; get; }
+        public ObservableCollection<ExternalProgram> ExternalPrograms { set; get; }
 
         public List<ListViewColumnMemento> ListViewColumnMemento { get; set; } = new List<ListViewColumnMemento>();
 
@@ -97,6 +97,19 @@ namespace NeeLaboratory.RealtimeSearch.Models
         public void ToggleAllowFolder()
         {
             AllowFolder = !AllowFolder;
+        }
+
+        public void Validate()
+        {
+            ValidateExternalProgramsIndex();
+        }
+
+        public void ValidateExternalProgramsIndex()
+        {
+            for (int i = 0; i < ExternalPrograms.Count; i++)
+            {
+                ExternalPrograms[i].Id = i + 1;
+            }
         }
     }
 }

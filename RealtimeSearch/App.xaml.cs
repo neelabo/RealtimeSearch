@@ -49,6 +49,8 @@ namespace NeeLaboratory.RealtimeSearch
 
                 // 設定ファイル読み込み
                 var appConfig = _persistAndRestoreService.Load();
+                appConfig?.Validate();
+
                 if (appConfig is not null)
                 {
                     AppConfig = appConfig;

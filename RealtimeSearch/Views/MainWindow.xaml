@@ -29,26 +29,12 @@
             <EventSetter Event="Control.MouseDoubleClick" Handler="ListViewItem_MouseDoubleClick" />
             <EventSetter Event="UIElement.PreviewMouseMove" Handler="PreviewMouseMove_Event"/>
             <EventSetter Event="UIElement.PreviewMouseDown" Handler="PreviewMouseDown_Event"/>
+            <EventSetter Event="ContextMenuOpening" Handler="ContextMenu_Opening"/>
 
             <Setter Property="ContextMenu">
                 <Setter.Value>
-                    <ContextMenu>
-                        <MenuItem Header="開く(_O)" Command="{x:Static local:MainWindow.OpenCommand}"/>
-                        <MenuItem Header="既定のアプリで開く" Command="{x:Static local:MainWindow.OpenCommandDefault}" />
-                        <MenuItem Header="外部アプリ１で開く" Command="{x:Static local:MainWindow.OpenCommand1}"/>
-                        <MenuItem Header="外部アプリ２で開く" Command="{x:Static local:MainWindow.OpenCommand2}"/>
-                        <MenuItem Header="外部アプリ３で開く" Command="{x:Static local:MainWindow.OpenCommand3}"/>
-                        <Separator/>
-                        <MenuItem Header="ファイルの場所を開く(_I)" Command="{x:Static local:MainWindow.OpenPlaceCommand}" />
-                        <Separator/>
-                        <MenuItem Header="ファイルをコピーする(_C)" Command="{x:Static local:MainWindow.CopyCommand}" />
-                        <Separator/>
-                        <MenuItem Header="削除(_D)" Command="{x:Static local:MainWindow.DeleteCommand}" />
-                        <MenuItem Header="名前の変更(_M)" Command="{x:Static local:MainWindow.RenameCommand}"/>
-                        <MenuItem Header="名前をコピーする" Command="{x:Static local:MainWindow.CopyNameCommand}" />
-                        <Separator/>
-                        <MenuItem Header="プロパティ(_R)" Command="{x:Static local:MainWindow.PropertyCommand}" />
-                    </ContextMenu>
+                    <ContextMenu />
+
                 </Setter.Value>
             </Setter>
 
@@ -98,18 +84,9 @@
 
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4" KeyboardNavigation.TabNavigation="Local">
 
-                <local:DropDownMenuButton DockPanel.Dock="Right" Width="25" Height="25" Style="{StaticResource IconTogglrButton}" Margin="2,0,0,0" TabIndex="4">
+                <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="25" Height="25" Command="{x:Static local:MainWindow.OpenSettingCommand}" ToolTip="設定" Margin="2,0,0,0" TabIndex="4">
                     <Image Width="16" Height="16" Source="{StaticResource ic_settings_24px}"/>
-                    <local:DropDownMenuButton.DropDownContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="フォルダーを含める" IsCheckable="False"
-                                      IsChecked="{Binding AllowFolder}"
-                                      Command="{x:Static local:MainWindow.ToggleAllowFolderCommand}" />
-                            <Separator />
-                            <MenuItem Header="設定を開く..." Click="SettingButton_Click"/>
-                        </ContextMenu>
-                    </local:DropDownMenuButton.DropDownContextMenu>
-                </local:DropDownMenuButton>
+                </Button>
 
                 <Border BorderBrush="#FFDDDDDD" BorderThickness="1" UseLayoutRounding="True" SnapsToDevicePixels="True">
                     <DockPanel>

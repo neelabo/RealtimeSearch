@@ -18,10 +18,15 @@
             <!--
             <CheckBox Checked="{Binding Program.IsEnabled}" VerticalAlignment="Center"/>
             -->
-            <TextBlock Text="{Binding Header}" FontWeight="Bold" Margin="5"/>
+            <TextBlock Text="{Binding Program.Id, StringFormat=Program {0}}" FontWeight="Bold" Margin="5"/>
         </StackPanel>
 
         <StackPanel Margin="20,0,0,0">
+
+            <DockPanel Margin="2" LastChildFill="True">
+                <TextBlock MinWidth="80" Text="名前：" VerticalAlignment="Center" Margin="2"/>
+                <TextBox Text="{Binding Program.Name}" />
+            </DockPanel>
 
             <DockPanel Margin="2" LastChildFill="True">
                 <TextBlock MinWidth="80" Text="種類：" VerticalAlignment="Center" Margin="2"/>

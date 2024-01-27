@@ -136,7 +136,8 @@ namespace NeeLaboratory.RealtimeSearch
             get { return _appConfig.AllowFolder; }
             set { _appConfig.AllowFolder = value; }
         }
-        
+
+        public ExternalProgramCollection Programs => _programs;
 
 
         [Conditional("DEBUG")]
@@ -215,6 +216,7 @@ namespace NeeLaboratory.RealtimeSearch
 
                 case nameof(_appConfig.AllowFolder):
                     RaisePropertyChanged(nameof(AllowFolder));
+                    _ = SearchAsync(true);
                     break;
             }
         }

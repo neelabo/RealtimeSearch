@@ -235,7 +235,7 @@ namespace NeeLaboratory.IO.Search.Files
                 using (_tree.Lock(token))
                 {
                     var entries = _tree.CollectFileItems();
-                    var items = _searcher.Search(keyword, entries, token).ToList();
+                   var items = _searcher.Search(keyword, entries, token).ToList();
                     return new SearchResult<FileItem>(keyword, items.Cast<FileItem>());
                 }
             }

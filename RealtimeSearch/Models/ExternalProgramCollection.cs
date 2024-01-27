@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -8,7 +9,7 @@ using NeeLaboratory.IO.Search.Files;
 
 namespace NeeLaboratory.RealtimeSearch.Models
 {
-    public class ExternalProgramCollection : BindableBase
+    public class ExternalProgramCollection : BindableBase, IEnumerable<ExternalProgram>
     {
         private readonly AppConfig _setting;
         private string _error = "";
@@ -20,12 +21,23 @@ namespace NeeLaboratory.RealtimeSearch.Models
         }
 
 
+        public ExternalProgram this[int i]
+        {
+            get { return _setting.ExternalPrograms[i]; }
+            set { _setting.ExternalPrograms[i] = value; }
+        }
+
+        public int Count
+        {
+            get { return _setting.ExternalPrograms.Count; }
+        }
+
+
         public string Error
         {
             get { return _error; }
             set { SetProperty(ref _error, value); }
         }
-
 
 
         public void ClearError()
@@ -70,6 +82,8 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
         public void Execute(IEnumerable<FileItem> files, int programId)
         {
+            if (_setting.ExternalPrograms.Count <= programId - 1) return;
+
             try
             {
                 Execute(files, _setting.ExternalPrograms[programId - 1]);
@@ -137,14 +151,14 @@ namespace NeeLaboratory.RealtimeSearch.Models
             else
             {
                 var uriData = string.Join(" ", files.Select(e => Uri.EscapeDataString(e.Path)));
-                var uriDataQuat = string.Join(" ", files.Select(e => "\"" + Uri.EscapeDataString(e.Path) + "\""));
+                var uriDataQuote = string.Join(" ", files.Select(e => "\"" + Uri.EscapeDataString(e.Path) + "\""));
 
                 var pathData = string.Join(" ", files.Select(e => e.Path));
-                var pathDataQuat = string.Join(" ", files.Select(e => "\"" + e.Path + "\""));
+                var pathDataQuote = string.Join(" ", files.Select(e => "\"" + e.Path + "\""));
 
-                s = s.Replace(ExternalProgram.KeyUriQuat, uriDataQuat);
+                s = s.Replace(ExternalProgram.KeyUriQuote, uriDataQuote);
                 s = s.Replace(ExternalProgram.KeyUri, uriData);
-                s = s.Replace(ExternalProgram.KeyFileQuat, pathDataQuat);
+                s = s.Replace(ExternalProgram.KeyFileQuote, pathDataQuote);
                 s = s.Replace(ExternalProgram.KeyFile, pathData);
             }
 
@@ -166,6 +180,16 @@ namespace NeeLaboratory.RealtimeSearch.Models
                 Debug.WriteLine(e.Message);
                 Error = e.Message;
             }
+        }
+
+        public IEnumerator<ExternalProgram> GetEnumerator()
+        {
+            return _setting.ExternalPrograms.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

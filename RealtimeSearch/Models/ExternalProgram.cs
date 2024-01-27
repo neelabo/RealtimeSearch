@@ -1,9 +1,11 @@
-﻿using System;
+﻿using NeeLaboratory.Generators;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -25,23 +27,18 @@ namespace NeeLaboratory.RealtimeSearch.Models
     }
 
 
-    public class ExternalProgram : INotifyPropertyChanged
+    [NotifyPropertyChanged]
+    public partial class ExternalProgram : INotifyPropertyChanged
     {
-        #region PropertyChanged
         public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
-        #endregion PropertyChanged
 
 
         public const string KeyFile = "$(file)";
         public const string KeyUri = "$(uri)";
-        public const string KeyFileQuat = "\"$(file)\"";
-        public const string KeyUriQuat = "\"$(uri)\"";
+        public const string KeyFileQuote = "\"$(file)\"";
+        public const string KeyUriQuote = "\"$(uri)\"";
 
+        private int _id;
         private ExternalProgramType _programType;
         private string _program = "";
         private string _parameter = "";
@@ -50,26 +47,45 @@ namespace NeeLaboratory.RealtimeSearch.Models
         private bool _isMultiArgumentEnabled;
         private List<string> _extensionsList = new();
 
+        [JsonInclude, JsonPropertyName("Name"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public string? _name;
+
 
         public ExternalProgram()
         {
         }
 
 
+        [JsonIgnore]
+        public int Id
+        {
+            get { return _id; }
+            set
+            {
+                if (SetProperty(ref _id, value))
+                {
+                    RaisePropertyChanged(nameof(Name));
+                }
+            }
+        }
+
+        [JsonIgnore]
+        public string Name
+        {
+            get { return _name ?? GetDefaultName(); }
+            set { SetProperty(ref _name, ValidateName(value)); }
+        }
+
         public ExternalProgramType ProgramType
         {
             get { return _programType; }
-            set { if (_programType != value) { _programType = value; RaisePropertyChanged(); } }
+            set { SetProperty(ref _programType, value); }
         }
 
         public string Program
         {
             get { return _program; }
-            set
-            {
-                value ??= ""; _program = value.Trim();
-                RaisePropertyChanged();
-            }
+            set { SetProperty(ref _program, value.Trim()); }
         }
 
         public string Parameter
@@ -91,13 +107,19 @@ namespace NeeLaboratory.RealtimeSearch.Models
         public string Protocol
         {
             get { return _protocol; }
-            set { _protocol = (value ?? "").Trim(); RaisePropertyChanged(); }
+            set { SetProperty(ref _protocol, value.Trim()); }
         }
 
         public string Extensions
         {
             get { return _extensions; }
-            set { if (_extensions != value) { _extensions = value; RaisePropertyChanged(); CreateExtensionsList(_extensions); } }
+            set
+            {
+                if (SetProperty(ref _extensions, value))
+                {
+                    CreateExtensionsList(_extensions);
+                }
+            }
         }
 
         public bool IsMultiArgumentEnabled
@@ -132,6 +154,22 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
             var ext = System.IO.Path.GetExtension(input).ToLower();
             return _extensionsList.Contains(ext);
+        }
+
+
+        private string GetDefaultName()
+        {
+            return $"Program {_id}";
+        }
+
+        private string? ValidateName(string value)
+        {
+            var s = value.Trim();
+            if (string.IsNullOrWhiteSpace(value) || s == GetDefaultName())
+            {
+                return null;
+            }
+            return s;
         }
     }
 }
