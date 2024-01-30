@@ -17,6 +17,15 @@ namespace NeeLaboratory.RealtimeSearch.Services
     /// </summary>
     public class ApplicationInfoService
     {
+        private IAppSetting _appSetting;
+
+
+        public ApplicationInfoService(IAppSetting appSetting)
+        {
+            _appSetting = appSetting;
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -150,7 +159,7 @@ namespace NeeLaboratory.RealtimeSearch.Services
             {
                 if (_isUseLocalApplicationDataFolder == null)
                 {
-                    _isUseLocalApplicationDataFolder = System.Configuration.ConfigurationManager.AppSettings["UseLocalApplicationData"] == "True";
+                    _isUseLocalApplicationDataFolder = _appSetting["UseLocalApplicationData"] == "True";
                 }
                 return (bool)_isUseLocalApplicationDataFolder;
             }
@@ -164,7 +173,7 @@ namespace NeeLaboratory.RealtimeSearch.Services
             {
                 if (_packageType == null)
                 {
-                    _packageType = ConfigurationManager.AppSettings["PackageType"] ?? "";
+                    _packageType = _appSetting["PackageType"] ?? "";
                     if (_packageType != ".msi") _packageType = ".zip";
                 }
                 return _packageType;
@@ -194,6 +203,7 @@ namespace NeeLaboratory.RealtimeSearch.Services
             return true;
         }
 
+#if false
         //
         public event EventHandler? LocalApplicationDataRemoved;
 
@@ -230,5 +240,11 @@ namespace NeeLaboratory.RealtimeSearch.Services
                 }
             }
         }
+#endif
+    }
+
+    public interface IAppSetting
+    {
+        string? this[string key] { get; }
     }
 }

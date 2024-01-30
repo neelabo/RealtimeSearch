@@ -8,8 +8,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
-using System.Windows.Threading;
-using System.Windows.Data;
+//using System.Windows.Threading;
+//using System.Windows.Data;
 using System.IO;
 using System.Collections.Specialized;
 using NeeLaboratory.IO.Search;
@@ -18,19 +18,24 @@ using NeeLaboratory.ComponentModel;
 
 namespace NeeLaboratory.RealtimeSearch.Models
 {
+    public interface ISearchResultDecorator<T>
+        where T : ISearchItem
+    {
+        void Decorate(SearchResult<T> searchResult);
+    }
+
     public class Search : BindableBase
     {
         private int _busyCount;
         private bool _isBusy;
         private string _information = "";
         private readonly AppConfig _appConfig;
-        private readonly DispatcherTimer _timer;
+        //private readonly DispatcherTimer _timer;
         private readonly FileSearchEngine _searchEngine;
         private CancellationTokenSource _searchCancellationTokenSource = new();
         private FileSearchResultWatcher? _searchResult;
         private string _lastSearchKeyword = "";
         private string _message = "";
-
 
         /// <summary>
         /// コンストラクタ
@@ -44,11 +49,11 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
             _appConfig.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
 
-            _timer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromMilliseconds(1000)
-            };
-            _timer.Tick += ProgressTimer_Tick;
+            //_timer = new DispatcherTimer
+            //{
+            //    Interval = TimeSpan.FromMilliseconds(1000)
+            //};
+            //_timer.Tick += ProgressTimer_Tick;
         }
 
 
@@ -83,6 +88,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
             }
         }
 
+        public ISearchResultDecorator<FileItem>? SearchResultDecorator { get; set; }
 
         private void SearchEngine_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
@@ -90,7 +96,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
             {
                 Debug.WriteLine($"State: {_searchEngine.State}");
                 SetMessage("");
-                _timer.IsEnabled = _searchEngine.State != SearchCommandEngineState.Idle;
+                //_timer.IsEnabled = _searchEngine.State != SearchCommandEngineState.Idle;
                 //IsBusyVisible = _searchEngine.State == SearchCommandEngineState.Search;
             }
         }
@@ -141,7 +147,6 @@ namespace NeeLaboratory.RealtimeSearch.Models
         /// </summary>
         public async Task SearchAsync(string keyword, bool isForce)
         {
-
             if (string.IsNullOrWhiteSpace(keyword))
             {
                 _lastSearchKeyword = keyword;
@@ -178,13 +183,12 @@ namespace NeeLaboratory.RealtimeSearch.Models
                 }
 
                 // 複数スレッドからコレクション操作できるようにする
-                BindingOperations.EnableCollectionSynchronization(searchResult.Items, new object());
+                //BindingOperations.EnableCollectionSynchronization(searchResult.Items, new object());
+                SearchResultDecorator?.Decorate(searchResult);
 
                 SearchResult = new FileSearchResultWatcher(_searchEngine, searchResult);
                 SearchResultChanged?.Invoke(this, EventArgs.Empty);
 
-                // 複数スレッドからコレクション操作できるようにする
-                //BindingOperations.EnableCollectionSynchronization(SearchResult.Items, new object());
 
                 SetMessage($"{SearchResult.Items.Count:#,0} 個の項目");
 
@@ -237,13 +241,13 @@ namespace NeeLaboratory.RealtimeSearch.Models
             UpdateInformation();
         }
 
-        private void ProgressTimer_Tick(object? sender, EventArgs e)
-        {
-            UpdateInformation();
-            Debug.WriteLine($"Information = {Information}");
-        }
+        //private void ProgressTimer_Tick(object? sender, EventArgs e)
+        //{
+        //    UpdateInformation();
+        //    Debug.WriteLine($"Information = {Information}");
+        //}
 
-        private void UpdateInformation()
+        public void UpdateInformation()
         {
             Information = _searchEngine.State switch
             {

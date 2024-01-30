@@ -10,6 +10,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
+using System.Windows.Threading;
 
 namespace NeeLaboratory.RealtimeSearch.Models
 {
@@ -23,6 +25,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         private readonly WebSearch _webSearch;
         private readonly History _history;
         private string _resultMessage = "";
+        private readonly DispatcherTimer _timer;
 
 
         private ClipboardSearch? _clipboardSearch;
@@ -36,11 +39,20 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
             _search = new Search(appConfig);
             _search.SearchResultChanged += Search_SearchResultChanged;
+            _search.SearchResultDecorator = new SearchResultDecorator();
 
             _webSearch = new WebSearch(appConfig);
 
             _history = new History();
+            BindingOperations.EnableCollectionSynchronization(_history.Collection, new object());
+
+            _timer = new DispatcherTimer()
+            {
+                Interval = TimeSpan.FromMilliseconds(1000),
+            };
+            _timer.Tick += ProgressTimer_Tick;
         }
+
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -70,6 +82,12 @@ namespace NeeLaboratory.RealtimeSearch.Models
         }
 
 
+
+        private void ProgressTimer_Tick(object? sender, EventArgs e)
+        {
+            _search.UpdateInformation();
+        }
+
         public void Loaded()
         {
             _search.ReIndex();
@@ -95,7 +113,15 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
         public async Task SearchAsync(bool isForce)
         {
-            await _search.SearchAsync(_keyword.Value.Trim(), isForce);
+            _timer.Start();
+            try
+            {
+                await _search.SearchAsync(_keyword.Value.Trim(), isForce);
+            }
+            finally
+            {
+                _timer.Stop(); 
+            }
         }
 
         public void WebSearch()
@@ -167,5 +193,14 @@ namespace NeeLaboratory.RealtimeSearch.Models
             }
         }
 
+    }
+
+
+    public class SearchResultDecorator : ISearchResultDecorator<FileItem>
+    {
+        public void Decorate(SearchResult<FileItem> searchResult)
+        {
+            BindingOperations.EnableCollectionSynchronization(searchResult.Items, new object());
+        }
     }
 }

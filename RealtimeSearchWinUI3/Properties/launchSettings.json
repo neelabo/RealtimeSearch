@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "RealtimeSearchWinUI3 (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "RealtimeSearchWinUI3 (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

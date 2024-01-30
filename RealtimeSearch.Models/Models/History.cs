@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Data;
+//using System.Windows.Data;
 
 namespace NeeLaboratory.RealtimeSearch.Models
 {
@@ -17,7 +17,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         public History()
         {
             Collection = new ObservableCollection<string>();
-            BindingOperations.EnableCollectionSynchronization(Collection, new object());
+            //BindingOperations.EnableCollectionSynchronization(Collection, new object());
         }
 
 

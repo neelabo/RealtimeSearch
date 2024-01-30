@@ -26,6 +26,7 @@ namespace NeeLaboratory.RealtimeSearch
     /// </summary>
     public partial class App : Application
     {
+
         private AppModel? _appModel;
 
         public App()
@@ -34,12 +35,56 @@ namespace NeeLaboratory.RealtimeSearch
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            _appModel = AppModel.Instance;
+            try
+            {
+                _appModel = new AppModel(new AppSetting());
+                AppModel.Instance = _appModel;
+
+#if false
+                // logger
+                //var sw = new StreamWriter("TraceLog.txt");
+                //sw.AutoFlush = true;
+                //var tw = TextWriter.Synchronized(sw);
+                //var twtl = new TextWriterTraceListener(tw, Development.Logger.TraceSource.Name);
+                //Trace.Listeners.Add(twtl);
+
+                var appTrace = Development.Logger.TraceSource;
+                appTrace.Listeners.Remove("Default");
+                var twtl = new TextWriterTraceListener("TraceLog.txt", "LogFile");
+                appTrace.Listeners.Add(twtl);
+                Development.Logger.SetLevel(SourceLevels.All);
+                Development.Logger.Trace(System.Environment.NewLine + new string('=', 80));
+
+                //Development.Logger.SetLevel(SourceLevels.All);
+                //var twtl = new TextWriterTraceListener("TraceLog.txt", Development.Logger.TraceSource.Name);
+                //Trace.Listeners.Add(twtl);
+                //Trace.AutoFlush = true;
+                //Trace.WriteLine(System.Environment.NewLine + new string('=', 80));
+#endif
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, AppModel.ApplicationName, MessageBoxButton.OK, MessageBoxImage.Error);
+                throw;
+            }
         }
 
         private void Application_Exit(object sender, ExitEventArgs e)
         {
-            _appModel?.Dispose();
+            try
+            {
+                _appModel?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, AppModel.ApplicationName, MessageBoxButton.OK, MessageBoxImage.Error);
+                throw;
+            }
         }
+    }
+
+    public class AppSetting : IAppSetting
+    {
+        public string? this[string key] => ConfigurationManager.AppSettings.Get(key);
     }
 }

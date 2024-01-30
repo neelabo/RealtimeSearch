@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Windows;
+//using System.Windows;
 
 namespace NeeLaboratory.RealtimeSearch.Windows
 {
@@ -126,6 +126,13 @@ namespace NeeLaboratory.RealtimeSearch.Windows
                 writer.WriteStringValue(value.IsValid() ? value.ToString() : "");
             }
         }
+    }
+
+    public enum WindowState
+    {
+        Normal = 0,
+        Minimized = 1,
+        Maximized = 2,
     }
 
 }

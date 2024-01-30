@@ -2,7 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
+    <!--
     <UseWPF>true</UseWPF>
+    -->
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>NeeLaboratory.RealtimeSearch</RootNamespace>
