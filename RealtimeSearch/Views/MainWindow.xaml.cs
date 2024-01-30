@@ -116,7 +116,7 @@ namespace NeeLaboratory.RealtimeSearch
             if (_initialized) return;
             _initialized = true;
 
-            _vm.Loaded();
+            _vm.Loaded(this);
             _vm.StartClipboardWatch(this);
         }
 

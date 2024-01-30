@@ -281,11 +281,9 @@ namespace NeeLaboratory.RealtimeSearch
         /// プロパティウィンドウを開く
         /// </summary>
         /// <param name="path"></param>
-        public static void OpenProperty(System.Windows.Window window, string path)
+        public static void OpenProperty(IntPtr hWnd, string path)
         {
-            var handle = new System.Windows.Interop.WindowInteropHelper(window).Handle;
-
-            if (!NativeMethods.SHObjectProperties(handle, NativeMethods.SHOP_FILEPATH, path, string.Empty))
+            if (!NativeMethods.SHObjectProperties(hWnd, NativeMethods.SHOP_FILEPATH, path, string.Empty))
             {
                 throw new ApplicationException("Cannot open property window");
             }

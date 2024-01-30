@@ -1,7 +1,6 @@
 ﻿using NeeLaboratory.Generators;
 using NeeLaboratory.IO.Search.Files;
 using NeeLaboratory.RealtimeSearch.Clipboards;
-using NeeLaboratory.RealtimeSearch.Models;
 using NeeLaboratory.Threading;
 using NeeLaboratory.Windows.Input;
 using System;
@@ -12,7 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.Models
 {
     [NotifyPropertyChanged]
     public partial class MainModel : INotifyPropertyChanged

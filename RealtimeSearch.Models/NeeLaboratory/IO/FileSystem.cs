@@ -19,6 +19,17 @@ namespace NeeLaboratory.RealtimeSearch
 
         #endregion Native methods
 
+        private static IntPtr _hWnd;
+
+        /// <summary>
+        /// set owner window handle
+        /// </summary>
+        /// <param name="hWnd"></param>
+        public static void SetOwnerWindowHandle(IntPtr hWnd)
+        {
+            _hWnd = hWnd;
+        }
+
         /// <summary>
         /// ファイルかディレクトリの存在をチェック
         /// </summary>
@@ -83,11 +94,20 @@ namespace NeeLaboratory.RealtimeSearch
 
         public static void SendToRecycleBin(IList<string> files)
         {
-            ShellFileOperation.Delete(App.Current.MainWindow, files, true);
+            SendToRecycleBin(_hWnd, files);
         }
 
+        public static void SendToRecycleBin(IntPtr hWnd, IList<string> files)
+        {
+            ShellFileOperation.Delete(hWnd, files, true);
+        }
 
         public static void Rename(string src, string dst)
+        {
+            Rename(_hWnd, src, dst);
+        }
+
+        public static void Rename(IntPtr hWnd, string src, string dst)
         {
             if (string.IsNullOrWhiteSpace(src) || string.IsNullOrWhiteSpace(dst)) throw new ArgumentNullException();
             if (Path.GetDirectoryName(src) != Path.GetDirectoryName(dst)) throw new ArgumentException("Different directories");
@@ -100,7 +120,7 @@ namespace NeeLaboratory.RealtimeSearch
                 throw new FileNotFoundException(src);
             }
 
-            ShellFileOperation.Rename(App.Current.MainWindow, src, dst, ShellFileOperation.OperationFlags.Default | ShellFileOperation.OperationFlags.RenameOnCollision);
+            ShellFileOperation.Rename(hWnd, src, dst, ShellFileOperation.OperationFlags.Default | ShellFileOperation.OperationFlags.RenameOnCollision);
         }
 
 

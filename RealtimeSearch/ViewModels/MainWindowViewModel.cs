@@ -32,6 +32,7 @@ namespace NeeLaboratory.RealtimeSearch
         private bool _isRenaming;
         private readonly ExternalProgramCollection _programs;
         private FileItem? _selectedItem;
+        private IntPtr _hWnd;
 
 
         public MainWindowViewModel(AppConfig appConfig, Messenger messenger)
@@ -159,8 +160,11 @@ namespace NeeLaboratory.RealtimeSearch
             _programs.ClearError();
         }
 
-        public void Loaded()
+        public void Loaded(Window window)
         {
+            _hWnd = new WindowInteropHelper(window).Handle;
+            FileSystem.SetOwnerWindowHandle(_hWnd);
+
             // 検索パスが設定されていなければ設定画面を開く
             if (_appConfig.SearchAreas.Count <= 0)
             {
@@ -247,7 +251,7 @@ namespace NeeLaboratory.RealtimeSearch
 
             try
             {
-                ShellFileResource.OpenProperty(Application.Current.MainWindow, SelectedItem.Path);
+                ShellFileResource.OpenProperty(_hWnd, SelectedItem.Path);
             }
             catch (Exception ex)
             {
@@ -284,13 +288,14 @@ namespace NeeLaboratory.RealtimeSearch
 
             try
             {
-                FileSystem.SendToRecycleBin(items.Select(e => e.Path).ToList());
+                FileSystem.SendToRecycleBin( items.Select(e => e.Path).ToList());
             }
             catch (Exception ex)
             {
                 _messenger.Send(this, new ShowMessageBoxMessage($"ファイル削除に失敗しました\n\n原因: {ex.Message}", MessageBoxImage.Error));
             }
         }
+
 
         /// <summary>
         /// 名前変更

@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Windows;
+//using System.Windows;
 
 namespace NeeLaboratory.RealtimeSearch
 {
@@ -154,21 +154,23 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
+#if false
         private static IntPtr GetHWnd(Window window)
         {
             return window != null
               ? new System.Windows.Interop.WindowInteropHelper(window).Handle
               : IntPtr.Zero;
         }
+#endif
 
 
-        public static void Copy(Window owner, IEnumerable<string> paths, string dst)
+        public static void Copy(IntPtr hWnd, IEnumerable<string> paths, string dst)
         {
             if (paths == null || !paths.Any()) throw new ArgumentException("Empty paths");
             if (dst == null) throw new ArgumentNullException(nameof(dst));
 
             NativeMethods.SHFILEOPSTRUCT shfos;
-            shfos.hwnd = GetHWnd(owner);
+            shfos.hwnd = hWnd;
             shfos.wFunc = NativeMethods.FileFuncFlags.FO_COPY;
             shfos.pFrom = string.Join("\0", paths) + "\0\0";
             shfos.pTo = dst + "\0\0";
@@ -180,18 +182,18 @@ namespace NeeLaboratory.RealtimeSearch
             SHFileOperation(ref shfos);
         }
 
-        public static void Move(Window owner, IEnumerable<string> paths, string dst)
+        public static void Move(IntPtr hWnd, IEnumerable<string> paths, string dst)
         {
-            Move(owner, paths, dst, OperationFlags.Default);
+            Move(hWnd, paths, dst, OperationFlags.Default);
         }
 
-        public static void Move(Window owner, IEnumerable<string> paths, string dst, OperationFlags flags)
+        public static void Move(IntPtr hWnd, IEnumerable<string> paths, string dst, OperationFlags flags)
         {
             if (paths == null || !paths.Any()) throw new ArgumentException("Empty paths");
             if (dst == null) throw new ArgumentNullException(nameof(dst));
 
             NativeMethods.SHFILEOPSTRUCT shfos;
-            shfos.hwnd = GetHWnd(owner);
+            shfos.hwnd = hWnd;
             shfos.wFunc = NativeMethods.FileFuncFlags.FO_MOVE;
             shfos.pFrom = string.Join("\0", paths) + "\0\0";
             shfos.pTo = dst + "\0\0";
@@ -203,18 +205,18 @@ namespace NeeLaboratory.RealtimeSearch
             SHFileOperation(ref shfos);
         }
 
-        public static void Rename(Window owner, string path, string dst)
+        public static void Rename(IntPtr hWnd, string path, string dst)
         {
-            Rename(owner, path, dst, OperationFlags.Default);
+            Rename(hWnd, path, dst, OperationFlags.Default);
         }
 
-        public static void Rename(Window owner, string path, string dst, OperationFlags flags)
+        public static void Rename(IntPtr hWnd, string path, string dst, OperationFlags flags)
         {
             if (string.IsNullOrEmpty(path)) throw new ArgumentException("Empty paths");
             if (dst == null) throw new ArgumentNullException(nameof(dst));
 
             NativeMethods.SHFILEOPSTRUCT shfos;
-            shfos.hwnd = GetHWnd(owner);
+            shfos.hwnd = hWnd;
             shfos.wFunc = NativeMethods.FileFuncFlags.FO_RENAME;
             shfos.pFrom = path + "\0\0";
             shfos.pTo = dst + "\0\0";
@@ -226,7 +228,7 @@ namespace NeeLaboratory.RealtimeSearch
             SHFileOperation(ref shfos);
         }
 
-        public static void Delete(Window owner, IEnumerable<string> paths, bool wantNukeWarning)
+        public static void Delete(IntPtr hWnd, IEnumerable<string> paths, bool wantNukeWarning)
         {
             if (paths == null || !paths.Any()) throw new ArgumentException("Empty paths");
 
@@ -237,7 +239,7 @@ namespace NeeLaboratory.RealtimeSearch
             }
 
             NativeMethods.SHFILEOPSTRUCT shfos;
-            shfos.hwnd = GetHWnd(owner);
+            shfos.hwnd = hWnd;
             shfos.wFunc = NativeMethods.FileFuncFlags.FO_DELETE;
             shfos.pFrom = string.Join("\0", paths) + "\0\0";
             shfos.pTo = null;
