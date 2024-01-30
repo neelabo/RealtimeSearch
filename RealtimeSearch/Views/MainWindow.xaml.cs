@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -22,42 +23,6 @@ namespace NeeLaboratory.RealtimeSearch
     /// </summary>
     public partial class MainWindow : Window
     {
-        public static readonly RoutedCommand OpenCommand = new("OpenCommand", typeof(MainWindow));
-        public static readonly RoutedCommand OpenCommand1 = new("OpenCommand1", typeof(MainWindow));
-        public static readonly RoutedCommand OpenCommand2 = new("OpenCommand2", typeof(MainWindow));
-        public static readonly RoutedCommand OpenCommand3 = new("OpenCommand3", typeof(MainWindow));
-        public static readonly RoutedCommand OpenCommand4 = new("OpenCommand4", typeof(MainWindow));
-        public static readonly RoutedCommand OpenCommand5 = new("OpenCommand5", typeof(MainWindow));
-        public static readonly RoutedCommand OpenCommand6 = new("OpenCommand6", typeof(MainWindow));
-        public static readonly RoutedCommand OpenCommand7 = new("OpenCommand7", typeof(MainWindow));
-        public static readonly RoutedCommand OpenCommand8 = new("OpenCommand8", typeof(MainWindow));
-        public static readonly RoutedCommand OpenCommand9 = new("OpenCommand9", typeof(MainWindow));
-        public static readonly RoutedCommand OpenCommandX = new("OpenCommandX", typeof(MainWindow));
-        public static readonly RoutedCommand OpenCommandDefault = new("OpenCommandDefault", typeof(MainWindow));
-        public static readonly RoutedCommand CopyCommand = new("CopyCommand", typeof(MainWindow));
-        public static readonly RoutedCommand OpenPlaceCommand = new("OpenPlaceCommand", typeof(MainWindow));
-        public static readonly RoutedCommand CopyNameCommand = new("CopyNameCommand", typeof(MainWindow));
-        public static readonly RoutedCommand RenameCommand = new("RenameCommand", typeof(MainWindow));
-        public static readonly RoutedCommand DeleteCommand = new("DeleteCommand", typeof(MainWindow));
-        public static readonly RoutedCommand SearchCommand = new("SearchCommand", typeof(MainWindow));
-        public static readonly RoutedCommand WebSearchCommand = new("WebSearchCommand", typeof(MainWindow));
-        public static readonly RoutedCommand PropertyCommand = new("PropertyCommand", typeof(MainWindow));
-        public static readonly RoutedCommand ToggleAllowFolderCommand = new("ToggleAllowFolderCommand", typeof(MainWindow));
-        public static readonly RoutedCommand OpenSettingCommand = new("OpenSettingCommand", typeof(MainWindow));
-
-        public static readonly List<RoutedCommand> OpenCommandCollection = new()
-        {
-            OpenCommand1,
-            OpenCommand2,
-            OpenCommand3,
-            OpenCommand4,
-            OpenCommand5,
-            OpenCommand6,
-            OpenCommand7,
-            OpenCommand8,
-            OpenCommand9,
-        };
-
         private readonly MainWindowViewModel _vm;
 
         private Point _dragStart;
@@ -75,11 +40,10 @@ namespace NeeLaboratory.RealtimeSearch
             var messenger = new Messenger();
             messenger.Register<ShowMessageBoxMessage>(ShowMessageBox);
             messenger.Register<ShowSettingWindowMessage>(ShowSettingWindow);
+            messenger.Register<RenameItemMessage>(RenameItem);
 
-            _vm = new MainWindowViewModel(App.AppConfig, messenger);
+            _vm = new MainWindowViewModel(AppModel.AppConfig, messenger);
             this.DataContext = _vm;
-
-            RegistRoutedCommand();
 
             _vm.SearchResultChanged += ViewModel_FilesChanged;
 
@@ -89,7 +53,7 @@ namespace NeeLaboratory.RealtimeSearch
             this.MouseRightButtonDown += (s, e) => this.RenameManager.Stop();
             this.Deactivated += (s, e) => this.RenameManager.Stop();
 
-            RestoreListViewMemento(App.AppConfig.ListViewColumnMemento);
+            RestoreListViewMemento(AppModel.AppConfig.ListViewColumnMemento);
 
 #if false
             // 実験
@@ -123,7 +87,13 @@ namespace NeeLaboratory.RealtimeSearch
             ShowSettingWindow();
         }
 
+        private void RenameItem(object? sender, RenameItemMessage e)
+        {
+            PopupRenameTextBox(e.Item);
+        }
+
         #endregion Messaging
+
 
         #region Methods
 
@@ -173,8 +143,7 @@ namespace NeeLaboratory.RealtimeSearch
         private void ListViewItem_MouseDoubleClick(object? sender, MouseButtonEventArgs e)
         {
             if (((ListViewItem?)sender)?.Content is not FileItem file) return;
-
-            _vm.Execute(new List<FileItem>() { file });
+            _vm.OpenExternalProgram(new List<FileItem>() { file });
         }
 
         private async void Keyword_KeyDown(object? sender, KeyEventArgs e)
@@ -185,7 +154,6 @@ namespace NeeLaboratory.RealtimeSearch
                 {
                     _vm.SetKeyword(comboBox.Text);
                     await _vm.SearchAsync(false);
-                    _vm.AddHistory();
                 }
             }
         }
@@ -203,14 +171,10 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        private void OpenSettingCommand_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            ShowSettingWindow();
-        }
 
         private void ShowSettingWindow()
         {
-            var window = new SettingWindow(App.AppConfig)
+            var window = new SettingWindow(AppModel.AppConfig)
             {
                 Owner = this,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
@@ -255,7 +219,7 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 if (this.ResultListView.SelectedItem is FileItem file)
                 {
-                    _vm.Rename(file, e.NewValue);
+                    _vm.Rename(file, e.NewValue, true);
                 }
             }
         }
@@ -284,7 +248,10 @@ namespace NeeLaboratory.RealtimeSearch
             this.ResultListView.UpdateLayout();
 
             // リネーム発動
-            Rename_Executed(this.ResultListView, null);
+            if (this.ResultListView.SelectedItem is FileItem item)
+            {
+                PopupRenameTextBox(item);
+            }
         }
 
         #endregion Rename
@@ -332,254 +299,6 @@ namespace NeeLaboratory.RealtimeSearch
         }
 
         #endregion DragDrop
-
-        #region Routed Commands
-
-        private void RegistRoutedCommand()
-        {
-            OpenCommand.InputGestures.Add(new KeyGesture(Key.Enter));
-            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand, Open_Executed));
-
-            OpenCommand1.InputGestures.Add(new KeyGesture(Key.D1, ModifierKeys.Control));
-            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand1, OpenEx1_Executed));
-
-            OpenCommand2.InputGestures.Add(new KeyGesture(Key.D2, ModifierKeys.Control));
-            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand2, OpenEx2_Executed));
-
-            OpenCommand3.InputGestures.Add(new KeyGesture(Key.D3, ModifierKeys.Control));
-            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand3, OpenEx3_Executed));
-
-            OpenCommand4.InputGestures.Add(new KeyGesture(Key.D4, ModifierKeys.Control));
-            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand4, OpenEx4_Executed));
-
-            OpenCommand5.InputGestures.Add(new KeyGesture(Key.D5, ModifierKeys.Control));
-            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand5, OpenEx5_Executed));
-
-            OpenCommand6.InputGestures.Add(new KeyGesture(Key.D6, ModifierKeys.Control));
-            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand6, OpenEx6_Executed));
-
-            OpenCommand7.InputGestures.Add(new KeyGesture(Key.D7, ModifierKeys.Control));
-            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand7, OpenEx7_Executed));
-
-            OpenCommand8.InputGestures.Add(new KeyGesture(Key.D8, ModifierKeys.Control));
-            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand8, OpenEx8_Executed));
-
-            OpenCommand9.InputGestures.Add(new KeyGesture(Key.D9, ModifierKeys.Control));
-            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommand9, OpenEx9_Executed));
-
-            OpenCommandDefault.InputGestures.Add(new KeyGesture(Key.Enter, ModifierKeys.Control));
-            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenCommandDefault, OpenDefault_Executed));
-
-            CopyCommand.InputGestures.Add(new KeyGesture(Key.C, ModifierKeys.Control));
-            this.ResultListView.CommandBindings.Add(new CommandBinding(CopyCommand, Copy_Executed));
-
-            this.ResultListView.CommandBindings.Add(new CommandBinding(OpenPlaceCommand, OpenPlace_Executed));
-
-            CopyNameCommand.InputGestures.Add(new KeyGesture(Key.C, ModifierKeys.Control | ModifierKeys.Shift));
-            this.ResultListView.CommandBindings.Add(new CommandBinding(CopyNameCommand, CopyName_Executed));
-
-            RenameCommand.InputGestures.Add(new KeyGesture(Key.F2));
-            this.ResultListView.CommandBindings.Add(new CommandBinding(RenameCommand, Rename_Executed));
-
-            DeleteCommand.InputGestures.Add(new KeyGesture(Key.Delete));
-            this.ResultListView.CommandBindings.Add(new CommandBinding(DeleteCommand, Delete_Executed));
-
-            SearchCommand.InputGestures.Add(new KeyGesture(Key.F5));
-            SearchCommand.InputGestures.Add(new KeyGesture(Key.R, ModifierKeys.Control));
-            this.CommandBindings.Add(new CommandBinding(SearchCommand, Search_Executed));
-
-            WebSearchCommand.InputGestures.Add(new KeyGesture(Key.F, ModifierKeys.Control));
-            this.CommandBindings.Add(new CommandBinding(WebSearchCommand, WebSearch_Executed));
-
-            this.ResultListView.CommandBindings.Add(new CommandBinding(PropertyCommand, Property_Executed));
-
-            this.CommandBindings.Add(new CommandBinding(ToggleAllowFolderCommand, ToggleAllowFolder_Executed));
-
-            this.CommandBindings.Add(new CommandBinding(OpenSettingCommand, OpenSettingCommand_Executed));
-        }
-
-        private async void ToggleAllowFolder_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            await _vm.ToggleAllowFolderAsync();
-        }
-
-        private void Property_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            if ((target as ListView)?.SelectedItem is FileItem file)
-            {
-                _vm.OpenProperty(file);
-            }
-        }
-
-        private async void Search_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            await _vm.SearchAsync(true);
-            _vm.AddHistory();
-        }
-
-        private void WebSearch_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            _vm.WebSearch();
-        }
-
-        // ファイル削除
-        private void Delete_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            var items = (target as ListView)?.SelectedItems;
-            if (items != null && items.Count > 0)
-            {
-                _vm.Delete(items.Cast<FileItem>().ToList());
-            }
-        }
-
-        // 名前変更
-        private void Rename_Executed(object? target, ExecutedRoutedEventArgs? e)
-        {
-            var listView = target as ListView;
-
-            if (listView?.SelectedItem is FileItem item)
-            {
-                PopupRenameTextBox(item);
-            }
-        }
-
-        // 外部アプリ実行タイプ
-        private enum ExecuteType
-        {
-            Default,
-            ExternalPrograms,
-            SelectedExternalProgram,
-        }
-
-        // ファイルを開く
-        private void Open_Executed(object target, ExecutedRoutedEventArgs _, ExecuteType executeType, int programId = 0)
-        {
-            // TODO: vm
-            var items = (target as ListView)?.SelectedItems;
-
-            if (items == null) return;
-
-            var nodes = items.OfType<FileItem>();
-            if (!nodes.Any()) return;
-
-            switch (executeType)
-            {
-                default:
-                case ExecuteType.Default:
-                    _vm.ExecuteDefault(nodes);
-                    break;
-                case ExecuteType.ExternalPrograms:
-                    _vm.Execute(nodes);
-                    break;
-                case ExecuteType.SelectedExternalProgram:
-                    _vm.Execute(nodes, programId);
-                    break;
-            }
-        }
-
-        private void OpenEx1_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 1);
-        }
-
-        private void OpenEx2_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 2);
-        }
-
-        private void OpenEx3_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 3);
-        }
-
-        private void OpenEx4_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 4);
-        }
-
-        private void OpenEx5_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 5);
-        }
-
-        private void OpenEx6_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 6);
-        }
-
-        private void OpenEx7_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 7);
-        }
-
-        private void OpenEx8_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 8);
-        }
-
-        private void OpenEx9_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, 9);
-        }
-
-        private void Open_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            Open_Executed(target, e, ExecuteType.ExternalPrograms);
-        }
-
-        private void OpenX_Executed(object target, ExecutedRoutedEventArgs e)
-        { 
-            int programId = 0;
-            if (e.Parameter is int value)
-            {
-                programId = value;
-            }
-            Open_Executed(target, e, ExecuteType.SelectedExternalProgram, programId);
-        }
-
-        // ファイルを開く(既定)
-        private void OpenDefault_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            Open_Executed(target, e, ExecuteType.Default);
-        }
-
-        // ファイルの場所を開く
-        private void OpenPlace_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            // TODO: vm
-            var items = (target as ListView)?.SelectedItems;
-
-            if (items == null) return;
-
-            foreach (var item in items)
-            {
-                if (item is FileItem file && (System.IO.File.Exists(file.Path) || System.IO.Directory.Exists(file.Path)))
-                {
-                    var startInfo = new ProcessStartInfo("explorer.exe", "/select,\"" + file.Path + "\"") { UseShellExecute = false };
-                    Process.Start(startInfo);
-                }
-            }
-        }
-
-        // ファイルのコピー
-        private void Copy_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            var items = (target as ListView)?.SelectedItems;
-            if (items is null) return;
-
-            _vm.CopyFilesToClipboard(items.Cast<FileItem>().ToList());
-        }
-
-        // ファイル名のコピー
-        private void CopyName_Executed(object target, ExecutedRoutedEventArgs e)
-        {
-            if ((target as ListView)?.SelectedItem is FileItem file)
-            {
-                _vm.CopyNameToClipboard(file);
-            }
-        }
-
-        #endregion Routed Commands
 
         #region Sort ListView
 
@@ -710,7 +429,9 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        #endregion
+        #endregion ListViewColumnMemento
+
+        #region ContextMenu
 
         private void ContextMenu_Opening(object sender, ContextMenuEventArgs e)
         {
@@ -718,34 +439,50 @@ namespace NeeLaboratory.RealtimeSearch
             var contextMenu = frameworkElement?.ContextMenu;
             if (contextMenu is null) return;
 
+            var selectedItems = this.ResultListView.SelectedItems;
+
             contextMenu.Items.Clear();
-            contextMenu.Items.Add(new MenuItem() { Header = "開く(_O)", Command = OpenCommand });
-            contextMenu.Items.Add(new MenuItem() { Header = "既定のアプリで開く", Command = OpenCommandDefault });
+            contextMenu.Items.Add(CreateMenuItem("開く(_O)", _vm.OpenExternalProgramCommand, selectedItems, new KeyGesture(Key.Enter)));
+            contextMenu.Items.Add(CreateMenuItem("既定のアプリで開く", _vm.OpenDefaultCommand, selectedItems, new KeyGesture(Key.Enter, ModifierKeys.Control)));
             contextMenu.Items.Add(new Separator());
             for (int i = 0; i < _vm.Programs.Count; i++)
             {
                 var program = _vm.Programs[i];
-                if (i < OpenCommandCollection.Count)
+                if (i < 9)
                 {
-                    contextMenu.Items.Add(new MenuItem() { Header = program.Name, Command = OpenCommandCollection[i] });
-               }
+                    contextMenu.Items.Add(CreateMenuItem(program.Name, _vm.OpenSelectedExternalProgramCommand, new OpenSelectedExternalProgramArgs(selectedItems, i + 1), new KeyGesture(Key.D1 + i, ModifierKeys.Control)));
+                }
                 else
                 {
-                    contextMenu.Items.Add(new MenuItem() { Header = program.Name, Command = OpenCommandX, CommandParameter = i });
+                    contextMenu.Items.Add(CreateMenuItem(program.Name, _vm.OpenSelectedExternalProgramCommand, new OpenSelectedExternalProgramArgs(selectedItems, i + 1)));
                 }
             }
+
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(new MenuItem() { Header = "ファイルの場所を開く(_I)", Command = OpenPlaceCommand });
+            contextMenu.Items.Add(CreateMenuItem("ファイルの場所を開く(_I)", _vm.OpenPlaceCommand, selectedItems));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(new MenuItem() { Header = "ファイルをコピーする(_C)", Command = CopyCommand });
-            contextMenu.Items.Add(new MenuItem() { Header = "名前をコピーする", Command = CopyNameCommand });
+            contextMenu.Items.Add(CreateMenuItem("ファイルをコピーする(_C)", _vm.CopyCommand, selectedItems, new KeyGesture(Key.C, ModifierKeys.Control)));
+            contextMenu.Items.Add(CreateMenuItem("名前をコピーする", _vm.CopyNameCommand, selectedItems, new KeyGesture(Key.C, ModifierKeys.Control | ModifierKeys.Shift)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(new MenuItem() { Header = "削除(_D)", Command = DeleteCommand });
+            contextMenu.Items.Add(CreateMenuItem("削除(_D)", _vm.DeleteCommand, selectedItems, new KeyGesture(Key.Delete)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(new MenuItem() { Header = "名前の変更(_M)", Command = RenameCommand });
+            contextMenu.Items.Add(CreateMenuItem("名前の変更(_M)", _vm.RenameCommand, null, new KeyGesture(Key.F2)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(new MenuItem() { Header = "プロパティ(_R)", Command = PropertyCommand });
+            contextMenu.Items.Add(CreateMenuItem("プロパティ(_R)", _vm.ShowPropertyCommand));
         }
+
+        private MenuItem CreateMenuItem(string header, ICommand command, object? commandParameter = null, KeyGesture? keyGesture = null)
+        {
+            return new MenuItem()
+            {
+                Header = header,
+                Command = command,
+                CommandParameter = commandParameter,
+                InputGestureText = keyGesture?.GetDisplayStringForCulture(CultureInfo.CurrentCulture)
+            };
+        }
+
+        #endregion ContextMenu
     }
 
 }

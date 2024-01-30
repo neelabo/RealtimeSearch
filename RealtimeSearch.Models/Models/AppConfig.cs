@@ -29,7 +29,6 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
     public class AppConfig : BindableBase, ISearchContext
     {
-
         private bool _isMonitorClipboard;
         private bool _isTopmost;
         private bool _isDetailVisible;

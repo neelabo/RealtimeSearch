@@ -90,7 +90,7 @@ namespace NeeLaboratory.RealtimeSearch
             this.CommandBindings.Add(new CommandBinding(CloseCommand, (t, e) => Close()));
 
             // help command
-            var readmeUri = "file://" + App.AppInfo.AssemblyLocation.Replace('\\', '/').TrimEnd('/') + $"/README.html";
+            var readmeUri = "file://" + AppModel.AppInfo.AssemblyLocation.Replace('\\', '/').TrimEnd('/') + $"/README.html";
             this.CommandBindings.Add(new CommandBinding(HelpCommand, (t, e) =>
             {
                 try

@@ -26,77 +26,20 @@ namespace NeeLaboratory.RealtimeSearch
     /// </summary>
     public partial class App : Application
     {
-        private readonly PersistAndRestoreService _persistAndRestoreService;
+        private AppModel? _appModel;
 
         public App()
         {
-            _persistAndRestoreService = new PersistAndRestoreService(new FileService());
         }
-
-        public static ApplicationInfoService AppInfo { get; private set; } = new ApplicationInfoService();
-
-        public static AppConfig AppConfig { get; private set; } = new AppConfig();
-
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            AppInfo.Initialize();
-
-            try
-            {
-                // カレントフォルダ設定
-                //System.Environment.CurrentDirectory = Config.LocalApplicationDataPath;
-
-                // 設定ファイル読み込み
-                var appConfig = _persistAndRestoreService.Load();
-                appConfig?.Validate();
-
-                if (appConfig is not null)
-                {
-                    AppConfig = appConfig;
-                }
-
-#if false
-                // logger
-                //var sw = new StreamWriter("TraceLog.txt");
-                //sw.AutoFlush = true;
-                //var tw = TextWriter.Synchronized(sw);
-                //var twtl = new TextWriterTraceListener(tw, Development.Logger.TraceSource.Name);
-                //Trace.Listeners.Add(twtl);
-
-                var appTrace = Development.Logger.TraceSource;
-                appTrace.Listeners.Remove("Default");
-                var twtl = new TextWriterTraceListener("TraceLog.txt", "LogFile");
-                appTrace.Listeners.Add(twtl);
-                Development.Logger.SetLevel(SourceLevels.All);
-                Development.Logger.Trace(System.Environment.NewLine + new string('=', 80));
-
-                //Development.Logger.SetLevel(SourceLevels.All);
-                //var twtl = new TextWriterTraceListener("TraceLog.txt", Development.Logger.TraceSource.Name);
-                //Trace.Listeners.Add(twtl);
-                //Trace.AutoFlush = true;
-                //Trace.WriteLine(System.Environment.NewLine + new string('=', 80));
-#endif
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, AppInfo.ProductName, MessageBoxButton.OK, MessageBoxImage.Error);
-                throw;
-            }
+            _appModel = AppModel.Instance;
         }
 
         private void Application_Exit(object sender, ExitEventArgs e)
         {
-            try
-            {
-                // 設定ファイル保存
-                _persistAndRestoreService.Save(AppConfig);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, AppInfo.ProductName, MessageBoxButton.OK, MessageBoxImage.Error);
-                throw;
-            }
+            _appModel?.Dispose();
         }
     }
 }

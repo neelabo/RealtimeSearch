@@ -1,4 +1,4 @@
-## Third-Party Licenses
+﻿## Third-Party Licenses
 
 ### Material design icons
 
@@ -15,3 +15,9 @@ ICON: pushpin, etc...
 * OnlineWebFonts.COM (C)
 * URL: [Icon Fonts](http://www.onlinewebfonts.com/icon)
 * License: [CC BY 3.0](http://creativecommons.org/licenses/by/3.0/)
+
+### .NET Community Toolkit
+
+* Copyright (C) .NET Foundation and Contributors
+* URL: [.NET Community Toolkit](https://github.com/CommunityToolkit/dotnet)
+* License: [MIT License](https://github.com/CommunityToolkit/dotnet/blob/main/License.md)

@@ -56,7 +56,7 @@ namespace NeeLaboratory.RealtimeSearch.Services
             ProcessModule? module = Process.GetCurrentProcess().MainModule;
             if (module is null) throw new InvalidOperationException();
 
-            var assembly = Assembly.GetExecutingAssembly();
+            var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
 
             ValidateProductInfo(assembly, module);
         }

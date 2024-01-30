@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>NeeLaboratory.RealtimeSearch</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NeeLaboratory.IO.Search.Files\NeeLaboratory.IO.Search.Files.csproj" />
+    <ProjectReference Include="..\NeeLaboratory\NeeLaboratory.Runtime\NeeLaboratory.Runtime.csproj" />
+    <ProjectReference Include="..\NeeLaboratory\NeeLaboratory.SourceGenerator\NeeLaboratory.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

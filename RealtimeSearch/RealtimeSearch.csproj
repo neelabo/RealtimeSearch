@@ -21,6 +21,10 @@
   <ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+  </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\NeeLaboratory.IO.Search.Files\NeeLaboratory.IO.Search.Files.csproj" />
@@ -28,6 +32,7 @@
     <ProjectReference Include="..\NeeLaboratory\NeeLaboratory.Runtime\NeeLaboratory.Runtime.csproj" />
     <ProjectReference Include="..\NeeLaboratory.IO.Search\NeeLaboratory.IO.Search\NeeLaboratory.IO.Search.csproj" />
     <ProjectReference Include="..\NeeLaboratory\NeeLaboratory.Windows\NeeLaboratory.Windows.csproj" />
+    <ProjectReference Include="..\RealtimeSearch.Models\RealtimeSearch.Models.csproj" />
   </ItemGroup>
   
 </Project>

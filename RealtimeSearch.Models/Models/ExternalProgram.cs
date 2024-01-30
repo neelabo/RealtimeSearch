@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -86,6 +87,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         {
             get { return _program; }
             set { SetProperty(ref _program, value.Trim()); }
+
         }
 
         public string Parameter
@@ -159,7 +161,9 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
         private string GetDefaultName()
         {
-            return $"Program {_id}";
+            return string.IsNullOrEmpty(_program)
+                ? $"Program {_id}"
+                : Path.GetFileNameWithoutExtension(_program);
         }
 
         private string? ValidateName(string value)

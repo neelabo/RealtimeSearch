@@ -5,23 +5,26 @@ using System.IO;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Windows;
 
 namespace NeeLaboratory.RealtimeSearch.Services
 {
     public class PersistAndRestoreService
     {
         private readonly IFileService _fileService;
+        private readonly ApplicationInfoService _appInfo;
 
 
-        public PersistAndRestoreService(IFileService fileService)
+        public PersistAndRestoreService(IFileService fileService, ApplicationInfoService appInfo)
         {
             _fileService = fileService;
+            _appInfo = appInfo;
         }
 
 
-        private static string FolderPath => App.AppInfo.LocalApplicationDataPath;
+        private string FolderPath => _appInfo.LocalApplicationDataPath;
 
-        private static string AppConfigFileName => App.AppInfo.ProductName + ".app.json";
+        private string AppConfigFileName => _appInfo.ProductName + ".app.json";
 
 
         // TODO ASync
@@ -52,4 +55,7 @@ namespace NeeLaboratory.RealtimeSearch.Services
             }
         }
     }
+
+
+
 }
