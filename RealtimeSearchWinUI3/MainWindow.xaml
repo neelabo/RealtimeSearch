@@ -8,7 +8,68 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
-    </StackPanel>
+    <Grid RowDefinitions="Auto,*">
+        <Grid.Resources>
+            <Style x:Key="IconButton" TargetType="Button">
+            </Style>
+        </Grid.Resources>
+
+
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" >
+
+
+            <StackPanel x:Name="ButtonsPanel" Orientation="Horizontal"
+                    Grid.Column="1">
+
+                <AppBarButton x:Name="SearchButton" Icon="Refresh" Label="Refresh" >
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="R" Modifiers="Control"/>
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+
+                <AppBarButton x:Name="WebSearchButton" Icon="Globe" Label="Web search" Command="{Binding WebSearchCommand}" >
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="F" Modifiers="Control"/>
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+
+                <AppBarButton x:Name="SettingButton" Icon="Setting" Label="Setting" Command="{Binding WebSearchCommand}" >
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="O" Modifiers="Control"/>
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+
+            </StackPanel>
+
+            <ComboBox x:Name="KeywordComboBox" IsEditable="True" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5"
+                  Grid.Column="0"
+
+                      RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.LeftOf="ButtonsPanel"
+                    RelativePanel.AlignVerticalCenterWith="ButtonsPanel">
+                <x:String>Red</x:String>
+                <x:String>Green</x:String>
+                <x:String>Blue</x:String>
+            </ComboBox>
+        </Grid>
+
+
+        <Grid Grid.Row="1">
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="CommunityToolkit.WinUI3 で DataTable が正式採用されるまで保留"/>
+        </Grid>
+
+        <!--
+        <Grid Grid.Row="1" Background="Red" MinWidth="10" MinHeight="10"  
+              RelativePanel.AlignLeftWithPanel="True"
+              RelativePanel.AlignRightWithPanel="True"
+              RelativePanel.AlignBottomWithPanel="True"
+              >
+
+            <TextBox x:Name="TestTextBox" MinWidth="256" TextChanged="TestTextBox_TextChanged"/>
+
+        </Grid>
+        -->
+
+    </Grid>
+
 </Window>

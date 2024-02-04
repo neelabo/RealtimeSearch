@@ -51,20 +51,14 @@ namespace NeeLaboratory.IO.Search.Files
             _context.PropertyChanged += SearchContext_PropertyChanged;
         }
 
-        private void SearchContext_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                case nameof(ISearchContext.AllowFolder):
-                    UpdateSearchProperties();
-                    break;
-            }
-        }
+
 
 
         [Subscribable]
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        [Subscribable]
+        public event EventHandler<SearchCommandEngineState> StateChanged;
 
 
         public bool IsBusy { get; private set; }
@@ -75,7 +69,13 @@ namespace NeeLaboratory.IO.Search.Files
         public SearchCommandEngineState State
         {
             get { return _state; }
-            private set { SetProperty(ref _state, value); }
+            private set
+            {
+                if (SetProperty(ref _state, value))
+                {
+                    StateChanged?.Invoke(this, _state);
+                }
+            }
         }
 
 
@@ -106,6 +106,15 @@ namespace NeeLaboratory.IO.Search.Files
             if (_disposedValue) throw new ObjectDisposedException(GetType().FullName);
         }
 
+        private void SearchContext_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(ISearchContext.AllowFolder):
+                    UpdateSearchProperties();
+                    break;
+            }
+        }
 
         public void AddSearchAreas(params FileArea[] areas)
         {
@@ -416,6 +425,8 @@ namespace NeeLaboratory.IO.Search.Files
 #endif
 
     }
+
+
 
 
 }

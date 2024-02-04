@@ -45,7 +45,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
             _appConfig = appConfig;
 
             _searchEngine = new FileSearchEngine(_appConfig);
-            _searchEngine.PropertyChanged += SearchEngine_PropertyChanged;
+            _searchEngine.StateChanged += SearchEngine_StateChanged;
 
             _appConfig.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
 
@@ -57,11 +57,15 @@ namespace NeeLaboratory.RealtimeSearch.Models
         }
 
 
-
         /// <summary>
         /// 結果変更イベント
         /// </summary>
         public EventHandler? SearchResultChanged;
+
+        /// <summary>
+        /// 状態変更イベント
+        /// </summary>
+        public EventHandler<SearchCommandEngineState>? StateChanged;
 
 
         public bool IsBusy
@@ -69,6 +73,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
             get { return _isBusy; }
             set { SetProperty(ref _isBusy, value); }
         }
+
         public string Information
         {
             get { return _information; }
@@ -90,15 +95,12 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
         public ISearchResultDecorator<FileItem>? SearchResultDecorator { get; set; }
 
-        private void SearchEngine_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+
+        private void SearchEngine_StateChanged(object? sender, SearchCommandEngineState e)
         {
-            if (e.PropertyName == nameof(FileSearchEngine.State))
-            {
-                Debug.WriteLine($"State: {_searchEngine.State}");
-                SetMessage("");
-                //_timer.IsEnabled = _searchEngine.State != SearchCommandEngineState.Idle;
-                //IsBusyVisible = _searchEngine.State == SearchCommandEngineState.Search;
-            }
+            Debug.WriteLine($"State: {_searchEngine.State}");
+            SetMessage("");
+            StateChanged?.Invoke(this, e);
         }
 
         private void SearchAreas_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
