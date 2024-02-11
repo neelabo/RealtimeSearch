@@ -1,185 +1,556 @@
+﻿# パッケージ生成スクリプト
+#
+# 使用ツール：
+#   - Wix Toolset
+#   - pandoc
+
 Param(
-	[ValidateSet("All", "Clean")]$Target = "All"
+	[ValidateSet("All", "Zip", "Installer", "Appx", "Canary", "Beta", "Dev")]$Target = "All",
+
+	# ビルドをスキップする
+	[switch]$continue,
+
+	# ログ出力のあるパッケージ作成
+	[switch]$trace,
+
+	# ターゲットx86
+	[switch]$x86,
+
+	# MSI作成時にMainComponents.wsxを更新する
+	[switch]$updateComponent,
+
+	# Postfix. Canary や Beta での番号重複回避用
+	[string]$versionPostfix = ""
 )
 
 # error to break
-$ErrorActionPreference = "Stop"
 trap { break }
 
-# sync .NET current directory
-[System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).Path)
+$ErrorActionPreference = "stop"
 
-#-----------------------
-# variables
+Write-Host "Target: $Target"
+Write-Host "Continue: $continue"
+Write-Host "Trace: $trace"
+Write-Host "x86: $x86"
+Write-Host "updateComponent: $updateComponent" 
+Write-Host "versionPostfix: $versionPostfix" 
+Write-Host
+Read-Host "Press Enter to continue"
+
+#
 $product = 'RealtimeSearch'
-$assembly = 'RealtimeSearch'
-$solutionDir = Resolve-Path ".."
-$projectDir = "$solutionDir\$assembly"
-$project = "$projectDir\$product.csproj"
-$publishDir = "Publish"
-$productDir = "$publishDir\$product-x64"
+$configuration = 'Release'
+$framework = 'net8.0-windows'
+
+#
+#$Win10SDK = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x64"
+$Win10SDK = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64"
 
 
 #---------------------
 # get fileversion
 function Get-FileVersion($fileName)
 {
-	if (-Not (Test-Path $filename))
-	{
-		Write-Error "File not found: $filename"
-		return
-	}
+	throw "not supported."
 
-	$fullpath = Convert-Path $filename
-	
-	$versionInfo = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($fullpath)
-	$major = $versionInfo.FileMajorPart
-	$minor = $versionInfo.FileMinorPart
+	$major = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($fileName).FileMajorPart
+	$minor = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($fileName).FileMinorPart
 
 	"$major.$minor"
 }
 
+
+#---------------------
+# get base vsersion
+function Get-Version($projectFile)
+{
+	$xml = [xml](Get-Content $projectFile)
+	$version = [String]$xml.Project.PropertyGroup.Version;
+	if ($version -match '(\d+\.\d+)\.\d+')
+	{
+		return $Matches[1]
+	}
+	
+    throw "Cannot get Version."
+}
+
+
+#---------------------
+# get build count
+function Get-BuildCount()
+{
+	# auto increment build version
+	$xml = [xml](Get-Content "BuildCount.xml")
+	return [int]$xml.build + 1
+}
+
+#---------------------
+# set build count
+function Set-BuildCount($buildCount)
+{
+	$xml = [xml](Get-Content "BuildCount.xml")
+	$xml.build = [string]$buildCount
+	$xml.Save("BuildCount.xml")
+}
+
+#---------------------
+# get git log
+function Get-GitLog()
+{
+    $branch = Invoke-Expression "git rev-parse --abbrev-ref HEAD"
+    $descrive = Invoke-Expression "git describe --abbrev=0 --tags"
+	$date = Invoke-Expression 'git log -1 --pretty=format:"%ad" --date=iso'
+	$result = Invoke-Expression "git log $descrive..head --encoding=Shift_JIS --pretty=format:`"%ae %s`""
+	$result = $result | Where-Object {$_ -match "^nee.laboratory"} | ForEach-Object {$_ -replace "^[\w\.@]+ ",""}
+	$result = $result | Where-Object { -not ($_ -match '^m.rge|^開発用|^作業中|\(dev\)|^-|^\.\.') } 
+
+    return "[${branch}] $descrive to head", $date, $result
+}
+
+#---------------------
+# get git log (markdown)
+function Get-GitLogMarkdown($title)
+{
+    $result = Get-GitLog
+	$header = $result[0]
+	$date = $result[1]
+    $logs = $result[2]
+
+	"## $title"
+	"### $header"
+	"Rev. $revision / $date"
+	""
+	$logs | ForEach-Object { "- $_" }
+	""
+	"This list of changes was auto generated."
+}
 
 #--------------------
 # replace keyword
 function Replace-Content
 {
 	Param([string]$filepath, [string]$rep1, [string]$rep2)
-	if (-Not (Test-Path $filepath))
+	if ( $(Test-Path $filepath) -ne $True )
 	{
-		Write-Error "file not found: $filename"
+		Write-Error "file not found"
 		return
 	}
-
 	# input UTF8, output UTF8
 	$file_contents = $(Get-Content -Encoding UTF8 $filepath) -replace $rep1, $rep2
 	$file_contents | Out-File -Encoding UTF8 $filepath
 }
 
 
-#----------------------
-# clear
-function Remove-Files
-{
-	$files = $args
-	foreach ($file in $files.Where({-Not [string]::IsNullOrEmpty($_)}))
-	{
-		Write-Host "Remove $file" -fore DarkYellow
-
-		if (Test-Path $file)
-		{
-			Remove-Item $file -Recurse -Force
-		}
-	}
-
-	Start-Sleep -m 100
-}
+#-----------------------
+# variables
+$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+$solutionDir = Convert-Path "$scriptPath\.."
+$solution = "$solutionDir\$product.sln"
+$projectDir = "$solutionDir\$product"
+$project = "$projectDir\$product.csproj"
+#$projectSusieDir = "$solutionDir\$product.Susie.Server"
+#$projectSusie = "$projectSusieDir\$product.Susie.Server.csproj"
+$projectTerminateDir = "$solutionDir\$product.Terminator"
+$ptojectTerminate = "$projectTerminateDir\$product.Terminator.csproj"
 
 #-----------------------
-# build
-function Publish-Product($project, $output)
+# procject output dir
+function Get-ProjectOutputDir($projectDir, $platform)
 {
-	#& dotnet publish $project -c Release -r win-x64 -p:PublishReadyToRun=true --no-self-contained -o publish/x64
-	#& dotnet publish $project -c Release -r win-x86 -p:PublishReadyToRun=true --no-self-contained -o publish/x86
-	#& dotnet publish $project -c Release -o $output
-	& dotnet publish $project -p:PublishProfile=FolderProfile-x64.pubxml -c Release
+	if ($platform -eq "AnyCPU")
+	{
+		"$projectDir\bin\$configuration\$framework"
+	}
+	else
+	{
+		"$projectDir\bin\$platform\$configuration\$framework"
+	}
 }
 
+#----------------------
+# build
+function Build-Project($platform, $outputDir, $options)
+{
+	$defaultOptions = @(
+		"-p:PublishProfile=FolderProfile-$platform.pubxml"
+		"-c", "Release"
+	)
+
+	& dotnet publish $project $defaultOptions $options -o Publish\$outputDir
+	if ($? -ne $true)
+	{
+		throw "build error"
+	}
+
+	#& dotnet publish $projectSusie $defaultOptions $options -o Publish\$outputDir\Libraries
+	#if ($? -ne $true)
+	#{
+	#	throw "build error"
+	#}
+	
+	#& dotnet publish $ptojectTerminate -p:PublishProfile=FolderProfile-$platform.pubxml -c Release
+}
+
+function Build-ProjectSelfContained($platform)
+{
+	$options = @(
+		"--self-contained", "true"
+	)
+
+	Build-Project $platform "$product-$platform" $options
+}
+
+function Build-ProjectFrameworkDependent($platform)
+{
+	$options = @(
+		"-p:PublishTrimmed=false"
+		"--self-contained", "false"
+	)
+
+	Build-Project $platform "$product-$platform-fd" $options
+}
 
 #----------------------
 # package section
-function New-Package
+function New-Package($platform, $productName, $productDir, $packageDir)
 {
-	# make package folder
 	$temp = New-Item $packageDir -ItemType Directory
 
-	# copy
-	Copy-Item "$productDir\$product.exe" $packageDir
-	Copy-Item "$productDir\$product.runtimeconfig.json" $packageDir
-	Copy-Item "$productDir\$product.deps.json" $packageDir
-	Copy-Item "$productDir\*.dll" $packageDir
-	Copy-Item "$productDir\*.dll.config" $packageDir
-
-
-	#------------------------
-	# generate README.html
-
-	$readmeDir = $packageDir + "\readme"
-	$temp = New-Item $readmeDir -ItemType Directory 
-
-	Copy-Item "$solutionDir\*.md" $readmeDir
-	#Copy-Item "$solutionDir\Style.html" $readmeDir
-	Copy-Item "$solutionDir\NeeLaboratory.IO.Search\THIRDPARTY_LICENSES.md" "$readmeDir\NeeLaboratory.IO.Search_THIRDPARTY_LICENSES.md"
+	Copy-Item $productDir\* $packageDir -Recurse -Exclude ("*.pdb", "$product.dll.config")
 	
 
-	# edit README.md
-	Replace-Content "$readmeDir\README.md" "# $product" "# $product $version"
+	# fix native dll
+	#if ($platform -eq "x86")
+	#{
+	#	Remove-Item $packageDir\x64 -Recurse
+	#}
+	#if ($platform -eq "x64")
+	#{
+	#	Remove-Item $packageDir\x86 -Recurse
+	#}
 
+	# custom config
+	New-ConfigForZip $productDir "$productName.dll.config" $packageDir
+
+	# generate README.html
+	New-Readme $packageDir "en-us" ".zip"
+	New-Readme $packageDir "ja-jp" ".zip"
+}
+
+#----------------------
+# generate README.html
+function New-Readme($packageDir, $culture, $target)
+{
+	$readmeSource = "Readme\$culture"
+
+	$readmeDir = $packageDir + "\readme.$culture"
+
+	$temp = New-Item $readmeDir -ItemType Directory 
+
+	Copy-Item "$readmeSource\Overview.md" $readmeDir
+	Copy-Item "$readmeSource\Canary.md" $readmeDir
+	Copy-Item "$readmeSource\Environment.md" $readmeDir
+	Copy-Item "$readmeSource\Contact.md" $readmeDir
+
+	Copy-Item "$solutionDir\LICENSE.md" $readmeDir
+	Copy-Item "$solutionDir\LICENSE.ja-jp.md" $readmeDir
+	Copy-Item "$solutionDir\THIRDPARTY_LICENSES.md" $readmeDir
+	Copy-Item "$solutionDir\NeeLaboratory.IO.Search\THIRDPARTY_LICENSES.md" "$readmeDir\NeeLaboratory.IO.Search_THIRDPARTY_LICENSES.md"
+
+	if ($target -eq ".canary")
+	{
+		Get-GitLogMarkdown "$product <VERSION/> - ChangeLog" | Set-Content -Encoding UTF8 "$readmeDir\ChangeLog.md"
+	}
+	else
+	{
+		Copy-Item "$readmeSource\ChangeLog.md" $readmeDir
+	}
+
+	$postfix = $version
+	$announce = ""
+	if ($target -eq ".canary")
+	{
+		$postfix = "Canary ${dateVersion}"
+		$announce = "Rev. ${revision}`r`n`r`n" + (Get-Content -Path "$readmeDir/Canary.md" -Raw -Encoding UTF8)
+	}
+
+	# edit README.md
+	Replace-Content "$readmeDir\Overview.md" "<VERSION/>" "$postfix"
+	Replace-Content "$readmeDir\Overview.md" "<ANNOUNCE/>" "$announce"
+	Replace-Content "$readmeDir\Environment.md" "<VERSION/>" "$postfix"
+	Replace-Content "$readmeDir\Contact.md" "<VERSION/>" "$postfix"
+	Replace-Content "$readmeDir\ChangeLog.md" "<VERSION/>" "$postfix"
+
+	$readmeHtml = "README.html"
+
+	if (-not ($culture -eq "en-us"))
+	{
+		$readmeHtml = "README.$culture.html"
+	}
+
+	$inputs = @()
+	$inputs += "$readmeDir\Overview.md"
+
+	if ($target -ne ".appx")
+	{
+		$inputs += "$readmeDir\Environment.md"
+	}
+
+	$inputs += "$readmeDir\Contact.md"
+	$inputs += "$readmeDir\LICENSE.md"
+
+	if ($culture -eq "ja-jp")
+	{
+		$inputs += "$readmeDir\LICENSE.ja-jp.md"
+	}
+
+	$inputs += "$readmeDir\THIRDPARTY_LICENSES.md"
+	$inputs += "$readmeDir\NeeLaboratory.IO.Search_THIRDPARTY_LICENSES.md"
+	$inputs += "$readmeDir\ChangeLog.md"
+
+	$output = "$packageDir\$readmeHtml"
+	$css = "Readme\Style.html"
+	
 	# markdown to html by pandoc
-	& pandoc -s -t html5 -o "$packageDir\README.html" -H Style.html "$readmeDir\README.md" "$readmeDir\LICENSE.md" "$readmeDir\THIRDPARTY_LICENSES.md" "$readmeDir\NeeLaboratory.IO.Search_THIRDPARTY_LICENSES.md"
+	pandoc -s -t html5 -o $output --metadata title="$product $postfix" -H $css $inputs
 	if ($? -ne $true)
 	{
-		throw "pandoc error" 
+		throw "pandoc error"
 	}
 
 	Remove-Item $readmeDir -Recurse
+}
 
-	return $temp
+#--------------------------
+# remove ZIP
+function Remove-Zip($packageZip)
+{
+	if (Test-Path $packageZip)
+	{
+		Remove-Item $packageZip
+	}
 }
 
 #--------------------------
 # archive to ZIP
-function New-Zip
+function New-Zip($packageDir, $packageZip)
 {
 	Compress-Archive $packageDir -DestinationPath $packageZip
 }
 
 
 #--------------------------
-# WiX
-function New-Msi
+function Get-CulturesFromConfig($inputDir, $config)
 {
-	$candle = 'C:\Program Files (x86)\WiX Toolset v3.11\bin\candle.exe'
-	$light = 'C:\Program Files (x86)\WiX Toolset v3.11\bin\light.exe'
-	$heat = 'C:\Program Files (x86)\WiX Toolset v3.11\bin\heat.exe'
+	[xml]$xml = Get-Content "$inputDir\$config"
 
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'Cultures' } | Select -First 1
+	return $add.value.Split(",")
+}
 
-	$config = "$product.dll.config"
-	$packageAppendDir = $packageDir + ".append"
+#--------------------------
+#
+function New-ConfigForZip($inputDir, $config, $outputDir)
+{
+	# make config for zip
+	[xml]$xml = Get-Content "$inputDir\$config"
 
-	# remove append folder
-	if (Test-Path $packageAppendDir)
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'PackageType' } | Select -First 1
+	$add.value = '.zip'
+
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'Watermark' } | Select -First 1
+	$add.value = 'False'
+
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'UseLocalApplicationData' } | Select -First 1
+	$add.value = 'False'
+
+	#$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'LibrariesPath' } | Select -First 1
+	#$add.value = 'Libraries'
+
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'Revision' } | Select -First 1
+	$add.value = $revision
+
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'DateVersion' } | Select -First 1
+	$add.value = $dateVersion
+	
+	if ($trace)
 	{
-		Remove-Item $packageAppendDir -Recurse
-		Start-Sleep -m 100
+		#<add key="LogFile" value="TraceLog.txt" />
+		$attribute1 = $xml.CreateAttribute('key')
+		$attribute1.Value = 'LogFile';
+		$attribute2 = $xml.CreateAttribute('value')
+		$attribute2.Value = 'TraceLog.txt';
+		$element = $xml.CreateElement('add');
+		$element.Attributes.Append($attribute1);
+		$element.Attributes.Append($attribute2);
+		$xml.configuration.appSettings.AppendChild($element);
 	}
 
-	# make append folder
-	$temp = New-Item $packageAppendDir -ItemType Directory
+	$utf8WithoutBom = New-Object System.Text.UTF8Encoding($false)
+	$outputFile = Join-Path (Convert-Path $outputDir) $config
 
+	$sw = New-Object System.IO.StreamWriter($outputFile, $false, $utf8WithoutBom)
+	$xml.Save( $sw )
+	$sw.Close()
+}
+
+#--------------------------
+#
+function New-ConfigForMsi($inputDir, $config, $outputDir)
+{
 	# make config for installer
-	[xml]$xml = Get-Content "$packageDir\$config"
+	[xml]$xml = Get-Content "$inputDir\$config"
 
 	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'PackageType' } | Select -First 1
 	$add.value = '.msi'
 
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'Watermark' } | Select -First 1
+	$add.value = 'False'
+
 	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'UseLocalApplicationData' } | Select -First 1
 	$add.value = 'True'
 
+	#$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'LibrariesPath' } | Select -First 1
+	#$add.value = 'Libraries'
+
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'Revision' } | Select -First 1
+	$add.value = $revision
+
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'DateVersion' } | Select -First 1
+	$add.value = $dateVersion
+
 	$utf8WithoutBom = New-Object System.Text.UTF8Encoding($false)
-	$sw = New-Object System.IO.StreamWriter("$packageAppendDir\$config", $false, $utf8WithoutBom)
+	$outputFile = Join-Path (Convert-Path $outputDir) $config
+	$sw = New-Object System.IO.StreamWriter($outputFile, $false, $utf8WithoutBom)
 	$xml.Save( $sw )
 	$sw.Close()
+}
+
+
+#--------------------------
+#
+function New-ConfigForAppx($inputDir, $config, $outputDir)
+{
+	# make config for appx
+	[xml]$xml = Get-Content "$inputDir\$config"
+
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'PackageType' } | Select -First 1
+	$add.value = '.appx'
+
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'Watermark' } | Select -First 1
+	$add.value = 'False'
+
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'UseLocalApplicationData' } | Select -First 1
+	$add.value = 'True'
+
+	#$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'LibrariesPath' } | Select -First 1
+	#$add.value = 'Libraries'
+
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'Revision' } | Select -First 1
+	$add.value = $revision
+
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'DateVersion' } | Select -First 1
+	$add.value = $dateVersion
+
+	$utf8WithoutBom = New-Object System.Text.UTF8Encoding($false)
+	$outputFile = Join-Path (Convert-Path $outputDir) $config
+
+	$sw = New-Object System.IO.StreamWriter($outputFile, $false, $utf8WithoutBom)
+	$xml.Save( $sw )
+	$sw.Close()
+}
+
+#--------------------------
+#
+function New-ConfigForDevPackage($inputDir, $config, $target, $outputDir)
+{
+	# make config for canary
+	[xml]$xml = Get-Content "$inputDir\$config"
+
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'PackageType' } | Select -First 1
+	$add.value = $target
+
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'Watermark' } | Select -First 1
+	$add.value = 'True'
+
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'UseLocalApplicationData' } | Select -First 1
+	$add.value = 'False'
+
+	#$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'LibrariesPath' } | Select -First 1
+	#$add.value = 'Libraries'
+
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'Revision' } | Select -First 1
+	$add.value = $revision
+
+	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'DateVersion' } | Select -First 1
+	$add.value = $dateVersion
+
+	$utf8WithoutBom = New-Object System.Text.UTF8Encoding($false)
+	$outputFile = Join-Path (Convert-Path $outputDir) $config
+
+	$sw = New-Object System.IO.StreamWriter($outputFile, $false, $utf8WithoutBom)
+	$xml.Save( $sw )
+	$sw.Close()
+}
+
+#---------------------------
+#
+function New-EmptyFolder($dir)
+{
+	# remove folder
+	if (Test-Path $dir)
+	{
+		Remove-Item $dir -Recurse
+		Start-Sleep -m 100
+	}
+
+	# make folder
+	$temp = New-Item $dir -ItemType Directory
+}
+
+#---------------------------
+#
+function New-PackageAppend($packageDir, $packageAppendDir)
+{
+	New-EmptyFolder $packageAppendDir
+
+	# configure customize
+	New-ConfigForMsi $packageDir "${product}.dll.config" $packageAppendDir
 
 	# icons
-	Copy-Item "$projectDir\App.ico" $packageAppendDir
+	Copy-Item "$projectDir\Resources\App.ico" $packageAppendDir
+}
 
-	# make DllComponents.wxs
-	#& $heat dir "$packageDir\Libraries" -cg DllComponents -ag -pog:Binaries -sfrag -var var.LibrariesDir -dr INSTALLFOLDER -out WixSource\DllComponents.wxs
-	#if ($? -ne $true)
-	#{
-	#	throw "heat error"
-	#}
+
+
+#--------------------------
+# remove Msi
+function Remove-Msi($packageAppendDir, $packageMsi)
+{
+	if (Test-Path $packageMsi)
+	{
+		Remove-Item $packageMsi
+	}
+
+	if (Test-Path $packageAppxDir_x64)
+	{
+		Remove-Item $packageAppxDir_x64 -Recurse
+	}
+}
+
+#--------------------------
+# Msi
+function New-Msi($arch, $packageDir, $packageAppendDir, $packageMsi)
+{
+	$candle = $env:WIX + 'bin\candle.exe'
+	$light = $env:WIX + 'bin\light.exe'
+	$heat = $env:WIX + 'bin\heat.exe'
+	$torch = $env:WIX + 'bin\torch.exe'
+	$wisubstg = "$Win10SDK\wisubstg.vbs"
+	$wilangid = "$Win10SDK\wilangid.vbs"
+
+	$1041Msi = "$packageAppendDir\1041.msi"
+	$1041Mst = "$packageAppendDir\1041.mst"
 
 	#-------------------------
 	# WiX
@@ -187,85 +558,556 @@ function New-Msi
 
 	$ErrorActionPreference = "stop"
 
-	& $candle -d"BuildVersion=$buildVersion" -d"ProductVersion=$version"  -d"ContentDir=$packageDir\\" -d"AppendDir=$packageDir.append\\" -ext WixNetFxExtension -out "$packageDir.append\\"  WixSource\*.wxs
-	if ($? -ne $true)
+	function New-MainComponents
 	{
-		throw "candle error"
+		$wxs = Resolve-Path "WixSource\$arch\MainComponents.wxs"
+		& $heat dir "$packageDir" -cg MainComponents -ag -pog:Binaries -sfrag -srd -sreg -var var.ContentDir -dr INSTALLFOLDER -out $wxs
+		if ($? -ne $true)
+		{
+			throw "heat error"
+		}
+
+		[xml]$xml = Get-Content $wxs
+
+		# remove $product.exe
+		$node = $xml.Wix.Fragment[0].DirectoryRef.Component | Where-Object{$_.File.Source -match "$product\.exe"}
+		if ($null -ne $node)
+		{
+			$componentId = $node.Id
+			$xml.Wix.Fragment[0].DirectoryRef.RemoveChild($node)
+
+			$node = $xml.Wix.Fragment[1].ComponentGroup.ComponentRef | Where-Object{$_.Id -eq $componentId}
+			$xml.Wix.Fragment[1].ComponentGroup.RemoveChild($node)
+		}
+
+		# remove $product.dll.config
+		$node = $xml.Wix.Fragment[0].DirectoryRef.Component | Where-Object{$_.File.Source -match "$product\.dll\.config"}
+		if ($null -ne $node)
+		{
+			$componentId = $node.Id
+			$xml.Wix.Fragment[0].DirectoryRef.RemoveChild($node)
+
+			$node = $xml.Wix.Fragment[1].ComponentGroup.ComponentRef | Where-Object{$_.Id -eq $componentId}
+			$xml.Wix.Fragment[1].ComponentGroup.RemoveChild($node)
+		}
+
+		$xml.Save($wxs)
 	}
 
-	& $light -out "$packageMsi" -ext WixUIExtension -ext WixNetFxExtension -cultures:ja-JP "$packageDir.append\*.wixobj"
+	function New-MsiSub($packageMsi, $culture)
+	{
+		Write-Host "$packageMsi : $culture" -fore Cyan
+		
+		$wixObjDir = "$packageAppendDir\obj.$culture"
+		New-EmptyFolder $wixObjDir
+
+		& $candle -arch $arch -d"Platform=$arch" -d"BuildVersion=$buildVersion" -d"ProductVersion=$version" -d"ContentDir=$packageDir\\" -d"AppendDir=$packageDir.append\\" -d"LibrariesDir=$packageDir\\Libraries" -d"culture=$culture" -ext WixNetFxExtension -out "$wixObjDir\\"  WixSource\*.wxs .\WixSource\$arch\*.wxs
+		if ($? -ne $true)
+		{
+			throw "candle error"
+		}
+
+		& $light -out "$packageMsi" -ext WixUIExtension -ext WixNetFxExtension -cultures:$culture -loc WixSource\Language-$culture.wxl  "$wixObjDir\*.wixobj"
+		if ($? -ne $true)
+		{
+			throw "light error" 
+		}
+	}
+
+	## Create MainComponents.wxs
+	if ($updateComponent)
+	{
+		Write-Host "Create MainComponents.wsx`n" -fore Cyan
+		New-MainComponents
+	}
+
+	New-MsiSub $packageMsi "en-us"
+	New-MsiSub $1041Msi "ja-jp"
+
+	& $torch -p -t language $packageMsi $1041Msi -out $1041Mst
 	if ($? -ne $true)
 	{
-		throw "light error" 
+		throw "torch error"
+	}
+
+	#-------------------------
+	# WinSDK
+	#-------------------------
+
+	& cscript "$wisubstg" "$packageMsi" $1041Mst 1041
+	if ($? -ne $true)
+	{
+		throw "wisubstg.vbs error"
+	}
+
+	& cscript "$wilangid" "$packageMsi" Package 1033,1041
+	if ($? -ne $true)
+	{
+		throw "wilangid.vbs error"
 	}
 }
 
 
 #--------------------------
-# main
-
-# clean product
-#Remove-Files $productDir
-if (Test-Path $publishDir)
+# Appx remove
+function Remove-Appx($packageAppendDir, $appx)
 {
-	Remove-Item $publishDir -Recurse
+	if (Test-Path $appx)
+	{
+		Remove-Item $appx
+	}
+
+	if (Test-Path $packageAppxDir_x64)
+	{
+		Remove-Item $packageAppxDir_x64 -Recurse
+	}
 }
 
-# build
-Write-Host "`n[Build] ...`n" -fore Cyan
-Publish-Product $project $productDir
+#--------------------------
+# Appx 
+function New-Appx($arch, $packageDir, $packageAppendDir, $appx)
+{
+	$packgaeFilesDir = "$packageAppendDir/PackageFiles"
+	$contentDir = "$packgaeFilesDir/$product"
 
-# get assembly version
-$version = Get-FileVersion "$productDir\$product.exe"
+	# copy package base files
+	Copy-Item "Appx\Resources" $packgaeFilesDir -Recurse -Force
 
-# auto increment build version
-$xml = [xml](Get-Content "BuildCount.xml")
-$buildCount = [int]$xml.build + 1
+	# copy resources.pri
+	Copy-Item "Appx\resources.pri" $packgaeFilesDir
 
-$buildVersion = (Get-FileVersion "$productDir\$product.exe") + ".$buildCount"
+	# update assembly
+	Copy-Item $packageDir $contentDir -Recurse -Force
+	New-ConfigForAppx $packageDir "${product}.dll.config" $contentDir
 
-$packageDir = $product + $version
-$packageZip = $packageDir + ".zip"
-$packageMsi = $packageDir + ".msi"
-$wixpdb = $packageDir + ".wixpdb"
+	# generate README.html
+	New-Readme $contentDir "en-us" ".appx"
+	New-Readme $contentDir "ja-jp" ".appx"
 
-# Clean
-Remove-Files $packageDir $packageZip $packageMsi $wixpdb
+	. $env:CersPath/_$product.Parameter.ps1
+	$param = Get-AppxParameter
+	$appxName = $param.name
+	$appxPublisher = $param.publisher
 
-Write-Host "`n[Package] ...`n" -fore Cyan
-New-Package
+	# generate AppManifest
+	$content = Get-Content "Appx\AppxManifest.xml"
+	$content = $content -replace "%NAME%","$appxName"
+	$content = $content -replace "%PUBLISHER%","$appxPublisher"
+	$content = $content -replace "%VERSION%","$assemblyVersion"
+	$content = $content -replace "%ARCH%", "$arch"
+	$content | Out-File -Encoding UTF8 "$packgaeFilesDir\AppxManifest.xml"
 
-if ($Target -eq "All")
+	# re-package
+	& "$Win10SDK\makeappx.exe" pack /l /d "$packgaeFilesDir" /p "$appx"
+	if ($? -ne $true)
+	{
+		throw "makeappx.exe error"
+	}
+
+	# signing
+	& "$Win10SDK\signtool.exe" sign -f "$env:CersPath/_$product.pfx" -fd SHA256 -v "$appx"
+	if ($? -ne $true)
+	{
+		throw "signtool.exe error"
+	}
+}
+
+
+#--------------------------
+# archive to Canary.ZIP
+function Remove-Canary()
+{
+	if (Test-Path $packageCanary)
+	{
+		Remove-Item $packageCanary
+	}
+
+	if (Test-Path $packageCanaryDir)
+	{
+		Remove-Item $packageCanaryDir -Recurse
+	}
+}
+
+function New-Canary($packageDir)
+{
+	New-DevPackage $packageDir $packageCanaryDir $packageCanary ".canary"
+}
+
+function New-CanaryAnyCPU($packageDir)
+{
+	New-DevPackage $packageDir $packageCanaryDir_AnyCPU $packageCanary_AnyCPU ".canary"
+}
+
+#--------------------------
+# archive to Beta.ZIP
+function Remove-Beta()
+{
+	if (Test-Path $packageBeta)
+	{
+		Remove-Item $packageBeta
+	}
+
+	if (Test-Path $packageBetaDir)
+	{
+		Remove-Item $packageBetaDir -Recurse
+	}
+}
+
+function New-Beta($packageDir)
+{
+	New-DevPackage $packageDir $packageBetaDir $packageBeta ".beta"
+}
+
+#--------------------------
+# archive to Canary/Beta.ZIP
+function New-DevPackage($packageDir, $devPackageDir, $devPackage, $target)
+{
+	# update assembly
+	Copy-Item $packageDir $devPackageDir -Recurse
+	New-ConfigForDevPackage $packageDir "${product}.dll.config" $target $devPackageDir
+
+	# generate README.html
+	New-Readme $devPackageDir "en-us" $target
+	New-Readme $devPackageDir "ja-jp" $target
+
+	Compress-Archive $devPackageDir -DestinationPath $devPackage
+}
+
+
+$build_x64 = $false
+$build_x86 = $false
+$build_x64_fd = $false
+
+#--------------------------
+# remove build objects
+function Remove-BuildObjects
+{
+	Get-ChildItem -Directory "$packagePrefix*" | Remove-Item -Recurse
+
+	Get-ChildItem -File "$packagePrefix*.*" | Remove-Item
+
+	if (Test-Path $publishDir)
+	{
+		Remove-Item $publishDir -Recurse
+	}
+	if (Test-Path $packageCanaryDir)
+	{
+		Remove-Item $packageCanaryDir -Recurse -Force
+	}
+	if (Test-Path $packageBetaDir)
+	{
+		Remove-Item $packageBetaDir -Recurse -Force
+	}
+	if (Test-Path $packageCanaryWild)
+	{
+		Remove-Item $packageCanaryWild
+	}
+	if (Test-Path $packageBetaWild)
+	{
+		Remove-Item $packageBetaWild
+	}
+
+	Start-Sleep -m 100
+}
+
+function Build-Clear
+{
+	# clear
+	Write-Host "`n[Clear] ...`n" -fore Cyan
+	Remove-BuildObjects
+}
+
+function Build-UpdateState
+{
+	$global:build_x64 = Test-Path $publishDir_x64
+	$global:build_x86 = Test-Path $publishDir_x86
+	$global:build_x64_fd = Test-Path $publishDir_x64_fd
+}
+
+function Build-PackageSorce-x64
+{
+	if ($global:build_x64 -eq $true) { return }
+
+	# build
+	Write-Host "`n[Build] ...`n" -fore Cyan
+	Build-ProjectSelfContained "x64"
+	
+	# create package source
+	Write-Host "`n[Package] ...`n" -fore Cyan
+	New-Package "x64" $product $publishDir_x64 $packageDir_x64
+
+	$global:build_x64 = $true
+}
+
+function Build-PackageSorce-x86
+{
+	if ($global:build_x86 -eq $true) { return }
+
+	# build
+	Write-Host "`n[Build x86] ...`n" -fore Cyan
+	Build-ProjectSelfContained "x86"
+	
+	# create package source
+	Write-Host "`n[Package x86] ...`n" -fore Cyan
+	New-Package "x86" $product $publishDir_x86 $packageDir_x86
+
+	$global:build_x86 = $true
+}
+
+function Build-PackageSorce-x64-fd
+{
+	if ($global:build_x64_fd -eq $true) { return }
+
+	# build
+	Write-Host "`n[Build frameword dependent] ...`n" -fore Cyan
+	Build-ProjectFrameworkDependent "x64"
+	
+	# create package source
+	Write-Host "`n[Package frameword dependent] ...`n" -fore Cyan
+	New-Package "x64-fd" $product $publishDir_x64_fd $packageDir_x64_fd
+
+	$global:build_x64_fd = $true
+}
+
+
+function Build-Zip-x64
 {
 	Write-Host "`[Zip] ...`n" -fore Cyan
-	New-Zip
-	Write-Host "`nExport $packageZip successed.`n" -fore Green
+
+	Remove-Zip $packageZip_x64
+	New-Zip $packageDir_x64 $packageZip_x64
+	Write-Host "`nExport $packageZip_x64 successed.`n" -fore Green
 }
 
-if ($Target -eq "All") 
+function Build-Zip-x86
 {
-	Write-Host "`[Installer] ...`n" -fore Cyan
-	New-Msi
-	Write-Host "`nExport $packageMsi successed.`n" -fore Green
+	Write-Host "`[Zip x86] ...`n" -fore Cyan
+
+	Remove-Zip $packageZip_x86
+	New-Zip $packageDir_x86 $packageZip_x86
+	Write-Host "`nExport $packageZip_x86 successed.`n" -fore Green
 }
 
-
-# current
-if (-not (Test-Path $product))
+function Build-Zip-x64-fd
 {
-	New-Item $product -ItemType Directory
-}
-Copy-Item "$packageDir\*" "$product\" -Recurse -Force
+	Write-Host "`[Zip fd] ...`n" -fore Cyan
 
+	Remove-Zip $packageZip_x64_fd
+	New-Zip $packageDir_x64_fd $packageZip_x64_fd
+	Write-Host "`nExport $packageZip_x64_fd successed.`n" -fore Green
+}
+
+
+function Build-Installer-x64
+{
+	Write-Host "`n[Installer] ...`n" -fore Cyan
+	
+	Remove-Msi $packageAppendDir_x64 $packageMsi_x64
+	New-PackageAppend $packageDir_x64 $packageAppendDir_x64
+	New-Msi "x64" $packageDir_x64 $packageAppendDir_x64 $packageMsi_x64
+	Write-Host "`nExport $packageMsi_x64 successed.`n" -fore Green
+}
+
+function Build-Installer-x86
+{
+	Write-Host "`n[Installer x86] ...`n" -fore Cyan
+
+	Remove-Msi $packageAppendDir_x86 $packageMsi_x86
+	New-PackageAppend $packageDir_x86 $packageAppendDir_x86
+	New-Msi "x86" $packageDir_x86 $packageAppendDir_x86 $packageMsi_x86
+	Write-Host "`nExport $packageMsi_x86 successed.`n" -fore Green
+}
+
+function Build-Appx-x64
+{
+	Write-Host "`n[Appx] ...`n" -fore Cyan
+
+	if (Test-Path "$env:CersPath\_Parameter.ps1")
+	{
+		Remove-Appx $packageAppxDir_x64 $packageX64Appx
+		New-Appx "x64" $packageDir_x64 $packageAppxDir_x64 $packageX64Appx
+		Write-Host "`nExport $packageX64Appx successed.`n" -fore Green
+	}
+	else
+	{
+		Write-Host "`nWarning: not exist make appx envionment. skip!`n" -fore Yellow
+	}
+}
+
+function Build-Appx-x86
+{
+	Write-Host "`n[Appx x86] ...`n" -fore Cyan
+
+	if (Test-Path "$env:CersPath\_Parameter.ps1")
+	{
+		Remove-Appx $packageAppxDir_x86 $packageX86Appx
+		New-Appx "x86" $packageDir_x86 $packageAppxDir_x86 $packageX86Appx
+		Write-Host "`nExport $packageX86Appx successed.`n" -fore Green
+	}
+	else
+	{
+		Write-Host "`nWarning: not exist make appx envionment. skip!`n" -fore Yellow
+	}
+}
+
+function Build-Canary
+{
+	Write-Host "`n[Canary] ...`n" -fore Cyan
+	Remove-Canary
+	New-Canary $packageDir_x64_fd
+	Write-Host "`nExport $packageCanary successed.`n" -fore Green
+}
+
+function Build-Beta
+{
+	Write-Host "`n[Beta] ...`n" -fore Cyan
+	Remove-Beta
+	New-Beta $packageDir_x64
+	Write-Host "`nExport $packageBeta successed.`n" -fore Green
+}
+
+
+function Export-Current
+{
+	Write-Host "`n[Current] ...`n" -fore Cyan
+	if (Test-Path $packageDir_x64_fd)
+	{
+		if (-not (Test-Path $product))
+		{
+			New-Item $product -ItemType Directory
+		}
+		Copy-Item "$packageDir_x64_fd\*" "$product\" -Recurse -Force
+	}
+	else
+	{
+		Write-Host "`nWarning: not exist $packageDir_x64_fd. skip!`n" -fore Yellow
+	}
+}
+
+#======================
+# main
+#======================
+
+# versions
+$version = Get-Version $project
+$buildCount = Get-BuildCount
+$buildVersion = "$version.$buildCount"
+$assemblyVersion = "$version.$buildCount.0"
+$revision = (& git rev-parse --short HEAD).ToString()
+$dateVersion = (Get-Date).ToString("MMdd") + $versionPostfix
+
+$publishDir = "Publish"
+$publishDir_x64 = "$publishDir\$product-x64"
+$publishDir_x86 = "$publishDir\$product-x86"
+$publishDir_x64_fd = "$publishDir\$product-x64-fd"
+$packagePrefix = "$product$version"
+$packageDir_x64 = "$product$version-x64"
+$packageDir_x86 = "$product$version-x86"
+$packageDir_x64_fd = "$product$version-x64-fd"
+$packageAppendDir_x64 = "$packageDir_x64.append"
+$packageAppendDir_x86 = "$packageDir_x86.append"
+$packageZip_x64 = "${product}${version}.zip"
+$packageZip_x86 = "${product}${version}-x86.zip"
+$packageZip_x64_fd = "${product}${version}-fd.zip"
+$packageMsi_x64 = "${product}${version}.msi"
+$packageMsi_x86 = "${product}${version}-x86.msi"
+$packageAppxDir_x64 = "${product}${version}-appx-x64"
+$packageAppxDir_x86 = "${product}${version}-appx-x84"
+$packageX86Appx = "${product}${version}-x86.appx"
+$packageX64Appx = "${product}${version}.appx"
+$packageCanaryDir = "${product}Canary"
+$packageCanaryDir_AnyCPU = "${product}Canary-AnyCPU"
+$packageCanary = "${product}Canary${dateVersion}.zip"
+$packageCanary_AnyCPU = "${product}Canary${dateVersion}_AnyCPU.zip"
+$packageCanaryWild = "${product}Canary*.zip"
+$packageBetaDir = "${product}Beta"
+$packageBeta = "${product}Beta${dateVersion}.zip"
+$packageBetaWild = "${product}Beta*.zip"
+
+
+if (-not $continue)
+{
+	Build-Clear
+}
+
+Build-UpdateState
+
+if (($Target -eq "All") -or ($Target -eq "Zip"))
+{
+	if ($x86)
+	{
+		Build-PackageSorce-x86
+		Build-Zip-x86
+	}
+	else
+	{
+		Build-PackageSorce-x64
+		Build-Zip-x64
+
+		Build-PackageSorce-x64-fd
+		Build-Zip-x64-fd
+	}
+}
+
+if (($Target -eq "All") -or ($Target -eq "Installer"))
+{
+	if ($x86)
+	{
+		Build-PackageSorce-x86
+		Build-Installer-x86
+	}
+	else
+	{
+		Build-PackageSorce-x64
+		Build-Installer-x64
+	}
+}
+
+if (($Target -eq "All") -or ($Target -eq "Appx"))
+{
+	if ($x86)
+	{
+		#Build-PackageSorce-x86
+		#Build-Appx-x86
+	}
+	else
+	{
+		#Build-PackageSorce-x64
+		#Build-Appx-x64
+	}
+}
+
+if (-not $x86)
+{
+	if (($Target -eq "All") -or ($Target -eq "Canary"))
+	{
+		Build-PackageSorce-x64-fd
+		Build-Canary
+	}
+
+	if (($Target -eq "All") -or ($Target -eq "Beta"))
+	{
+		Build-PackageSorce-x64
+		Build-Beta
+	}
+
+	if (-not $continue)
+	{
+		Build-PackageSorce-x64-fd
+		Export-Current
+	}
+}
 
 #--------------------------
 # saev buid version
-$xml.build = [string]$buildCount
-$xml.Save("BuildCount.xml")
+if ((-not $continue) -and ($Target -eq "Dev"))
+{
+	Set-BuildCount $buildCount
+}
 
 #-------------------------
 # Finish.
-Write-Host "`nAll done.`n" -fore Green
+Write-Host "`nBuild $buildVersion All done.`n" -fore Green
 
 
 

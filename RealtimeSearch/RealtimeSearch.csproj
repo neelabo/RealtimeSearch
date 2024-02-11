@@ -7,7 +7,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ApplicationManifest>App.manifest</ApplicationManifest>
-    <ApplicationIcon>App.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\App.ico</ApplicationIcon>
     <Version>4.0.0</Version>
     <Authors>NeeLaboratory</Authors>
     <Copyright>Copyright © 2015-2024 Ito Mitsuhiro (nee)</Copyright>
@@ -17,6 +17,10 @@
     <NoWarn>$(NoWarn);WFAC010</NoWarn>
     <RootNamespace>NeeLaboratory.RealtimeSearch</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\App.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />
@@ -33,6 +37,10 @@
     <ProjectReference Include="..\NeeLaboratory.IO.Search\NeeLaboratory.IO.Search\NeeLaboratory.IO.Search.csproj" />
     <ProjectReference Include="..\NeeLaboratory\NeeLaboratory.Windows\NeeLaboratory.Windows.csproj" />
     <ProjectReference Include="..\RealtimeSearch.Models\RealtimeSearch.Models.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Resource Include="Resources\App.ico" />
   </ItemGroup>
   
 </Project>
