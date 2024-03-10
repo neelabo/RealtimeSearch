@@ -39,13 +39,10 @@ Read-Host "Press Enter to continue"
 
 #
 $product = 'RealtimeSearch'
-$configuration = 'Release'
-$framework = 'net8.0-windows'
-
-#
-#$Win10SDK = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x64"
 $Win10SDK = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64"
 
+# sync current directory
+[System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).Path)
 
 #---------------------
 # get fileversion
@@ -80,7 +77,8 @@ function Get-Version($projectFile)
 function Get-BuildCount()
 {
 	# auto increment build version
-	$xml = [xml](Get-Content "BuildCount.xml")
+	$path = Convert-Path "BuildCount.xml"
+	$xml = [xml](Get-Content $path)
 	return [int]$xml.build + 1
 }
 
@@ -88,9 +86,10 @@ function Get-BuildCount()
 # set build count
 function Set-BuildCount($buildCount)
 {
-	$xml = [xml](Get-Content "BuildCount.xml")
+	$path = Convert-Path "BuildCount.xml"
+	$xml = [xml](Get-Content $path)
 	$xml.build = [string]$buildCount
-	$xml.Save("BuildCount.xml")
+	$xml.Save($path)
 }
 
 #---------------------
@@ -150,22 +149,9 @@ $projectDir = "$solutionDir\$product"
 $project = "$projectDir\$product.csproj"
 #$projectSusieDir = "$solutionDir\$product.Susie.Server"
 #$projectSusie = "$projectSusieDir\$product.Susie.Server.csproj"
-$projectTerminateDir = "$solutionDir\$product.Terminator"
-$ptojectTerminate = "$projectTerminateDir\$product.Terminator.csproj"
+#$projectTerminateDir = "$solutionDir\$product.Terminator"
+#$ptojectTerminate = "$projectTerminateDir\$product.Terminator.csproj"
 
-#-----------------------
-# procject output dir
-function Get-ProjectOutputDir($projectDir, $platform)
-{
-	if ($platform -eq "AnyCPU")
-	{
-		"$projectDir\bin\$configuration\$framework"
-	}
-	else
-	{
-		"$projectDir\bin\$platform\$configuration\$framework"
-	}
-}
 
 #----------------------
 # build
@@ -217,7 +203,6 @@ function New-Package($platform, $productName, $productDir, $packageDir)
 	$temp = New-Item $packageDir -ItemType Directory
 
 	Copy-Item $productDir\* $packageDir -Recurse -Exclude ("*.pdb", "$product.dll.config")
-	
 
 	# fix native dll
 	#if ($platform -eq "x86")
@@ -560,7 +545,7 @@ function New-Msi($arch, $packageDir, $packageAppendDir, $packageMsi)
 
 	function New-MainComponents
 	{
-		$wxs = Resolve-Path "WixSource\$arch\MainComponents.wxs"
+		$wxs = Convert-Path "WixSource\$arch\MainComponents.wxs"
 		& $heat dir "$packageDir" -cg MainComponents -ag -pog:Binaries -sfrag -srd -sreg -var var.ContentDir -dr INSTALLFOLDER -out $wxs
 		if ($? -ne $true)
 		{

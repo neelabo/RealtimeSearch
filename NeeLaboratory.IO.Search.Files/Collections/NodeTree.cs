@@ -57,7 +57,7 @@ namespace NeeLaboratory.Collections
         public Node? Find(string path, bool inTrunk)
         {
             var node = _root;
-            var tokens = path.Split('\\', StringSplitOptions.RemoveEmptyEntries);
+            var tokens = SplitPath(path);
 
             foreach (var token in tokens)
             {
@@ -73,7 +73,7 @@ namespace NeeLaboratory.Collections
         public Node? Add(string path)
         {
             var node = _root;
-            var names = path.Split('\\', StringSplitOptions.RemoveEmptyEntries);
+            var names = SplitPath(path);
             if (!names.Any()) throw new ArgumentException();
             var isNew = false;
 
