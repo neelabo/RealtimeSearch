@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Data;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.Converters
 {
     // ファイルサイズを表示用に整形する
     [ValueConversion(typeof(long), typeof(string))]

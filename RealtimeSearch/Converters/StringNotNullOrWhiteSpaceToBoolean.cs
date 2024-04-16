@@ -1,24 +1,18 @@
 ﻿using System;
-using System.Windows.Data;
 using System.Globalization;
+using System.Windows.Data;
 
 namespace NeeLaboratory.RealtimeSearch.Converters
 {
-    /// <summary>
-    /// Reverse boolean
-    /// </summary>
-    public class ReverseBooleanConverter : IValueConverter
+    public class StringNotNullOrWhiteSpaceToBoolean : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is bool boolean)
+            if (value is string s)
             {
-                return !boolean;
+                return !string.IsNullOrWhiteSpace(s);
             }
-            else
-            {
-                return value;
-            }
+            return false;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -26,6 +20,4 @@ namespace NeeLaboratory.RealtimeSearch.Converters
             throw new NotImplementedException();
         }
     }
-
-
 }

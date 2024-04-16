@@ -58,7 +58,7 @@ namespace NeeLaboratory.IO.Search.Files
         public event PropertyChangedEventHandler? PropertyChanged;
 
         [Subscribable]
-        public event EventHandler<SearchCommandEngineState> StateChanged;
+        public event EventHandler<SearchCommandEngineState>? StateChanged;
 
 
         public bool IsBusy { get; private set; }

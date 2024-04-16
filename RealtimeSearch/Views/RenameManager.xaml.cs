@@ -14,7 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.Views
 {
     /// <summary>
     /// RenameManager.xaml の相互作用ロジック

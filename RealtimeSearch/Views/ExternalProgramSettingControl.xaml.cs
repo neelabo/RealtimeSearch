@@ -1,9 +1,4 @@
-﻿// Copyright (c) 2015-2016 Mitsuhiro Ito (nee)
-//
-// This software is released under the MIT License.
-// http://opensource.org/licenses/mit-license.php
-
-using NeeLaboratory.RealtimeSearch.Models;
+﻿using NeeLaboratory.RealtimeSearch.Models;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -20,7 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.Views
 {
     /// <summary>
     /// ExternalProgramSettingControl.xaml の相互作用ロジック
@@ -33,9 +28,9 @@ namespace NeeLaboratory.RealtimeSearch
             set { SetValue(ProgramProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for Program.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ProgramProperty =
             DependencyProperty.Register("Program", typeof(ExternalProgram), typeof(ExternalProgramSettingControl), new PropertyMetadata(null));
+
 
         public string Header
         {
@@ -43,10 +38,8 @@ namespace NeeLaboratory.RealtimeSearch
             set { SetValue(HeaderProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for Header.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty HeaderProperty =
             DependencyProperty.Register("Header", typeof(string), typeof(ExternalProgramSettingControl), new PropertyMetadata("外部アプリ設定"));
-
 
 
 
@@ -58,22 +51,4 @@ namespace NeeLaboratory.RealtimeSearch
         }
     }
 
-
-    //
-    public class StringNotNullOrWhiteSpaceToBoolean : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is string s)
-            {
-                return !string.IsNullOrWhiteSpace(s);
-            }
-            return false;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
 }

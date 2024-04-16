@@ -1,5 +1,6 @@
 ﻿using NeeLaboratory.IO.Search.Files;
 using NeeLaboratory.RealtimeSearch.Models;
+using NeeLaboratory.RealtimeSearch.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,7 +17,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.Views
 {
     /// <summary>
     /// MainWindow.xaml の相互作用ロジック

@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.Converters
 {
     public class FileInfoToTypeNameConverter : IValueConverter
     {

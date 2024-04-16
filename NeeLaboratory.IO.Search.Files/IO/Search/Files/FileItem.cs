@@ -13,11 +13,11 @@ namespace NeeLaboratory.IO.Search.Files
     [NotifyPropertyChanged]
     public partial class FileItem : ISearchItem, IComparable, INotifyPropertyChanged
     {
-        internal static class NativeMethods
+        internal static partial class NativeMethods
         {
             // 参考：自然順ソート
-            [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
-            public static extern int StrCmpLogicalW(string psz1, string psz2);
+            [LibraryImport("shlwapi.dll", EntryPoint = "StrCmpLogicalW", StringMarshalling = StringMarshalling.Utf16)]
+            public static partial int StrCmpLogicalW(string psz1, string psz2);
         }
 
 

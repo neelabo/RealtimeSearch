@@ -1,9 +1,4 @@
-﻿// Copyright (c) 2015-2016 Mitsuhiro Ito (nee)
-//
-// This software is released under the MIT License.
-// http://opensource.org/licenses/mit-license.php
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,39 +8,23 @@ using System.Windows;
 using System.Windows.Controls;
 
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.Views
 {
     /// <summary>
     /// FilenameBox.xaml の相互作用ロジック
     /// </summary>
     public partial class DirectoryNameBox : UserControl
     {
-        #region Text
-        public static readonly DependencyProperty TextProperty =
-            DependencyProperty.Register(
-            "Text",
-            typeof(string),
-            typeof(DirectoryNameBox),
-            new FrameworkPropertyMetadata("", new PropertyChangedCallback(OnTextChanged)));
-
         public string Text
         {
             get { return (string)GetValue(TextProperty); }
             set { SetValue(TextProperty, value); }
         }
 
-        private static void OnTextChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
-        {
-        }
-        #endregion
+        public static readonly DependencyProperty TextProperty =
+            DependencyProperty.Register(nameof(Text), typeof(string), typeof(DirectoryNameBox), new PropertyMetadata(""));
 
-        #region DefaultDirectory
-        public static readonly DependencyProperty DefaultDirectoryProperty =
-            DependencyProperty.Register(
-            "DefaultDirectory",
-            typeof(string),
-            typeof(DirectoryNameBox),
-            new FrameworkPropertyMetadata("", new PropertyChangedCallback(OnDefaultDirectoryChanged)));
+
 
         public string DefaultDirectory
         {
@@ -53,18 +32,9 @@ namespace NeeLaboratory.RealtimeSearch
             set { SetValue(DefaultDirectoryProperty, value); }
         }
 
-        private static void OnDefaultDirectoryChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
-        {
-        }
-        #endregion
+        public static readonly DependencyProperty DefaultDirectoryProperty =
+            DependencyProperty.Register(nameof(DefaultDirectory), typeof(string), typeof(DirectoryNameBox), new PropertyMetadata(""));
 
-        #region IsValid
-        public static readonly DependencyProperty IsValidProperty =
-            DependencyProperty.Register(
-            "IsValid",
-            typeof(bool),
-            typeof(DirectoryNameBox),
-            new FrameworkPropertyMetadata(false, new PropertyChangedCallback(OnIsValidChanged)));
 
         public bool IsValid
         {
@@ -72,18 +42,9 @@ namespace NeeLaboratory.RealtimeSearch
             set { SetValue(IsValidProperty, value); }
         }
 
-        private static void OnIsValidChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
-        {
-        }
-        #endregion
+        public static readonly DependencyProperty IsValidProperty =
+            DependencyProperty.Register(nameof(IsValid), typeof(bool), typeof(DirectoryNameBox), new PropertyMetadata(false));
 
-        #region SelectDirectory
-        public static readonly DependencyProperty SelectDirectoryProperty =
-            DependencyProperty.Register(
-            "SelectDirectory",
-            typeof(bool),
-            typeof(DirectoryNameBox),
-            new FrameworkPropertyMetadata(true, new PropertyChangedCallback(OnSelectDirectoryChanged)));
 
         public bool SelectDirectory
         {
@@ -91,18 +52,8 @@ namespace NeeLaboratory.RealtimeSearch
             set { SetValue(SelectDirectoryProperty, value); }
         }
 
-        private static void OnSelectDirectoryChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
-        {
-        }
-        #endregion
-
-        #region Title
-        public static readonly DependencyProperty TitleProperty =
-            DependencyProperty.Register(
-            "Title",
-            typeof(string),
-            typeof(DirectoryNameBox),
-            new FrameworkPropertyMetadata(null, new PropertyChangedCallback(OnTitleChanged)));
+        public static readonly DependencyProperty SelectDirectoryProperty =
+            DependencyProperty.Register(nameof(SelectDirectory), typeof(bool), typeof(DirectoryNameBox), new PropertyMetadata(true));
 
         public string Title
         {
@@ -110,18 +61,9 @@ namespace NeeLaboratory.RealtimeSearch
             set { SetValue(TitleProperty, value); }
         }
 
-        private static void OnTitleChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
-        {
-        }
-        #endregion
+        public static readonly DependencyProperty TitleProperty =
+            DependencyProperty.Register(nameof(Title), typeof(string), typeof(DirectoryNameBox), new PropertyMetadata(null));
 
-        #region Filter
-        public static readonly DependencyProperty FilterProperty =
-            DependencyProperty.Register(
-            "Filter",
-            typeof(string),
-            typeof(DirectoryNameBox),
-            new FrameworkPropertyMetadata(null, new PropertyChangedCallback(OnFilterChanged)));
 
         public string Filter
         {
@@ -129,18 +71,9 @@ namespace NeeLaboratory.RealtimeSearch
             set { SetValue(FilterProperty, value); }
         }
 
-        private static void OnFilterChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
-        {
-        }
-        #endregion
+        public static readonly DependencyProperty FilterProperty =
+            DependencyProperty.Register(nameof(Filter), typeof(string), typeof(DirectoryNameBox), new PropertyMetadata(null));
 
-        #region Note
-        public static readonly DependencyProperty NoteProperty =
-            DependencyProperty.Register(
-            "Note",
-            typeof(string),
-            typeof(DirectoryNameBox),
-            new FrameworkPropertyMetadata("フォルダのパスを入力してください", new PropertyChangedCallback(OnNoteChanged)));
 
         public string Note
         {
@@ -148,19 +81,17 @@ namespace NeeLaboratory.RealtimeSearch
             set { SetValue(NoteProperty, value); }
         }
 
-        private static void OnNoteChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
-        {
-        }
-        #endregion
+        public static readonly DependencyProperty NoteProperty =
+            DependencyProperty.Register(nameof(Note), typeof(string), typeof(DirectoryNameBox), new PropertyMetadata("フォルダのパスを入力してください"));
 
 
-        //
+
+
         public DirectoryNameBox()
         {
             InitializeComponent();
         }
 
-        //
         private void ButtonOpenDialog_Click(object sender, RoutedEventArgs e)
         {
             if (SelectDirectory)
@@ -203,7 +134,6 @@ namespace NeeLaboratory.RealtimeSearch
             }
         }
 
-        //
         private void PathTextBox_PreviewDragOver(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop, true))
@@ -217,7 +147,6 @@ namespace NeeLaboratory.RealtimeSearch
             e.Handled = true;
         }
 
-        //
         private void PathTextBox_Drop(object sender, DragEventArgs e)
         {
             if (e.Data.GetData(System.Windows.DataFormats.FileDrop) is not string[] dropFiles) return;
@@ -240,25 +169,4 @@ namespace NeeLaboratory.RealtimeSearch
         }
     }
 
-    //
-    [System.Windows.Data.ValueConversion(typeof(bool), typeof(Visibility))]
-    public class NotBoolToVisiblityConverter : System.Windows.Data.IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            if ((bool)value)
-            {
-                return Visibility.Hidden;
-            }
-            else
-            {
-                return Visibility.Visible;
-            }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
 }

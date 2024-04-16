@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Data;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.Converters
 {
     // 文字列状態を処理中表示に変換する
     [ValueConversion(typeof(string), typeof(Visibility))]

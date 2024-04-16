@@ -19,9 +19,8 @@ using NeeLaboratory.RealtimeSearch.Clipboards;
 using NeeLaboratory.RealtimeSearch.Windows;
 using NeeLaboratory.Threading;
 using CommunityToolkit.Mvvm.Input;
-using System.CodeDom.Compiler;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.RealtimeSearch.ViewModels
 {
     public partial class MainWindowViewModel : BindableBase
     {
@@ -93,17 +92,17 @@ namespace NeeLaboratory.RealtimeSearch
             {
                 if (SetProperty(ref _isRenaming, value))
                 {
-                    RaisePropertyChanged(nameof(IsTipsVisibled));
+                    RaisePropertyChanged(nameof(IsTipsVisible));
                 }
             }
         }
 
-        public bool IsTipsVisibled
+        public bool IsTipsVisible
         {
             get { return !_appConfig.IsDetailVisible && !IsRenaming; }
         }
 
-        public bool IsDetailVisibled
+        public bool IsDetailVisible
         {
             get { return _appConfig.IsDetailVisible; }
             set { _appConfig.IsDetailVisible = value; }
@@ -194,8 +193,8 @@ namespace NeeLaboratory.RealtimeSearch
             switch (e.PropertyName)
             {
                 case nameof(_appConfig.IsDetailVisible):
-                    RaisePropertyChanged(nameof(IsDetailVisibled));
-                    RaisePropertyChanged(nameof(IsTipsVisibled));
+                    RaisePropertyChanged(nameof(IsDetailVisible));
+                    RaisePropertyChanged(nameof(IsTipsVisible));
                     break;
 
                 case nameof(_appConfig.IsTopmost):

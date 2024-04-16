@@ -1,15 +1,17 @@
-﻿<UserControl x:Class="NeeLaboratory.RealtimeSearch.DirectoryNameBox"
+﻿<UserControl x:Class="NeeLaboratory.RealtimeSearch.Views.DirectoryNameBox"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:NeeLaboratory.RealtimeSearch"
+             xmlns:local="clr-namespace:NeeLaboratory.RealtimeSearch.Views"
              mc:Ignorable="d" 
              d:DesignHeight="40" d:DesignWidth="300">
 
+    <!--
     <UserControl.Resources>
-        <local:NotBoolToVisiblityConverter x:Key="NotBoolToVisiblityConverter"/>
+        <local:NotBoolToVisibilityConverter x:Key="NotBoolToVisibilityConverter"/>
     </UserControl.Resources>
+    -->
 
     <Grid>
         <TextBox x:Name="PathTextBox" Padding="0,0,22,0" Text="{Binding Text, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:DirectoryNameBox}}}" Height="20" VerticalAlignment="Center" PreviewDragOver="PathTextBox_PreviewDragOver" Drop="PathTextBox_Drop">
