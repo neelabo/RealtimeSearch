@@ -210,7 +210,6 @@ namespace NeeLaboratory.IO.Search.Files
         /// <param name="token"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-
         public Node CreateChildrenRecursive(Node parent, DirectoryInfo directoryInfo, CancellationToken token)
         {
             Debug.Assert(_enumerationOptions.RecurseSubdirectories == false);
@@ -224,7 +223,18 @@ namespace NeeLaboratory.IO.Search.Files
                 return parent;
             }
 
-            var entries = directoryInfo.GetFileSystemInfos(_searchPattern, _enumerationOptions);
+            FileSystemInfo[] entries;
+            try
+            {
+                entries = directoryInfo.GetFileSystemInfos(_searchPattern, _enumerationOptions);
+            }
+            catch (Exception ex)
+            {
+                // TODO: ログに出力
+                Debug.WriteLine($"IO Error: {ex.Message}");
+                entries = [];
+            }
+
             token.ThrowIfCancellationRequested();
 
             // パラレルにしたほうが速いね
