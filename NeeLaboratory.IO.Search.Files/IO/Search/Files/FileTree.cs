@@ -141,11 +141,11 @@ namespace NeeLaboratory.IO.Search.Files
                 Trunk.ClearChildren();
                 if (_recurseSubdirectories)
                 {
-                    CreateChildrenRecursive(Trunk, new DirectoryInfo(Trunk.FullName), token);
+                    CreateChildrenRecursive(Trunk, new DirectoryInfo(LoosePath.TrimDirectoryEnd(Trunk.FullName)), token);
                 }
                 else
                 {
-                    CreateChildrenTop(Trunk, new DirectoryInfo(Trunk.FullName), token);
+                    CreateChildrenTop(Trunk, new DirectoryInfo(LoosePath.TrimDirectoryEnd(Trunk.FullName)), token);
                 }
 
                 sw.Stop();
