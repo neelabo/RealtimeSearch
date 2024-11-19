@@ -14,7 +14,6 @@ using System.Threading;
 using System.Linq;
 using NeeLaboratory.IO.Search.Diagnostics;
 using System.Collections.ObjectModel;
-using Newtonsoft.Json.Linq;
 using NeeLaboratory.IO.Search.Files;
 
 namespace RealtimeSearchUnitTest
