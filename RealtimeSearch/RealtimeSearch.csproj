@@ -1,16 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\RealtimeSearch.props" />
+  
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ApplicationManifest>App.manifest</ApplicationManifest>
     <ApplicationIcon>Resources\App.ico</ApplicationIcon>
-    <Version>4.0.0</Version>
-    <Authors>NeeLaboratory</Authors>
-    <Copyright>Copyright © 2015-2024 Ito Mitsuhiro (nee)</Copyright>
   </PropertyGroup>
 
   <PropertyGroup>

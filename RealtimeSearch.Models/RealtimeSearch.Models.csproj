@@ -1,10 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\RealtimeSearch.props" />
+  
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <!--
-    <UseWPF>true</UseWPF>
-    -->
+    <TargetFramework>net9.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>NeeLaboratory.RealtimeSearch</RootNamespace>

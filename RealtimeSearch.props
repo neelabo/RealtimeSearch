@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <VersionPrefix>4.0.0</VersionPrefix>
+    <Authors>NeeLaboratory</Authors>
+    <Copyright>Copyright © 2015-2024 Ito Mitsuhiro (nee)</Copyright>
+  </PropertyGroup>
+</Project>
