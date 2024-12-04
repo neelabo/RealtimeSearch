@@ -424,6 +424,10 @@ namespace NeeLaboratory.IO.Search.Files
         }
 #endif
 
+        public void ReserveRename(string src, string dst)
+        {
+            _tree.ReserveRename(src, dst);
+        }
     }
 
 

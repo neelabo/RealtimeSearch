@@ -332,10 +332,12 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
             {
                 try
                 {
+                    _model.ReserveRename(src, dst);
                     FileSystem.Rename(src, dst);
                 }
                 catch (Exception ex)
                 {
+                    _model.ReserveRename("", "");
                     _messenger.Send(this, new ShowMessageBoxMessage($"名前の変更に失敗しました\n\n原因: {ex.Message}", MessageBoxImage.Error));
                 }
             }

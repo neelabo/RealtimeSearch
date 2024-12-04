@@ -192,6 +192,10 @@ namespace NeeLaboratory.RealtimeSearch.Models
             }
         }
 
+        public void ReserveRename(string src, string dst)
+        {
+            _search.ReserveRename(src, dst);
+        }
     }
 
 
