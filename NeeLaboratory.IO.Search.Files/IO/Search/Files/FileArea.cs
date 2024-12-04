@@ -11,7 +11,7 @@ namespace NeeLaboratory.IO.Search.Files
 
         public FileArea(string path)
         {
-            Path = System.IO.Path.GetFullPath(path).Trim('\\');
+            Path = System.IO.Path.GetFullPath(path);
         }
 
         public FileArea(string path, bool includeSubdirectories) : this(path)
