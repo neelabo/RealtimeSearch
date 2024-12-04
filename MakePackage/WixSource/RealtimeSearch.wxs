@@ -3,7 +3,7 @@
 <?define Bits = "all" ?>
 
 <?if $(var.Platform) = "x86" ?>
-  <?define ProductName = "RealtimeSearch $(var.ProductVersion) (x86)" ?>
+  <?define ProductName = "RealtimeSearch $(var.AppVersion) (x86)" ?>
   <?define UpgradeCode = "AC5AB353-1C33-4166-97D2-70E311211AF9" ?>
   <?define SystemDir = "SystemFolder" ?>
   <?define ProgramFilesDir = "ProgramFilesFolder" ?>
@@ -11,7 +11,7 @@
   <?define IdentName = "RealtimeSearchX86" ?>
   <?define ExeName = "RealtimeSearch (x86)" ?>
 <?elseif $(var.Platform) = "x64" ?>
-  <?define ProductName = "RealtimeSearch $(var.ProductVersion)" ?>
+  <?define ProductName = "RealtimeSearch $(var.AppVersion)" ?>
   <?define UpgradeCode = "C2084D9A-11E0-4287-B4BD-B99968ECD1CD" ?>
   <?define SystemDir = "System64Folder" ?>
   <?define ProgramFilesDir = "ProgramFiles64Folder" ?>
@@ -27,7 +27,7 @@
 <?endif?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" Name="RealtimeSearch $(var.ProductVersion)" Version="$(var.BuildVersion)" Language="!(loc.language)" Codepage="$(var.codepage)" Manufacturer="NeeLaboratory" UpgradeCode="$(var.UpgradeCode)">
+  <Product Id="*" Name="$(var.ProductName)" Version="$(var.ProductVersion)" Language="!(loc.language)" Codepage="$(var.codepage)" Manufacturer="NeeLaboratory" UpgradeCode="$(var.UpgradeCode)">
     <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" SummaryCodepage="$(var.codepage)" Comments="RealtimeSearch is a file search tool." Platform="$(var.Platform)"/>
 
     <MajorUpgrade DowngradeErrorMessage="!(loc.downgradeErrorMessage)" />

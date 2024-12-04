@@ -1,4 +1,5 @@
-﻿using NeeLaboratory.IO.Search.Files;
+﻿using Microsoft.Win32;
+using NeeLaboratory.IO.Search.Files;
 using NeeLaboratory.RealtimeSearch.Models;
 using System;
 using System.Collections.Generic;
@@ -212,16 +213,16 @@ namespace NeeLaboratory.RealtimeSearch.Views
 
         private void AddPathWithDialog()
         {
-            var dialog = new System.Windows.Forms.FolderBrowserDialog
+            var dialog = new OpenFolderDialog()
             {
-                Description = "検索フォルダーの追加",
-                SelectedPath = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal)
+                Title = "検索フォルダーの追加",
+                InitialDirectory = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal)
             };
 
             var result = dialog.ShowDialog();
-            if (result == System.Windows.Forms.DialogResult.OK)
+            if (result == true)
             {
-                AddSearchPath(dialog.SelectedPath);
+                AddSearchPath(dialog.FolderName);
             }
         }
 

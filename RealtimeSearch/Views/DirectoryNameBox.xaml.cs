@@ -96,26 +96,26 @@ namespace NeeLaboratory.RealtimeSearch.Views
         {
             if (SelectDirectory)
             {
-                var dialog = new System.Windows.Forms.FolderBrowserDialog
+                var dialog = new Microsoft.Win32.OpenFolderDialog
                 {
-                    Description = Title ?? "フォルダ選択",
-                    SelectedPath = Text
+                    Title = Title ?? "フォルダ選択",
+                    InitialDirectory = Text
                 };
 
-                if (string.IsNullOrWhiteSpace(dialog.SelectedPath))
+                if (string.IsNullOrWhiteSpace(dialog.InitialDirectory))
                 {
-                    dialog.SelectedPath = DefaultDirectory;
+                    dialog.InitialDirectory = DefaultDirectory;
                 }
 
                 var result = dialog.ShowDialog();
-                if (result == System.Windows.Forms.DialogResult.OK)
+                if (result == true)
                 {
-                    Text = dialog.SelectedPath;
+                    Text = dialog.FolderName;
                 }
             }
             else
             {
-                var dialog = new System.Windows.Forms.OpenFileDialog
+                var dialog = new Microsoft.Win32.OpenFileDialog
                 {
                     Title = Title ?? "ファイル選択"
                 };
@@ -127,7 +127,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
                 dialog.Filter = Filter;
 
                 var result = dialog.ShowDialog();
-                if (result == System.Windows.Forms.DialogResult.OK)
+                if (result == true)
                 {
                     Text = dialog.FileName;
                 }
