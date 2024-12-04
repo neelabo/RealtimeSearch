@@ -271,14 +271,17 @@ namespace NeeLaboratory.IO.Search.Files
             return node;
         }
 
-        // TODO: 名前がよろしくない。 CancellationToken がないと別機能になる
-        private void Add(string path, CancellationToken token)
+        private void AddFile(string path, CancellationToken token)
         {
             if (_disposedValue) return;
             if (!_initialized) return;
 
             using var lockToken = _semaphore.Lock(token);
+            AddFileCore(path, token);
+        }
 
+        private void AddFileCore(string path, CancellationToken token)
+        {
             var info = CreateFileInfo(path);
             if ((info.Attributes & _enumerationOptions.AttributesToSkip) != 0)
             {
@@ -305,25 +308,30 @@ namespace NeeLaboratory.IO.Search.Files
             Validate();
         }
 
-        // TODO: 名前がよろしくない。 CancellationToken がないと別機能になる
-        private void Rename(string path, string oldPath, CancellationToken token)
+        private void RenameFile(string path, string oldPath, CancellationToken token)
         {
             if (_disposedValue) return;
             if (!_initialized) return;
 
             using var lockToken = _semaphore.Lock(token);
+            RenameFileCore(path, oldPath, token);
+        }
+
+        private void RenameFileCore(string path, string oldPath, CancellationToken token)
+        { 
+            // 名前だけ変更以外は受け付けない
+            if (System.IO.Path.GetDirectoryName(path) != System.IO.Path.GetDirectoryName(oldPath))
+            {
+                Debug.Assert(false, $"Cannot Rename: Other than the name: {path}");
+                return;
+            }
 
             var node = Find(oldPath);
             if (node is null)
             {
+                // NOTE: 大文字、小文字の名前変更のときは Changed イベント前に Deleted イベントが発行されるので変更元は見つからない
                 Trace($"Cannot Rename: NofFound: {path}");
-                return;
-            }
-
-            // 名前だけ変更以外は受け付けない
-            if (System.IO.Path.GetDirectoryName(path) != System.IO.Path.GetDirectoryName(oldPath))
-            {
-                Debug.WriteLine($"Cannot Rename: Other than the name: {path}");
+                AddFileCore(path, token);
                 return;
             }
 
@@ -336,14 +344,17 @@ namespace NeeLaboratory.IO.Search.Files
             Validate();
         }
 
-        // TODO: 名前がよろしくない。 CancellationToken がないと別機能になる
-        private void Remove(string path, CancellationToken token)
+        private void RemoveFile(string path, CancellationToken token)
         {
             if (_disposedValue) return;
             if (!_initialized) return;
 
             using var lockToken = _semaphore.Lock(token);
+            RemoveFileCore(path, token);
+        }
 
+        private void RemoveFileCore(string path, CancellationToken token)
+        { 
             var node = Remove(path);
             if (node is null)
             {
@@ -362,13 +373,17 @@ namespace NeeLaboratory.IO.Search.Files
             Validate();
         }
 
-        private void Update(string path, CancellationToken token)
+        private void UpdateFile(string path, CancellationToken token)
         {
             if (_disposedValue) return;
             if (!_initialized) return;
 
             using var lockToken = _semaphore.Lock(token);
+            UpdateFileCore(path, token);
+        }
 
+        private void UpdateFileCore(string path, CancellationToken token)
+        { 
             var node = Find(path);
             if (node is null)
             {
@@ -443,25 +458,25 @@ namespace NeeLaboratory.IO.Search.Files
         private void Watcher_Created(object sender, FileSystemEventArgs e)
         {
             Trace($"Watcher created: {e.FullPath}");
-            _jobEngine.InvokeAsync(() => Add(e.FullPath, CancellationToken.None));
+            _jobEngine.InvokeAsync(() => AddFile(e.FullPath, CancellationToken.None));
         }
 
         private void Watcher_Deleted(object sender, FileSystemEventArgs e)
         {
             Trace($"Watcher deleted: {e.FullPath}");
-            _jobEngine.InvokeAsync(() => Remove(e.FullPath, CancellationToken.None));
+            _jobEngine.InvokeAsync(() => RemoveFile(e.FullPath, CancellationToken.None));
         }
 
         private void Watcher_Renamed(object? sender, RenamedEventArgs e)
         {
             Trace($"Watcher renamed: {e.OldFullPath} => {e.Name}");
-            _jobEngine.InvokeAsync(() => Rename(e.FullPath, e.OldFullPath, CancellationToken.None));
+            _jobEngine.InvokeAsync(() => RenameFile(e.FullPath, e.OldFullPath, CancellationToken.None));
         }
 
         private void Watcher_Changed(object? sender, FileSystemEventArgs e)
         {
             Trace($"Watcher changed: {e.FullPath}");
-            _jobEngine.InvokeAsync(() => Update(e.FullPath, CancellationToken.None));
+            _jobEngine.InvokeAsync(() => UpdateFile(e.FullPath, CancellationToken.None));
         }
 
         /// <summary>
