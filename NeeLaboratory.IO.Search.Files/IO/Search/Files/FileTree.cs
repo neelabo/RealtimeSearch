@@ -21,7 +21,7 @@ namespace NeeLaboratory.IO.Search.Files
     {
         private readonly string _path;
         private FileSystemWatcher? _fileSystemWatcher;
-        private readonly SlimJobEngine _jobEngine;
+        private readonly DelaySlimJobEngine _jobEngine;
         private readonly EnumerationOptions _enumerationOptions;
         private readonly bool _recurseSubdirectories;
         private readonly string _searchPattern;
@@ -46,7 +46,7 @@ namespace NeeLaboratory.IO.Search.Files
 
             _path = path;
 
-            _jobEngine = new SlimJobEngine(nameof(FileTree));
+            _jobEngine = new DelaySlimJobEngine(nameof(FileTree));
 
             _searchPattern = "*";
             _recurseSubdirectories = enumerationOptions.RecurseSubdirectories;
@@ -464,7 +464,8 @@ namespace NeeLaboratory.IO.Search.Files
         private void Watcher_Deleted(object sender, FileSystemEventArgs e)
         {
             Trace($"Watcher deleted: {e.FullPath}");
-            _jobEngine.InvokeAsync(() => RemoveFile(e.FullPath, CancellationToken.None));
+            // 大文字・小文字のみの Rename では先に Deleted が発生するため処理を遅延させる
+            _jobEngine.InvokeDelayAsync(() => RemoveFile(e.FullPath, CancellationToken.None), 100);
         }
 
         private void Watcher_Renamed(object? sender, RenamedEventArgs e)
