@@ -29,7 +29,6 @@ namespace NeeLaboratory.IO.Search.Files
         private bool _disposedValue;
         private int _count;
         private readonly SemaphoreSlim _semaphore = new(1, 1);
-        private string? _reservedRenamePath;
 
 
         /// <summary>
@@ -319,9 +318,7 @@ namespace NeeLaboratory.IO.Search.Files
         }
 
         private void RenameFileCore(string path, string oldPath, CancellationToken token)
-        {
-            _reservedRenamePath = null;
-
+        { 
             // 名前だけ変更以外は受け付けない
             if (System.IO.Path.GetDirectoryName(path) != System.IO.Path.GetDirectoryName(oldPath))
             {
@@ -358,16 +355,10 @@ namespace NeeLaboratory.IO.Search.Files
 
         private void RemoveFileCore(string path, CancellationToken token)
         { 
-            if (_reservedRenamePath is not null && path == _reservedRenamePath)
-            {
-                Trace($"Cannot Remove: {path} is rename reserved");
-                return;
-            }
-
             var node = Remove(path);
             if (node is null)
             {
-                Trace($"Cannot Remove: {path}");
+                Trace($"Cannot Removed: {path}");
                 return;
             }
 
@@ -510,18 +501,6 @@ namespace NeeLaboratory.IO.Search.Files
             await _jobEngine.InvokeAsync(() => { }, token);
         }
 
-        /// <summary>
-        /// 名前変更予約
-        /// </summary>
-        /// <remarks>
-        /// 大文字・小文字のみのファイル名変更では先に削除イベントが発生するので、ノードが削除されないようにする
-        /// </remarks>
-        /// <param name="src"></param>
-        /// <param name="dst"></param>
-        public void ReserveRename(string src, string dst)
-        {
-            _reservedRenamePath = string.IsNullOrEmpty(src) ? null : src;
-        }
 
         [Conditional("LOCAL_DEBUG")]
         private void Trace(string s, params object[] args)

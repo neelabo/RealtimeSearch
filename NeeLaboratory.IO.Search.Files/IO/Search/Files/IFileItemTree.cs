@@ -22,7 +22,5 @@ namespace NeeLaboratory.IO.Search.Files
 
         void Wait(CancellationToken token);
         Task WaitAsync(CancellationToken token);
-
-        void ReserveRename(string src, string dst);
     }
 }

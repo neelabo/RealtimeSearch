@@ -218,14 +218,6 @@ namespace NeeLaboratory.IO.Search.Files
             });
         }
 
-        public void ReserveRename(string src, string dst)
-        {
-            var trees = _trees;
-            foreach (var tree in trees)
-            {
-                tree.ReserveRename(src, dst);
-            }
-        }
     }
 
 }
