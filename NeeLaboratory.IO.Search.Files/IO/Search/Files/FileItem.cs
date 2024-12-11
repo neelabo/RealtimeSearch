@@ -21,12 +21,22 @@ namespace NeeLaboratory.IO.Search.Files
         }
 
 
-        private FileSystemInfo _info;
+        private bool _isDirty;
 
 
         public FileItem(FileSystemInfo fileSystemInfo)
         {
             SetFileInfo(fileSystemInfo);
+        }
+
+        public FileItem(bool isDirectory, string path, string name, DateTime lastWriteTime, long size, bool isDirty)
+        {
+            IsDirectory = isDirectory;
+            Path = path;
+            Name = name;
+            Size = size;
+            LastWriteTime = lastWriteTime;
+            IsDirty = isDirty;
         }
 
 
@@ -38,6 +48,13 @@ namespace NeeLaboratory.IO.Search.Files
         public string Name { get; private set; }
         public long Size { get; private set; }
         public DateTime LastWriteTime { get; private set; }
+
+        public bool IsDirty
+        {
+            get { return _isDirty; }
+            set { SetProperty(ref _isDirty, value); }
+        }
+
 
         public string? Extension
         {
@@ -83,16 +100,15 @@ namespace NeeLaboratory.IO.Search.Files
         /// Update FileInfo
         /// </summary>
         /// <param name="fileSystemInfo"></param>
-        [MemberNotNull(nameof(_info), nameof(IsDirectory), nameof(Path), nameof(Name), nameof(Size), nameof(LastWriteTime))]
+        [MemberNotNull(nameof(IsDirectory), nameof(Path), nameof(Name), nameof(Size), nameof(LastWriteTime))]
         public void SetFileInfo(FileSystemInfo fileSystemInfo)
         {
-            _info = fileSystemInfo;
-
-            IsDirectory = _info.Attributes.HasFlag(FileAttributes.Directory);
-            Path = _info.FullName;
-            Name = _info.Name;
-            Size = _info is FileInfo fileInfo ? fileInfo.Length : -1;
-            LastWriteTime = _info.LastWriteTime;
+            IsDirectory = fileSystemInfo.Attributes.HasFlag(FileAttributes.Directory);
+            Path = fileSystemInfo.FullName;
+            Name = fileSystemInfo.Name;
+            Size = fileSystemInfo is FileInfo fileInfo ? fileInfo.Length : -1;
+            LastWriteTime = fileSystemInfo.LastWriteTime;
+            IsDirty = false;
 
             RaisePropertyChanged(null);
         }

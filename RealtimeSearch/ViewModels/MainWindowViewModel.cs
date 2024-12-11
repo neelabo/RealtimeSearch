@@ -171,6 +171,16 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
             }
 
             _model.Loaded();
+
+#if DEBUG
+            // [DEV] 検索実行
+            InputKeyword = "test";
+#endif
+        }
+
+        public void Closed()
+        {
+            _model.Closed();
         }
 
         private void ShowMessageBox(string message)

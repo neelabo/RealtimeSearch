@@ -29,13 +29,15 @@ namespace NeeLaboratory.IO.Search.Files
 
         public int Count => _trees.Sum(t => t.Count);
 
+        public List<FileItemTree> Trees => _trees;
 
-        public void SetSearchAreas(IEnumerable<FileArea> areas)
+
+        public void SetSearchAreas(IEnumerable<FileArea> areas, FileForestMemento? memento = null)
         {
             var oldies = _trees;
 
             var fixedAreas = ValidatePathCollection(areas);
-            var trees = fixedAreas.Select(area => oldies.FirstOrDefault(e => e.Area == area) ?? CreateTree(area)).ToList();
+            var trees = fixedAreas.Select(area => oldies.FirstOrDefault(e => e.Area == area) ?? CreateTree(area, memento)).ToList();
             var removes = oldies.Except(trees);
 
             _trees = trees;
@@ -60,9 +62,10 @@ namespace NeeLaboratory.IO.Search.Files
         }
 
 
-        private FileItemTree CreateTree(FileArea area)
+        private FileItemTree CreateTree(FileArea area, FileForestMemento? memento)
         {
-            var tree = new FileItemTree(area);
+            var treeMemento = memento?.Trees?.FirstOrDefault(e => e.FileArea == area);
+            var tree = new FileItemTree(area, treeMemento);
             tree.AddContentChanged += Tree_AddContentChanged;
             tree.RemoveContentChanged += Tree_RemoveContentChanged;
             tree.ContentChanged += Tree_ContentChanged;
@@ -218,6 +221,18 @@ namespace NeeLaboratory.IO.Search.Files
             });
         }
 
+        public FileForestMemento CreateMemento()
+        {
+            return new FileForestMemento(_trees.Select(e => e.CreateTreeMemento()).ToList());
+        }
+
+#if false
+        public static List<FileItemTree> RestoreMemento(FileItemForestMemento memento)
+        {
+            if (memento.Trees is null) return new();
+            return memento.Trees.Select(e => FileItemTree.Restore(e)).WhereNotNull().ToList();
+        }
+#endif
     }
 
 }

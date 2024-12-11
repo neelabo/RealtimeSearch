@@ -12,7 +12,7 @@ namespace NeeLaboratory.Collections
     public class NodeTree
     {
         private readonly Node _root = new Node("");
-        private readonly Node _trunk;
+        private Node _trunk;
 
         public NodeTree(string path)
         {
@@ -31,6 +31,17 @@ namespace NeeLaboratory.Collections
 
         public Node Trunk => _trunk;
 
+
+        public void SetTrunk(Node node)
+        {
+            Debug.Assert(node.Name == Trunk.Name);
+
+            var parent = Trunk.Parent;
+            Debug.Assert(parent is not null);
+            parent.RemoveChild(Trunk);
+            parent.AddChild(node);
+            _trunk = node;
+        }
 
         private static IEnumerable<string> SplitPath(string path)
         {
@@ -138,6 +149,8 @@ namespace NeeLaboratory.Collections
         [Conditional("DEBUG")]
         public void Validate()
         {
+            var sw = Stopwatch.StartNew();
+
             Debug.Assert(_root.Parent is null);
             Debug.Assert(_root.Name is "");
 
@@ -149,7 +162,10 @@ namespace NeeLaboratory.Collections
                 Debug.Assert(!string.IsNullOrEmpty(node.Name));
                 Debug.Assert(node.Children is null || !node.Children.GroupBy(i => i).SelectMany(g => g.Skip(1)).Any());
             }
-        }
-    }
 
+            sw.Stop();
+            Debug.WriteLine($"Validate {_trunk.FullName}: {sw.ElapsedMilliseconds} ms");
+        }
+
+    }
 }

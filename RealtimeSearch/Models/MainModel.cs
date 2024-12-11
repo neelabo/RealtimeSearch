@@ -92,7 +92,13 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
         public void Loaded()
         {
-            _search.ReIndex();
+            var cache = _search.LoadCache();
+            _search.ReIndex(cache);
+        }
+
+        public void Closed()
+        {
+            _search.SaveCache();
         }
 
         public void SetKeyword(string keyword)

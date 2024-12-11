@@ -29,7 +29,7 @@ namespace NeeLaboratory.IO.Search.Files
         private bool _disposedValue;
         private int _count;
         private readonly SemaphoreSlim _semaphore = new(1, 1);
-
+        private FileTreeMemento? _memento;
 
         /// <summary>
         /// コンストラクタ。
@@ -39,12 +39,13 @@ namespace NeeLaboratory.IO.Search.Files
         /// <param name="enumerationOptions">検索オプション</param>
         /// <exception cref="ArgumentException">絶対パスでない</exception>
         /// <exception cref="DirectoryNotFoundException">ディレクトリが見つからない</exception>
-        public FileTree(string path, EnumerationOptions enumerationOptions) : base(path)
+        public FileTree(string path, FileTreeMemento? memento, EnumerationOptions enumerationOptions) : base(path)
         {
             path = LoosePath.TrimDirectoryEnd(path);
             if (!Directory.Exists(path)) throw new DirectoryNotFoundException($"Directory not found: {path}");
 
             _path = path;
+            _memento = memento;
 
             _jobEngine = new DelaySlimJobEngine(nameof(FileTree));
 
@@ -134,28 +135,20 @@ namespace NeeLaboratory.IO.Search.Files
 
             Trace($"Initialize {_path}: ...");
 
-            var sw = Stopwatch.StartNew();
-
             try
             {
-                Trunk.ClearChildren();
-                if (_recurseSubdirectories)
+                if (_memento is null)
                 {
-                    CreateChildrenRecursive(Trunk, new DirectoryInfo(LoosePath.TrimDirectoryEnd(Trunk.FullName)), token);
+                    InitializeFromFileSystem(token);
                 }
                 else
                 {
-                    CreateChildrenTop(Trunk, new DirectoryInfo(LoosePath.TrimDirectoryEnd(Trunk.FullName)), token);
+                    InitializeFromCache(_memento, token);
+                    _memento = null;
                 }
 
-                sw.Stop();
-                Debug.WriteLine($"Initialize {_path}: {sw.ElapsedMilliseconds} ms, Count={Trunk.WalkChildren().Count()}");
-                //Trunk.Dump();
-
-                sw.Start();
-                Validate();
-                sw.Stop();
-                Debug.WriteLine($"Validate {_path}: {sw.ElapsedMilliseconds} ms");
+                Debug.Assert(Trunk.Content is FileItem);
+                //Validate();
 
                 _initialized = true;
             }
@@ -173,6 +166,134 @@ namespace NeeLaboratory.IO.Search.Files
             }
         }
 
+        /// <summary>
+        /// ファイルシステムから Tree を構築する
+        /// </summary>
+        /// <param name="token"></param>
+        /// <exception cref="AggregateException"></exception>
+        private void InitializeFromFileSystem(CancellationToken token)
+        {
+            var sw = Stopwatch.StartNew();
+
+            Trunk.ClearChildren();
+            if (_recurseSubdirectories)
+            {
+                CreateChildrenRecursive(Trunk, new DirectoryInfo(LoosePath.TrimDirectoryEnd(Trunk.FullName)), token);
+            }
+            else
+            {
+                CreateChildrenTop(Trunk, new DirectoryInfo(LoosePath.TrimDirectoryEnd(Trunk.FullName)), token);
+            }
+
+            Debug.WriteLine($"Initialize {_path}: {sw.ElapsedMilliseconds} ms, Count={Trunk.WalkChildren().Count()}");
+            //Trunk.Dump();
+        }
+
+        /// <summary>
+        /// キャッシュから Tree を構築する
+        /// </summary>
+        /// <param name="memento"></param>
+        /// <param name="token"></param>
+        private void InitializeFromCache(FileTreeMemento memento, CancellationToken token)
+        {
+            var sw = Stopwatch.StartNew();
+
+            var trunk = FileItemTree.RestoreTree(memento);
+            if (trunk is null) throw new InvalidOperationException();
+
+            Debug.Assert((trunk.Content as FileItem)?.Path == Trunk.FullName);
+            SetTrunk(trunk);
+
+            Debug.WriteLine($"Initialize {_path}: FromCache: {sw.ElapsedMilliseconds} ms, Count={Trunk.WalkChildren().Count()}");
+
+            // TODO: 非同期実行
+            Task.Run(() =>
+            {
+                try
+                {
+                    var sw = Stopwatch.StartNew();
+                    UpdateNode(Trunk, token);
+                    Debug.WriteLine($"Initialize {_path}: Update done. {sw.ElapsedMilliseconds}ms");
+                }
+                catch (OperationCanceledException)
+                {
+                }
+            }, token);
+        }
+
+        private void UpdateNode(Node node, CancellationToken token)
+        {
+            Debug.Assert(node.Content is FileItem);
+            if (node.Content is not FileItem fileItem) return;
+
+            if (!fileItem.IsDirty) return;
+            token.ThrowIfCancellationRequested();
+
+            var info = CreateFileInfo(fileItem.Path);
+            var isUpdate = false;
+            if (info.Exists)
+            {
+                if (info.LastWriteTime != fileItem.LastWriteTime) // 最終更新日だけチェック
+                {
+                    Debug.WriteLine($"Node: Update: {node.FullName}");
+                    // TODO: 以下で情報を２度更新している。IsDirty を拡張して掃除されないようにするか、内容変更イベントのみ発行するかのどちらかにする
+                    fileItem.SetFileInfo(info);
+                    _jobEngine.InvokeAsync(() => UpdateFile(node.FullName, token));
+                    isUpdate = true;
+                }
+                fileItem.IsDirty = false;
+
+                if (fileItem.IsDirectory)
+                {
+                    var directory = (DirectoryInfo)info;
+                    if (isUpdate)
+                    {
+                        // 構成に変更があるときは
+                        var map = node.ChildCollection().ToDictionary(e => e.Name, e => e);
+                        foreach (var entry in Directory.GetFileSystemEntries(fileItem.Path).Select(e => System.IO.Path.GetFileName(e)))
+                        {
+                            if (map.TryGetValue(entry, out var childNode))
+                            {
+                                // 存在するものは通常の更新
+                                UpdateNode(childNode, token);
+                            }
+                            else
+                            {
+                                // 存在しないものは新しく追加
+                                var path = System.IO.Path.Combine(node.FullName, entry);
+                                Debug.WriteLine($"Node: Add: {path}");
+                                _jobEngine.InvokeAsync(() => AddFile(path, token));
+                            }
+                        }
+
+                        // 掃除
+                        foreach (var entry in node.ChildCollection().Where(e => (e.Content as FileItem)?.IsDirty == true))
+                        {
+                            Debug.WriteLine($"Node: Remove: {entry.FullName}");
+                            _jobEngine.InvokeAsync(() => RemoveFile(entry.FullName, token));
+                        }
+                    }
+                    else
+                    {
+                        // 構成に変更がない場合は個別の子ノードの更新
+                        foreach (var childNode in node.ChildCollection())
+                        {
+                            UpdateNode(childNode, token);
+                        }
+                    }
+                }
+                else
+                {
+                    node.ClearChildren();
+                }
+
+                Interlocked.Add(ref _count, node.Children?.Count ?? 0);
+            }
+            else
+            {
+                node.RemoveSelf();
+            }
+        }
 
         /// <summary>
         /// 子ノード生成 再帰なし
@@ -318,7 +439,7 @@ namespace NeeLaboratory.IO.Search.Files
         }
 
         private void RenameFileCore(string path, string oldPath, CancellationToken token)
-        { 
+        {
             // 名前だけ変更以外は受け付けない
             if (System.IO.Path.GetDirectoryName(path) != System.IO.Path.GetDirectoryName(oldPath))
             {
@@ -354,7 +475,7 @@ namespace NeeLaboratory.IO.Search.Files
         }
 
         private void RemoveFileCore(string path, CancellationToken token)
-        { 
+        {
             var node = Remove(path);
             if (node is null)
             {
@@ -383,7 +504,7 @@ namespace NeeLaboratory.IO.Search.Files
         }
 
         private void UpdateFileCore(string path, CancellationToken token)
-        { 
+        {
             var node = Find(path);
             if (node is null)
             {
@@ -408,7 +529,7 @@ namespace NeeLaboratory.IO.Search.Files
         {
         }
 
-        protected FileSystemInfo CreateFileInfo(string path)
+        protected static FileSystemInfo CreateFileInfo(string path)
         {
             var attr = File.GetAttributes(path);
             var file = (FileSystemInfo)(attr.HasFlag(FileAttributes.Directory) ? new DirectoryInfo(path) : new FileInfo(path));

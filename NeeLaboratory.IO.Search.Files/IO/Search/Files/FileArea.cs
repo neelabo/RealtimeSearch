@@ -1,9 +1,11 @@
-﻿using System;
+﻿using MemoryPack;
+using System;
 using System.Runtime.Serialization;
 
 namespace NeeLaboratory.IO.Search.Files
 {
-    public class FileArea
+    [MemoryPackable]
+    public partial record class FileArea
     {
         public FileArea()
         {
@@ -14,14 +16,15 @@ namespace NeeLaboratory.IO.Search.Files
             Path = System.IO.Path.GetFullPath(path);
         }
 
+        [MemoryPackConstructor]
         public FileArea(string path, bool includeSubdirectories) : this(path)
         {
             IncludeSubdirectories = includeSubdirectories;
         }
 
-        public string Path { get; set; } = "";
+        public string Path { get; init; } = "";
 
-        public bool IncludeSubdirectories { get; set; }
+        public bool IncludeSubdirectories { get; init; }
 
 
         public bool Contains(FileArea other)
@@ -55,6 +58,7 @@ namespace NeeLaboratory.IO.Search.Files
                 }
             }
         }
+
     }
 
 }

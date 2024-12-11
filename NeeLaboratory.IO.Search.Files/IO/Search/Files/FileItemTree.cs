@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-//using NodeArea = NeeLaboratory.IO.Search.FileNode.NodeArea;
 
 
 namespace NeeLaboratory.IO.Search.Files
@@ -17,9 +16,16 @@ namespace NeeLaboratory.IO.Search.Files
     {
         private FileArea _area;
 
-        public FileItemTree(FileArea area) : base(area.Path, CreateEnumerationOptions(area))
+        public FileItemTree(FileArea area, FileTreeMemento? memento) : base(area.Path, memento, CreateEnumerationOptions(area))
         {
             _area = area;
+
+            // すべての Node の Content を保証する
+            foreach (var node in Root.Walk())
+            {
+                if (string.IsNullOrEmpty(node.Name)) continue;
+                EnsureContent(node);
+            }
         }
 
 
@@ -96,11 +102,91 @@ namespace NeeLaboratory.IO.Search.Files
 
         private FileItem CreateFileItem(Node node)
         {
+            Debug.Assert(node.Content is null);
+
             var info = CreateFileInfo(node.FullName);
             var fileItem = new FileItem(info);
             node.Content = fileItem;
             return fileItem;
         }
+
+        private void EnsureContent(Node node)
+        {
+            if (node.Content is null)
+            {
+                node.Content = new FileItem(CreateFileInfo(node.FullName));
+            }
+        }
+
+        public void DumpDepth()
+        {
+            foreach (var item in Trunk.WalkChildrenWithDepth())
+            {
+                var fileItem = GetFileItem(item.Node);
+                var fileNode = new FileNodeMemento(item.Depth, fileItem.IsDirectory, item.Node.Name, fileItem.LastWriteTime, fileItem.Size);
+                Debug.WriteLine(fileNode);
+            }
+        }
+
+        #region Memento
+        // TODO: Memento が FileItemTree と等しく対応していないので、データ構造の見直しが必要
+
+        public FileTreeMemento CreateTreeMemento()
+        {
+            // TODO: Trunk から生成してるけど、Root からでよくないか？
+            return new FileTreeMemento(_area, CreateTreeMemento(Trunk));
+        }
+
+        public List<FileNodeMemento> CreateTreeMemento(Node node)
+        {
+            return node.WalkWithDepth().Select(e => CreateFileNode(e.Node, e.Depth)).ToList();
+        }
+
+        private FileNodeMemento CreateFileNode(Node node, int depth)
+        {
+            var fileItem = GetFileItem(node);
+            return new FileNodeMemento(depth, fileItem.IsDirectory, node.Name, fileItem.LastWriteTime, fileItem.Size);
+        }
+
+        public static Node? RestoreTree(FileTreeMemento memento)
+        {
+            if (memento == null) return null;
+            if (memento.FileArea is null) return null;
+            if (memento.Nodes is null) return null;
+
+            var directory = System.IO.Path.GetDirectoryName(memento.FileArea.Path) ?? "";
+
+            Node root = new Node("");
+            Node current = root;
+            int depth = -1;
+            foreach (var node in memento.Nodes)
+            {
+                Debug.Assert(node.Depth > 0 || System.IO.Path.GetFileName(memento.FileArea.Path) == node.Name);
+
+                while (node.Depth <= depth)
+                {
+                    current = current.Parent ?? throw new FormatException("Cannot get parent node.");
+                    depth--;
+                }
+                if (node.Depth - 1 != depth) throw new FormatException("Node is missing.");
+
+                var child = new Node(node.Name);
+                current.AddChild(child);
+                var path = System.IO.Path.Combine(directory, current.FullName, node.Name);
+                child.Content = new FileItem(node.IsDirectory, path, node.Name, node.LastWriteTime, node.Size, true);
+                current = child;
+                depth = node.Depth;
+            }
+
+            // Trunk
+            Debug.Assert(root.Children?.Count == 1);
+            var trunkNode = root.Children.First();
+            root.RemoveChild(trunkNode);
+
+            return trunkNode;
+        }
+
+        #endregion
 
 
         [Conditional("LOCAL_DEBUG")]
@@ -108,6 +194,5 @@ namespace NeeLaboratory.IO.Search.Files
         {
             Debug.WriteLine($"{this.GetType().Name}: {string.Format(s, args)}");
         }
-
     }
 }

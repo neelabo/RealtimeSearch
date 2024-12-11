@@ -130,6 +130,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
         private void Window_Closed(object? sender, EventArgs e)
         {
             _vm.StopClipboardWatch();
+            _vm.Closed();
         }
 
         private void MainWindow_KeyDown(object? sender, KeyEventArgs e)

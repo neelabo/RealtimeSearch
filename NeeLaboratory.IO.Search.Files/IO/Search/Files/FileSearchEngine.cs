@@ -64,7 +64,7 @@ namespace NeeLaboratory.IO.Search.Files
         public bool IsBusy { get; private set; }
 
 
-        public IFileItemTree Tree => _tree;
+        public FileItemForest Tree => _tree;
 
         public SearchCommandEngineState State
         {
@@ -122,9 +122,9 @@ namespace NeeLaboratory.IO.Search.Files
             _ = IndexAsync(CancellationToken.None);
         }
 
-        public void SetSearchAreas(IEnumerable<FileArea> areas)
+        public void SetSearchAreas(IEnumerable<FileArea> areas, FileForestMemento? memento = null)
         {
-            _tree.SetSearchAreas(areas);
+            _tree.SetSearchAreas(areas, memento);
             _ = IndexAsync(CancellationToken.None);
         }
 
@@ -168,6 +168,9 @@ namespace NeeLaboratory.IO.Search.Files
             {
                 throw job.Exception;
             }
+
+            // ##
+            //_tree.Test();
         }
 
         private void IndexInner(CancellationToken token)

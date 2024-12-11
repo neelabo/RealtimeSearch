@@ -111,18 +111,29 @@ namespace NeeLaboratory.RealtimeSearch.Models
         /// <summary>
         /// インデックス再構築
         /// </summary>
-        public void ReIndex()
+        public void ReIndex(FileForestMemento? memento = null)
         {
             var keyword = SearchResult?.Keyword;
             SearchResult = null;
 
-            _searchEngine.SetSearchAreas(_appConfig.SearchAreas);
+            _searchEngine.SetSearchAreas(_appConfig.SearchAreas, memento);
 
             // 再検索
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 _ = SearchAsync(keyword, true);
             }
+        }
+
+        // TODO: Cache file name
+        public FileForestMemento? LoadCache()
+        {
+            return FileForestCache.Load(FileForestCache.CacheFileName);
+        }
+
+        public void SaveCache()
+        {
+            FileForestCache.Save(FileForestCache.CacheFileName, _searchEngine.Tree.CreateMemento());
         }
 
         /// <summary>

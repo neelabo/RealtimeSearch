@@ -124,6 +124,44 @@ namespace NeeLaboratory.Collections
             return RemoveChild(node);
         }
 
+        /// <summary>
+        /// ノード削除
+        /// </summary>
+        /// <param name="children"></param>
+        public void RemoveChildren(IEnumerable<Node> children)
+        {
+            foreach(var child in children)
+            {
+                RemoveChild(child);
+            }
+        }
+
+        /// <summary>
+        /// 自身をノードから削除
+        /// </summary>
+        /// <returns></returns>
+        public Node? RemoveSelf()
+        {
+            if (this.Parent is null) return null;
+            return this.Parent.RemoveChild(this);
+        }
+
+        /// <summary>
+        /// 子ノードのコレクション。
+        /// Children が null の場合は空コレクションを返す
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Node> ChildCollection()
+        {
+            if (Children is not null)
+            {
+                foreach (var child in Children)
+                {
+                    yield return child;
+                }
+            }
+        }
+
         public IEnumerable<Node> WalkChildren()
         {
             if (Children is not null)
@@ -147,6 +185,46 @@ namespace NeeLaboratory.Collections
                 foreach (var child in Children)
                 {
                     foreach (var node in child.Walk())
+                    {
+                        yield return node;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 深さつき Walk
+        /// </summary>
+        /// <param name="depth"></param>
+        /// <returns></returns>
+        public IEnumerable<(Node Node, int Depth)> WalkChildrenWithDepth(int depth = 0)
+        {
+            if (Children is not null)
+            {
+                foreach (var child in Children)
+                {
+                    foreach (var node in child.WalkWithDepth(depth + 1))
+                    {
+                        yield return node;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 深さつき Walk
+        /// </summary>
+        /// <param name="depth"></param>
+        /// <returns></returns>
+        public IEnumerable<(Node Node, int Depth)> WalkWithDepth(int depth = 0)
+        {
+            yield return (this, depth);
+
+            if (Children is not null)
+            {
+                foreach (var child in Children)
+                {
+                    foreach (var node in child.WalkWithDepth(depth + 1))
                     {
                         yield return node;
                     }
