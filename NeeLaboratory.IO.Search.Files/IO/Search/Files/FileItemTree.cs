@@ -33,7 +33,6 @@ namespace NeeLaboratory.IO.Search.Files
         public event EventHandler<FileTreeContentChangedEventArgs>? RemoveContentChanged;
         public event EventHandler<FileTreeContentChangedEventArgs>? ContentChanged;
 
-
         public FileArea Area => _area;
 
 

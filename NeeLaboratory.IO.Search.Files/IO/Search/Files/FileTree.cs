@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using NeeLaboratory.Collections;
+using NeeLaboratory.ComponentModel;
 
 namespace NeeLaboratory.IO.Search.Files
 {
@@ -30,6 +31,8 @@ namespace NeeLaboratory.IO.Search.Files
         private int _count;
         private readonly SemaphoreSlim _semaphore = new(1, 1);
         private FileTreeMemento? _memento;
+        private bool _isCollectBusy;
+
 
         /// <summary>
         /// コンストラクタ。
@@ -56,12 +59,28 @@ namespace NeeLaboratory.IO.Search.Files
         }
 
 
+        public event EventHandler<bool>? CollectBusyChanged;
+
+
         public string Path => _path;
 
         /// <summary>
         /// おおよその総数。非同期に加算されるため不正確
         /// </summary>
         public int Count => _count;
+
+        public bool IsCollectBusy
+        {
+            get { return _isCollectBusy; }
+            set
+            {
+                if (_isCollectBusy != value)
+                {
+                    _isCollectBusy = value;
+                    CollectBusyChanged?.Invoke(this, _isCollectBusy);
+                }
+            }
+        }
 
 
         protected virtual void Dispose(bool disposing)
@@ -88,6 +107,12 @@ namespace NeeLaboratory.IO.Search.Files
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        private IDisposable CreateCollectSection()
+        {
+            IsCollectBusy = true;
+            return new AnonymousDisposable(() => IsCollectBusy = false);
         }
 
         /// <summary>
@@ -175,6 +200,8 @@ namespace NeeLaboratory.IO.Search.Files
         {
             var sw = Stopwatch.StartNew();
 
+            using var section = CreateCollectSection();
+
             Trunk.ClearChildren();
             if (_recurseSubdirectories)
             {
@@ -198,6 +225,8 @@ namespace NeeLaboratory.IO.Search.Files
         {
             var sw = Stopwatch.StartNew();
 
+            var section = CreateCollectSection();
+
             var trunk = FileItemTree.RestoreTree(memento);
             if (trunk is null) throw new InvalidOperationException();
 
@@ -207,16 +236,23 @@ namespace NeeLaboratory.IO.Search.Files
             Debug.WriteLine($"Initialize {_path}: FromCache: {sw.ElapsedMilliseconds} ms, Count={Trunk.WalkChildren().Count()}");
 
             // TODO: 非同期実行
-            Task.Run(() =>
+            Task.Run(async () =>
             {
                 try
                 {
+#if DEBUG
+                    await Task.Delay(3000);
+#endif
                     var sw = Stopwatch.StartNew();
                     UpdateNode(Trunk, token);
                     Debug.WriteLine($"Initialize {_path}: Update done. {sw.ElapsedMilliseconds}ms");
                 }
                 catch (OperationCanceledException)
                 {
+                }
+                finally
+                {
+                    section.Dispose();
                 }
             }, token);
         }

@@ -45,7 +45,8 @@ namespace NeeLaboratory.RealtimeSearch.Models
             _appConfig = appConfig;
 
             _searchEngine = new FileSearchEngine(_appConfig);
-            _searchEngine.StateChanged += SearchEngine_StateChanged;
+            _searchEngine.SubscribePropertyChanged(nameof(FileSearchEngine.IsCollectBusy), SearchEngine_IsCollectBusyPropertyChanged);
+            _searchEngine.SubscribePropertyChanged(nameof(FileSearchEngine.IsSearchBusy), SearchEngine_IsSearchBusyPropertyChanged);
 
             _appConfig.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
 
@@ -62,11 +63,6 @@ namespace NeeLaboratory.RealtimeSearch.Models
         /// </summary>
         public EventHandler? SearchResultChanged;
 
-        /// <summary>
-        /// 状態変更イベント
-        /// </summary>
-        public EventHandler<SearchCommandEngineState>? StateChanged;
-
 
         public bool IsBusy
         {
@@ -74,11 +70,16 @@ namespace NeeLaboratory.RealtimeSearch.Models
             set { SetProperty(ref _isBusy, value); }
         }
 
+        public bool IsCollectBusy => _searchEngine.IsCollectBusy;
+
+        public bool IsSearchBusy => _searchEngine.IsSearchBusy;
+
         public string Information
         {
             get { return _information; }
-            set { _information = value; RaisePropertyChanged(); }
+            set { SetProperty(ref _information, value); }
         }
+
 
         public FileSearchResultWatcher? SearchResult
         {
@@ -96,11 +97,18 @@ namespace NeeLaboratory.RealtimeSearch.Models
         public ISearchResultDecorator<FileItem>? SearchResultDecorator { get; set; }
 
 
-        private void SearchEngine_StateChanged(object? sender, SearchCommandEngineState e)
+        private void SearchEngine_IsCollectBusyPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            Debug.WriteLine($"State: {_searchEngine.State}");
-            SetMessage("");
-            StateChanged?.Invoke(this, e);
+            Debug.WriteLine($"State: IsCollectBusy={_searchEngine.IsCollectBusy}");
+            UpdateInformation();
+            RaisePropertyChanged(nameof(IsCollectBusy));
+        }
+
+        private void SearchEngine_IsSearchBusyPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            Debug.WriteLine($"State: IsSearchBusy={_searchEngine.IsSearchBusy}");
+            UpdateInformation();
+            RaisePropertyChanged(nameof(IsSearchBusy));
         }
 
         private void SearchAreas_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -262,17 +270,19 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
         public void UpdateInformation()
         {
-            Information = _searchEngine.State switch
+            if (_searchEngine.IsSearchBusy)
             {
-                SearchCommandEngineState.Idle
-                    => _message,
-                SearchCommandEngineState.Collect
-                    => $"Indexing... ({_searchEngine.Tree.Count})",
-                SearchCommandEngineState.Search
-                    => $"Searching...",
-                _
-                    => ""
-            }; ;
+                Information = $"Searching...";
+            }
+            else if (_searchEngine.IsCollectBusy)
+            {
+                var indexing = $"{_searchEngine.Tree.Count} Indexing...";
+                Information = string.IsNullOrEmpty(_message) ? indexing : $"{_message} ({indexing})";
+            }
+            else
+            {
+                Information = _message;
+            }
         }
 
     }

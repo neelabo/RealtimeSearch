@@ -1,4 +1,5 @@
 ﻿//#define LOCAL_DEBUG
+using NeeLaboratory.ComponentModel;
 using NeeLaboratory.Generators;
 using NeeLaboratory.IO;
 using NeeLaboratory.IO.Search;
@@ -16,7 +17,6 @@ using System.Threading.Tasks;
 
 namespace NeeLaboratory.IO.Search.Files
 {
-
     [NotifyPropertyChanged]
     public partial class FileSearchEngine : INotifyPropertyChanged, IDisposable
     {
@@ -29,10 +29,10 @@ namespace NeeLaboratory.IO.Search.Files
         private CancellationTokenSource? _indexCancellationTokenSource;
         private CancellationTokenSource? _searchCancellationTokenSource;
         private bool _disposedValue;
-
         private readonly SlimJobEngine _jobEngine;
         private AsyncLock _collectLock = new();
-        private SearchCommandEngineState _state;
+        private bool _isCollectBusy;
+        private bool _isSearchBusy;
 
 
         public FileSearchEngine(ISearchContext context)
@@ -43,6 +43,7 @@ namespace NeeLaboratory.IO.Search.Files
             //AllowHidden = allowHidden;
 
             _tree = new FileItemForest();
+            _tree.CollectBusyChanged += Tree_CollectBusyChanged;
             _searcher = new Searcher(new FileSearchContext(SearchValueCacheFactory.Create()));
             UpdateSearchProperties();
 
@@ -52,30 +53,24 @@ namespace NeeLaboratory.IO.Search.Files
         }
 
 
-
-
         [Subscribable]
         public event PropertyChangedEventHandler? PropertyChanged;
-
-        [Subscribable]
-        public event EventHandler<SearchCommandEngineState>? StateChanged;
 
 
         public bool IsBusy { get; private set; }
 
-
         public FileItemForest Tree => _tree;
 
-        public SearchCommandEngineState State
+        public bool IsCollectBusy
         {
-            get { return _state; }
-            private set
-            {
-                if (SetProperty(ref _state, value))
-                {
-                    StateChanged?.Invoke(this, _state);
-                }
-            }
+            get { return _isCollectBusy; }
+            set { SetProperty(ref _isCollectBusy, value); }
+        }
+
+        public bool IsSearchBusy
+        {
+            get { return _isSearchBusy; }
+            set { SetProperty(ref _isSearchBusy, value); }
         }
 
 
@@ -104,6 +99,17 @@ namespace NeeLaboratory.IO.Search.Files
         protected void ThrowIfDisposed()
         {
             if (_disposedValue) throw new ObjectDisposedException(GetType().FullName);
+        }
+
+        private void Tree_CollectBusyChanged(object? sender, bool e)
+        {
+            IsCollectBusy = e;
+        }
+
+        private IDisposable CreateSearchSection()
+        {
+            IsSearchBusy = true;
+            return new AnonymousDisposable(() => IsSearchBusy = false);
         }
 
         private void SearchContext_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -175,35 +181,9 @@ namespace NeeLaboratory.IO.Search.Files
 
         private void IndexInner(CancellationToken token)
         {
-            State = SearchCommandEngineState.Collect;
-            try
-            {
-                //var sw = Stopwatch.StartNew();
-                _tree.Wait(token);
-                _tree.Initialize(token);
-                //sw.Stop();
-                //Debug.WriteLine($"ForestInitialize: {sw.ElapsedMilliseconds} ms");
-            }
-            finally
-            {
-                State = SearchCommandEngineState.Idle;
-            }
+            _tree.Wait(token);
+            _tree.Initialize(token);
         }
-
-        public async Task IndexInnerAsync(CancellationToken token)
-        {
-            State = SearchCommandEngineState.Collect;
-            try
-            {
-                await _tree.WaitAsync(token);
-                await _tree.InitializeAsync(token);
-            }
-            finally
-            {
-                State = SearchCommandEngineState.Idle;
-            }
-        }
-
 
         public async Task<SearchResult<FileItem>> SearchAsync(string keyword, CancellationToken token)
         {
@@ -222,7 +202,7 @@ namespace NeeLaboratory.IO.Search.Files
                 //await job.WaitAsync(_searchCancellationTokenSource.Token);
                 //return job.Result;
 
-                var job =  _jobEngine.InvokeAsync(() => SearchInner(keyword, token));
+                var job = _jobEngine.InvokeAsync(() => SearchInner(keyword, token));
                 await job;
                 if (job.Exception is not null)
                 {
@@ -241,13 +221,14 @@ namespace NeeLaboratory.IO.Search.Files
             token.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            State = SearchCommandEngineState.Search;
+            using var section = CreateSearchSection();
+
             try
             {
                 using (_tree.Lock(token))
                 {
                     var entries = _tree.CollectFileItems();
-                   var items = _searcher.Search(keyword, entries, token).ToList();
+                    var items = _searcher.Search(keyword, entries, token).ToList();
                     return new SearchResult<FileItem>(keyword, items.Cast<FileItem>());
                 }
             }
@@ -259,10 +240,6 @@ namespace NeeLaboratory.IO.Search.Files
             {
                 return new SearchResult<FileItem>(keyword, null, ex);
             }
-            finally
-            {
-                State = SearchCommandEngineState.Idle;
-            }
         }
 
 
@@ -271,7 +248,8 @@ namespace NeeLaboratory.IO.Search.Files
             token.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            State = SearchCommandEngineState.Search;
+            using var section = CreateSearchSection();
+
             try
             {
                 using (await _tree.LockAsync(token))
@@ -289,10 +267,6 @@ namespace NeeLaboratory.IO.Search.Files
             catch (Exception ex)
             {
                 return new SearchResult<FileItem>(keyword, null, ex);
-            }
-            finally
-            {
-                State = SearchCommandEngineState.Idle;
             }
         }
 
@@ -323,13 +297,12 @@ namespace NeeLaboratory.IO.Search.Files
             try
             {
                 // 収集
-                State = SearchCommandEngineState.Collect;
                 await _tree.WaitAsync(CancellationToken.None);
                 await _tree.InitializeAsync(token);
                 using (await _tree.LockAsync(token))
                 {
                     // 検索
-                    State = SearchCommandEngineState.Search;
+                    using var section = CreateSearchSection();
                     var entries = _tree.CollectFileItems();
                     var units = keywords.Select(e => new MultiSearchUnit(e)).ToList();
                     Parallel.ForEach(units, unit =>
@@ -366,7 +339,6 @@ namespace NeeLaboratory.IO.Search.Files
             {
                 tokenSource.Dispose();
                 IsBusy = false;
-                State = SearchCommandEngineState.Idle;
             }
         }
 

@@ -38,7 +38,8 @@ namespace NeeLaboratory.RealtimeSearch.Models
             _keyword.ValueChanged += async (s, e) => await SearchAsync(false);
 
             _search = new Search(appConfig);
-            _search.StateChanged += Search_StateChanged;
+            _search.SubscribePropertyChanged(nameof(Search.IsCollectBusy), Search_IsCollectBusyChanged);
+            _search.SubscribePropertyChanged(nameof(Search.IsSearchBusy), Search_IsSearchBusyChanged);
             _search.SearchResultChanged += Search_SearchResultChanged;
             _search.SearchResultDecorator = new SearchResultDecorator();
 
@@ -129,9 +130,19 @@ namespace NeeLaboratory.RealtimeSearch.Models
             _webSearch.Search(_keyword.Value);
         }
 
-        private void Search_StateChanged(object? sender, SearchCommandEngineState e)
+        private void Search_IsCollectBusyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            _timer.IsEnabled = e != SearchCommandEngineState.Idle;
+            UpdateInformationTimer();
+        }
+
+        private void Search_IsSearchBusyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            UpdateInformationTimer();
+        }
+
+        private void UpdateInformationTimer()
+        {
+            _timer.IsEnabled = _search.IsCollectBusy || _search.IsSearchBusy;
         }
 
         private void Search_SearchResultChanged(object? sender, EventArgs e)

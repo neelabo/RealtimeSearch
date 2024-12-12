@@ -15,13 +15,14 @@ namespace NeeLaboratory.IO.Search.Files
     {
         private List<FileItemTree> _trees = new();
         private bool _disposedValue;
+        private bool _isCollectBusy;
 
 
         public FileItemForest()
         {
         }
 
-
+        public event EventHandler<bool>? CollectBusyChanged;
         public event EventHandler<FileTreeContentChangedEventArgs>? AddContentChanged;
         public event EventHandler<FileTreeContentChangedEventArgs>? RemoveContentChanged;
         public event EventHandler<FileTreeContentChangedEventArgs>? ContentChanged;
@@ -30,6 +31,19 @@ namespace NeeLaboratory.IO.Search.Files
         public int Count => _trees.Sum(t => t.Count);
 
         public List<FileItemTree> Trees => _trees;
+
+        public bool IsCollectBusy
+        {
+            get { return _isCollectBusy; }
+            private set
+            {
+                if (_isCollectBusy != value)
+                {
+                    _isCollectBusy = value;
+                    CollectBusyChanged?.Invoke(this, _isCollectBusy);
+                }
+            }
+        }
 
 
         public void SetSearchAreas(IEnumerable<FileArea> areas, FileForestMemento? memento = null)
@@ -66,6 +80,7 @@ namespace NeeLaboratory.IO.Search.Files
         {
             var treeMemento = memento?.Trees?.FirstOrDefault(e => e.FileArea == area);
             var tree = new FileItemTree(area, treeMemento);
+            tree.CollectBusyChanged += Tree_CollectBusyChanged;
             tree.AddContentChanged += Tree_AddContentChanged;
             tree.RemoveContentChanged += Tree_RemoveContentChanged;
             tree.ContentChanged += Tree_ContentChanged;
@@ -74,10 +89,16 @@ namespace NeeLaboratory.IO.Search.Files
 
         private void RemoveTree(FileItemTree tree)
         {
+            tree.CollectBusyChanged -= Tree_CollectBusyChanged;
             tree.AddContentChanged -= Tree_AddContentChanged;
             tree.RemoveContentChanged -= Tree_RemoveContentChanged;
             tree.ContentChanged -= Tree_ContentChanged;
             tree.Dispose();
+        }
+
+        private void Tree_CollectBusyChanged(object? sender, bool e)
+        {
+            IsCollectBusy = _trees.Any(e => e.IsCollectBusy);
         }
 
         private void Tree_AddContentChanged(object? sender, FileTreeContentChangedEventArgs e)

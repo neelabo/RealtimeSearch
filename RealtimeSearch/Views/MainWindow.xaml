@@ -157,7 +157,7 @@
                     </Button>
 
                     <Grid>
-                        <TextBlock TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Search.Information}" TextDecorations="{x:Null}" />
+                        <TextBlock Margin="8,0" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Search.Information}" TextDecorations="{x:Null}" />
                     </Grid>
                 </DockPanel>
             </Grid>
@@ -212,9 +212,14 @@
                                     </CheckBox.Style>
                                 </CheckBox>
 
-                                <Rectangle DockPanel.Dock="Left" VerticalAlignment="Center" Width="10" Height="10" Fill="Orange" RadiusX="4" RadiusY="4" Visibility="{Binding IsDirty, Converter={StaticResource BoolToVisibility}}"/>
-
-                                <Image DockPanel.Dock="Left" Source="{Binding Converter={StaticResource FileInfoToIconConverter}}" Width="16" Margin="0,0,4,0"/>
+                                <Grid  DockPanel.Dock="Left" Width="16" Margin="0,0,4,0">
+                                    <Image Source="{Binding Converter={StaticResource FileInfoToIconConverter}}" Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Grid VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,-2,-2" Visibility="{Binding IsDirty, Converter={StaticResource BoolToVisibility}}">
+                                        <TextBlock Text="&#xF136;" FontFamily="Segoe MDL2 Assets" Foreground="#F8F8F8"/>
+                                        <TextBlock Text="&#xF143;" FontFamily="Segoe MDL2 Assets" Foreground="SteelBlue"/>
+                                    </Grid>
+                                </Grid>
+                                
                                 <TextBlock x:Name="FileNameTextBlock" Text="{Binding Name}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
                             </DockPanel>
                         </DataTemplate>
