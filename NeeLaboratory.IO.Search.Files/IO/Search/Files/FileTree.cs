@@ -262,29 +262,31 @@ namespace NeeLaboratory.IO.Search.Files
             Debug.Assert(node.Content is FileItem);
             if (node.Content is not FileItem fileItem) return;
 
-            if (!fileItem.IsDirty) return;
+            if (fileItem.State == FileItemState.Stable) return;
             token.ThrowIfCancellationRequested();
 
             var info = CreateFileInfo(fileItem.Path);
             var isUpdate = false;
             if (info.Exists)
             {
-                if (info.LastWriteTime != fileItem.LastWriteTime) // 最終更新日だけチェック
+                if (info.LastWriteTime == fileItem.LastWriteTime) // 最終更新日だけチェック
                 {
+                    fileItem.State = FileItemState.Stable;
+                }
+                else
+                { 
                     Debug.WriteLine($"Node: Update: {node.FullName}");
-                    // TODO: 以下で情報を２度更新している。IsDirty を拡張して掃除されないようにするか、内容変更イベントのみ発行するかのどちらかにする
-                    fileItem.SetFileInfo(info);
-                    _jobEngine.InvokeAsync(() => UpdateFile(node.FullName, token));
+                    fileItem.State = FileItemState.Known;
+                    _jobEngine.InvokeAsync(() => UpdateFile(node.FullName, info, token));
                     isUpdate = true;
                 }
-                fileItem.IsDirty = false;
 
                 if (fileItem.IsDirectory)
                 {
                     var directory = (DirectoryInfo)info;
                     if (isUpdate)
                     {
-                        // 構成に変更があるときは
+                        // 構成に変更があるときはエントリを再取得する
                         var map = node.ChildCollection().ToDictionary(e => e.Name, e => e);
                         foreach (var entry in Directory.GetFileSystemEntries(fileItem.Path).Select(e => System.IO.Path.GetFileName(e)))
                         {
@@ -303,7 +305,7 @@ namespace NeeLaboratory.IO.Search.Files
                         }
 
                         // 掃除
-                        foreach (var entry in node.ChildCollection().Where(e => (e.Content as FileItem)?.IsDirty == true))
+                        foreach (var entry in node.ChildCollection().Where(e => (e.Content as FileItem)?.State == FileItemState.Unknown))
                         {
                             Debug.WriteLine($"Node: Remove: {entry.FullName}");
                             _jobEngine.InvokeAsync(() => RemoveFile(entry.FullName, token));
@@ -496,7 +498,7 @@ namespace NeeLaboratory.IO.Search.Files
             Rename(oldPath, System.IO.Path.GetFileName(path));
 
             // コンテンツ更新
-            UpdateContent(node, true);
+            UpdateContent(node, null, true);
 
             Validate();
         }
@@ -530,17 +532,21 @@ namespace NeeLaboratory.IO.Search.Files
             Validate();
         }
 
-        private void UpdateFile(string path, CancellationToken token)
+        private void UpdateFile(string path, FileSystemInfo? info, CancellationToken token)
         {
+            Debug.Assert(info is null || info.FullName == path);
+
             if (_disposedValue) return;
             if (!_initialized) return;
 
             using var lockToken = _semaphore.Lock(token);
-            UpdateFileCore(path, token);
+            UpdateFileCore(path, info, token);
         }
 
-        private void UpdateFileCore(string path, CancellationToken token)
+        private void UpdateFileCore(string path, FileSystemInfo? info, CancellationToken token)
         {
+            Debug.Assert(info is null || info.FullName == path);
+
             var node = Find(path);
             if (node is null)
             {
@@ -548,7 +554,7 @@ namespace NeeLaboratory.IO.Search.Files
                 return;
             }
 
-            UpdateContent(node, false);
+            UpdateContent(node, info, false);
 
             Trace($"Update: {path}");
         }
@@ -561,7 +567,7 @@ namespace NeeLaboratory.IO.Search.Files
         {
         }
 
-        protected virtual void UpdateContent(Node? node, bool isRecursive)
+        protected virtual void UpdateContent(Node? node, FileSystemInfo? info, bool isRecursive)
         {
         }
 
@@ -634,7 +640,7 @@ namespace NeeLaboratory.IO.Search.Files
         private void Watcher_Changed(object? sender, FileSystemEventArgs e)
         {
             Trace($"Watcher changed: {e.FullPath}");
-            _jobEngine.InvokeAsync(() => UpdateFile(e.FullPath, CancellationToken.None));
+            _jobEngine.InvokeAsync(() => UpdateFile(e.FullPath, null, CancellationToken.None));
         }
 
         /// <summary>

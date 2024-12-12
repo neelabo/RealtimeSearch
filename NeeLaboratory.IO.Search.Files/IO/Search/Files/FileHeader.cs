@@ -1,5 +1,7 @@
 ﻿//#define LOCAL_DEBUG
 
+using System.Text;
+
 namespace NeeLaboratory.IO.Search.Files
 {
     public class FileHeader : IEquatable<FileHeader?>
@@ -21,14 +23,14 @@ namespace NeeLaboratory.IO.Search.Files
 
         public static void Write(Stream stream, FileHeader header)
         {
-            using var writer = new BinaryWriter(stream);
+            using var writer = new BinaryWriter(stream, Encoding.UTF8, true);
             writer.Write(header.Magic);
             writer.Write(header.Version);
         }
 
         public static FileHeader Read(Stream stream)
         {
-            using var reader = new BinaryReader(stream);
+            using var reader = new BinaryReader(stream, Encoding.UTF8, true);
             var magic = reader.ReadBytes(4);
             var version = reader.ReadInt32();
             return new FileHeader(magic, version);

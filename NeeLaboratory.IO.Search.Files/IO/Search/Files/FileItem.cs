@@ -21,7 +21,7 @@ namespace NeeLaboratory.IO.Search.Files
         }
 
 
-        private bool _isDirty;
+        private FileItemState _state;
 
 
         public FileItem(FileSystemInfo fileSystemInfo)
@@ -29,14 +29,14 @@ namespace NeeLaboratory.IO.Search.Files
             SetFileInfo(fileSystemInfo);
         }
 
-        public FileItem(bool isDirectory, string path, string name, DateTime lastWriteTime, long size, bool isDirty)
+        public FileItem(bool isDirectory, string path, string name, DateTime lastWriteTime, long size, FileItemState state)
         {
             IsDirectory = isDirectory;
             Path = path;
             Name = name;
             Size = size;
             LastWriteTime = lastWriteTime;
-            IsDirty = isDirty;
+            State = state;
         }
 
 
@@ -49,12 +49,11 @@ namespace NeeLaboratory.IO.Search.Files
         public long Size { get; private set; }
         public DateTime LastWriteTime { get; private set; }
 
-        public bool IsDirty
+        public FileItemState State
         {
-            get { return _isDirty; }
-            set { SetProperty(ref _isDirty, value); }
+            get { return _state; }
+            set { SetProperty(ref _state, value); }
         }
-
 
         public string? Extension
         {
@@ -108,7 +107,7 @@ namespace NeeLaboratory.IO.Search.Files
             Name = fileSystemInfo.Name;
             Size = fileSystemInfo is FileInfo fileInfo ? fileInfo.Length : -1;
             LastWriteTime = fileSystemInfo.LastWriteTime;
-            IsDirty = false;
+            State = FileItemState.Stable;
 
             RaisePropertyChanged(null);
         }
@@ -153,4 +152,11 @@ namespace NeeLaboratory.IO.Search.Files
         }
     }
 
+
+    public enum FileItemState
+    {
+        Stable = 0,
+        Known,
+        Unknown,
+    }
 }

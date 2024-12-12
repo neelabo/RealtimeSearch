@@ -66,12 +66,13 @@ namespace NeeLaboratory.IO.Search.Files
             }
         }
 
-        protected override void UpdateContent(Node? node, bool isRecursive)
+        protected override void UpdateContent(Node? node, FileSystemInfo? info, bool isRecursive)
         {
             if (node == null) return;
+            Debug.Assert(info is null || info.FullName == node.FullName);
 
             var fileItem = GetFileItem(node);
-            fileItem.SetFileInfo(CreateFileInfo(node.FullName));
+            fileItem.SetFileInfo(info ?? CreateFileInfo(node.FullName));
             Trace($"Update: {fileItem}");
             ContentChanged?.Invoke(this, new FileTreeContentChangedEventArgs(fileItem));
 
@@ -80,7 +81,7 @@ namespace NeeLaboratory.IO.Search.Files
             // 子ノード更新
             foreach (var n in node.Children)
             {
-                UpdateContent(n, isRecursive);
+                UpdateContent(n, null, isRecursive);
             }
         }
 
@@ -172,7 +173,7 @@ namespace NeeLaboratory.IO.Search.Files
                 var child = new Node(node.Name);
                 current.AddChild(child);
                 var path = System.IO.Path.Combine(directory, current.FullName, node.Name);
-                child.Content = new FileItem(node.IsDirectory, path, node.Name, node.LastWriteTime, node.Size, true);
+                child.Content = new FileItem(node.IsDirectory, path, node.Name, node.LastWriteTime, node.Size, FileItemState.Unknown);
                 current = child;
                 depth = node.Depth;
             }
