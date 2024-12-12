@@ -138,7 +138,8 @@ namespace NeeLaboratory.RealtimeSearch.Models
         {
             if (_appConfig.UseCache)
             {
-                return FileForestCache.Load(FileForestCache.CacheFileName);
+                var fileName = GetCacheFileName();
+                return FileForestCache.Load(fileName);
             }
             else
             {
@@ -148,14 +149,20 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
         public void SaveCache()
         {
+            var fileName = GetCacheFileName();
             if (_appConfig.UseCache)
             {
-                FileForestCache.Save(FileForestCache.CacheFileName, _searchEngine.Tree.CreateMemento());
+                FileForestCache.Save(fileName, _searchEngine.Tree.CreateMemento());
             }
             else
             {
-                FileForestCache.Remove(FileForestCache.CacheFileName);
+                FileForestCache.Remove(fileName);
             }
+        }
+
+        private string GetCacheFileName()
+        {
+            return System.IO.Path.Combine(AppModel.AppInfo.LocalApplicationDataPath, FileForestCache.CacheFileName);
         }
 
         /// <summary>

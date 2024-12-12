@@ -8,7 +8,7 @@ namespace NeeLaboratory.IO.Search.Files
 {
     public static class FileForestCache
     {
-        public const string CacheFileName = "RealtimeSearch.cache";
+        public const string CacheFileName = "Node.cache";
         public static FileHeader DefaultFileHeader { get; } = new FileHeader("RSNC"u8, 1); // RealtimeSearch Node Cache, Version 1
 
         public static void Save(string path, FileForestMemento memento)

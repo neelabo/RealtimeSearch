@@ -119,10 +119,22 @@ namespace NeeLaboratory.RealtimeSearch.Services
                     }
                     else
                     {
-                        _localApplicationDataPath = AssemblyLocation;
+                        _localApplicationDataPath = Path.Combine(AssemblyLocation, "Profile");
+                        CreateFolder(_localApplicationDataPath);
                     }
                 }
                 return _localApplicationDataPath;
+            }
+        }
+
+        /// <summary>
+        /// フォルダー生成
+        /// </summary>
+        private static void CreateFolder(string path)
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
             }
         }
 

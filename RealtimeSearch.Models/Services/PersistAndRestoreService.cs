@@ -24,7 +24,7 @@ namespace NeeLaboratory.RealtimeSearch.Services
 
         private string FolderPath => _appInfo.LocalApplicationDataPath;
 
-        private string AppConfigFileName => _appInfo.ProductName + ".app.json";
+        private string AppConfigFileName => "Setting.json";
 
 
         // TODO ASync
