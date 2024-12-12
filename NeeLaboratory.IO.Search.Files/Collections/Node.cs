@@ -8,6 +8,8 @@ namespace NeeLaboratory.Collections
 {
     public class Node
     {
+        private Lock _childLock = new();
+
         public Node(string name)
         {
             Name = name.TrimEnd('\\');
@@ -15,6 +17,8 @@ namespace NeeLaboratory.Collections
             // NOTE: ネットワークパス用に先頭の区切り文字を許容する
             if (Name.TrimStart('\\').Contains("\\")) throw new ArgumentException("It contains a delimiter: '\\'");
         }
+
+        public Lock ChildLock => _childLock;
 
         public string Name { get; set; }
 
@@ -37,12 +41,15 @@ namespace NeeLaboratory.Collections
         /// </summary>
         public void ClearChildren()
         {
-            if (Children is null) return;
-            foreach (var child in Children)
+            lock (_childLock)
             {
-                child.Parent = null;
+                if (Children is null) return;
+                foreach (var child in Children)
+                {
+                    child.Parent = null;
+                }
+                Children = null;
             }
-            Children = null;
         }
 
         /// <summary>
@@ -66,20 +73,23 @@ namespace NeeLaboratory.Collections
         /// <returns></returns>
         public Node AddChild(Node node)
         {
-            if (node.Parent is not null)
+            lock (_childLock)
             {
-                node.Parent.RemoveChild(node);
-                Debug.Assert(node.Parent is null);
-            }
+                if (node.Parent is not null)
+                {
+                    node.Parent.RemoveChild(node);
+                    Debug.Assert(node.Parent is null);
+                }
 
-            if (Children is null)
-            {
-                Children = new List<Node>();
-            }
+                if (Children is null)
+                {
+                    Children = new List<Node>();
+                }
 
-            Children.Add(node);
-            node.Parent = this;
-            return node;
+                Children.Add(node);
+                node.Parent = this;
+                return node;
+            }
         }
 
         /// <summary>
@@ -106,9 +116,12 @@ namespace NeeLaboratory.Collections
         {
             if (node.Parent != this) return null;
 
-            node.Parent = null;
-            Children?.Remove(node);
-            return node;
+            lock (_childLock)
+            {
+                node.Parent = null;
+                Children?.Remove(node);
+                return node;
+            }
         }
 
         /// <summary>
@@ -130,7 +143,7 @@ namespace NeeLaboratory.Collections
         /// <param name="children"></param>
         public void RemoveChildren(IEnumerable<Node> children)
         {
-            foreach(var child in children)
+            foreach (var child in children)
             {
                 RemoveChild(child);
             }
@@ -150,6 +163,9 @@ namespace NeeLaboratory.Collections
         /// 子ノードのコレクション。
         /// Children が null の場合は空コレクションを返す
         /// </summary>
+        /// <remarks>
+        /// スレッドアンセーフなので使用側で ChildLock すること
+        /// </remarks>
         /// <returns></returns>
         public IEnumerable<Node> ChildCollection()
         {

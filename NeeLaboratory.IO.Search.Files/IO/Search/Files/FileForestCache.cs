@@ -21,6 +21,14 @@ namespace NeeLaboratory.IO.Search.Files
             Compress(stream, bin);
         }
 
+        public static void Remove(string path)
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+
         public static FileForestMemento? Load(string path)
         {
             try

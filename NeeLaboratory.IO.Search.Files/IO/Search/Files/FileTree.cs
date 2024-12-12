@@ -269,6 +269,8 @@ namespace NeeLaboratory.IO.Search.Files
             var isUpdate = false;
             if (info.Exists)
             {
+                var removes = new List<Node>();
+
                 if (info.LastWriteTime == fileItem.LastWriteTime) // 最終更新日だけチェック
                 {
                     fileItem.State = FileItemState.Stable;
@@ -283,53 +285,70 @@ namespace NeeLaboratory.IO.Search.Files
 
                 if (fileItem.IsDirectory)
                 {
-                    var directory = (DirectoryInfo)info;
-                    if (isUpdate)
+                    lock (node.ChildLock)
                     {
-                        // 構成に変更があるときはエントリを再取得する
-                        var map = node.ChildCollection().ToDictionary(e => e.Name, e => e);
-                        foreach (var entry in Directory.GetFileSystemEntries(fileItem.Path).Select(e => System.IO.Path.GetFileName(e)))
+                        var directory = (DirectoryInfo)info;
+                        if (isUpdate)
                         {
-                            if (map.TryGetValue(entry, out var childNode))
+                            // 構成に変更があるときはエントリを再取得する
+                            var map = node.ChildCollection().ToDictionary(e => e.Name, e => e);
+                            foreach (var entry in Directory.GetFileSystemEntries(fileItem.Path).Select(e => System.IO.Path.GetFileName(e)))
                             {
-                                // 存在するものは通常の更新
-                                UpdateNode(childNode, token);
+                                if (map.TryGetValue(entry, out var childNode))
+                                {
+                                    // 存在するものは通常の更新
+                                    UpdateNode(childNode, token);
+                                }
+                                else
+                                {
+                                    // 存在しないものは新しく追加
+                                    var path = System.IO.Path.Combine(node.FullName, entry);
+                                    Debug.WriteLine($"Node: Add: {path}");
+                                    _jobEngine.InvokeAsync(() => AddFile(path, token));
+                                }
                             }
-                            else
-                            {
-                                // 存在しないものは新しく追加
-                                var path = System.IO.Path.Combine(node.FullName, entry);
-                                Debug.WriteLine($"Node: Add: {path}");
-                                _jobEngine.InvokeAsync(() => AddFile(path, token));
-                            }
-                        }
 
-                        // 掃除
-                        foreach (var entry in node.ChildCollection().Where(e => (e.Content as FileItem)?.State == FileItemState.Unknown))
-                        {
-                            Debug.WriteLine($"Node: Remove: {entry.FullName}");
-                            _jobEngine.InvokeAsync(() => RemoveFile(entry.FullName, token));
+                            // 掃除
+                            removes.AddRange(node.ChildCollection().Where(e => (e.Content as FileItem)?.State == FileItemState.Unknown));
                         }
-                    }
-                    else
-                    {
-                        // 構成に変更がない場合は個別の子ノードの更新
-                        foreach (var childNode in node.ChildCollection())
+                        else
                         {
-                            UpdateNode(childNode, token);
+                            // 構成に変更がない場合は個別の子ノードの更新
+                            foreach (var childNode in node.ChildCollection())
+                            {
+                                UpdateNode(childNode, token);
+                                if ((childNode.Content as FileItem)?.State == FileItemState.Unknown)
+                                {
+                                    removes.Add(childNode);
+                                }
+                            }
                         }
                     }
                 }
                 else
                 {
-                    node.ClearChildren();
+                    // ファイルなのに子ノードがある場合は全部削除
+                    if (node.Children is not null && node.Children.Count != 0)
+                    {
+                        lock (node.ChildLock) // いらないはずだが一応
+                        {
+                            removes.AddRange(node.Children);
+                        }
+                    }
+                }
+
+                // Unknown な子ノードを削除
+                foreach (var entry in removes)
+                {
+                    Debug.WriteLine($"Node: Remove: {entry.FullName}");
+                    _jobEngine.InvokeAsync(() => RemoveFile(entry.FullName, token));
                 }
 
                 Interlocked.Add(ref _count, node.Children?.Count ?? 0);
             }
             else
             {
-                node.RemoveSelf();
+                Debug.WriteLine($"Node: {node} not found.");
             }
         }
 
@@ -573,9 +592,17 @@ namespace NeeLaboratory.IO.Search.Files
 
         protected static FileSystemInfo CreateFileInfo(string path)
         {
+            var file = new FileInfo(path);
+            if (file.Exists) return file;
+            var directory = new DirectoryInfo(path);
+            //Debug.Assert(directory.Exists);
+            return directory;
+          
+#if false
             var attr = File.GetAttributes(path);
             var file = (FileSystemInfo)(attr.HasFlag(FileAttributes.Directory) ? new DirectoryInfo(path) : new FileInfo(path));
             return file;
+#endif
         }
 
         /// <summary>

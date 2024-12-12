@@ -16,20 +16,31 @@
             <Setter Property="Margin" Value="0,5,0,5"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
+
+        <Style TargetType="TextBlock" x:Key="TabItemHeader">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="MinWidth" Value="50"/>
+        </Style>
+
     </Window.Resources>
 
     <Grid>
 
-        <TabControl TabStripPlacement="Left">
-            
-            <TabItem Header="設定">
+        <TabControl TabStripPlacement="Top">
+
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Style="{StaticResource TabItemHeader}" Text="一般" />
+                </TabItem.Header>
                 <StackPanel Margin="4">
 
                     <TextBlock Text="設定" Style="{StaticResource Header}"/>
                     <StackPanel Style="{StaticResource Phrase}">
-                        <CheckBox  Margin="2"  IsChecked="{Binding Setting.AllowFolder}" VerticalAlignment="Center" Content="フォルダーを含める"/>
-                        <CheckBox  Margin="2"   IsChecked="{Binding Setting.IsMonitorClipboard}" VerticalAlignment="Center" Content="クリップボードを監視" ToolTip="クリップボードを監視し、コピーされたテキストで即座に検索を開始します"/>
-                        <CheckBox  Margin="2"  IsChecked="{Binding Setting.IsTopmost}" VerticalAlignment="Center" Content="常に手前に表示"/>
+                        <CheckBox Margin="2" IsChecked="{Binding Setting.AllowFolder}" VerticalAlignment="Center" Content="フォルダーを含める"/>
+                        <CheckBox Margin="2" IsChecked="{Binding Setting.IsMonitorClipboard}" VerticalAlignment="Center" Content="クリップボードを監視" ToolTip="クリップボードを監視し、コピーされたテキストで即座に検索を開始します"/>
+                        <CheckBox Margin="2" IsChecked="{Binding Setting.IsTopmost}" VerticalAlignment="Center" Content="常に手前に表示"/>
+                        <CheckBox Margin="2" IsChecked="{Binding Setting.UseCache}" VerticalAlignment="Center" Content="インデックスをキャッシュ" />
                     </StackPanel>
 
                     <TextBlock Text="Web検索" Style="{StaticResource Header}"/>
@@ -46,8 +57,11 @@
 
 
             </TabItem>
-            
-            <TabItem Header="検索">
+
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Style="{StaticResource TabItemHeader}" Text="検索範囲" />
+                </TabItem.Header>
                 <DockPanel x:Name="BaseControl" Margin="8" >
 
                     <DockPanel x:Name="SearchPathPanel">
@@ -104,8 +118,10 @@
                 </DockPanel>
             </TabItem>
 
-            <TabItem Header="外部アプリ">
-                
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Style="{StaticResource TabItemHeader}" Text="外部アプリ" />
+                </TabItem.Header>
                 <DockPanel>
 
                     <local:ExternalProgramSettingControl DockPanel.Dock="Bottom" Margin="5"

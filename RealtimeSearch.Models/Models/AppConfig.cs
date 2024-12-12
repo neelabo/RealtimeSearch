@@ -82,6 +82,8 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
         public WindowPlacement WindowPlacement { get; set; } = new WindowPlacement();
 
+        public bool UseCache { get; set; } = true;
+
 
         [Obsolete("typo")] // ver.4
         [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingDefault)] 

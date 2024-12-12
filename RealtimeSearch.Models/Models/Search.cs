@@ -136,12 +136,26 @@ namespace NeeLaboratory.RealtimeSearch.Models
         // TODO: Cache file name
         public FileForestMemento? LoadCache()
         {
-            return FileForestCache.Load(FileForestCache.CacheFileName);
+            if (_appConfig.UseCache)
+            {
+                return FileForestCache.Load(FileForestCache.CacheFileName);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public void SaveCache()
         {
-            FileForestCache.Save(FileForestCache.CacheFileName, _searchEngine.Tree.CreateMemento());
+            if (_appConfig.UseCache)
+            {
+                FileForestCache.Save(FileForestCache.CacheFileName, _searchEngine.Tree.CreateMemento());
+            }
+            else
+            {
+                FileForestCache.Remove(FileForestCache.CacheFileName);
+            }
         }
 
         /// <summary>
