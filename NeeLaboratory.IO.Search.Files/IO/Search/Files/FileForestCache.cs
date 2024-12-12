@@ -9,39 +9,28 @@ namespace NeeLaboratory.IO.Search.Files
     public static class FileForestCache
     {
         public const string CacheFileName = "RealtimeSearch.cache";
+        public static FileHeader DefaultFileHeader { get; } = new FileHeader("RSNC"u8, 1); // RealtimeSearch Node Cache, Version 1
 
         public static void Save(string path, FileForestMemento memento)
         {
-            // TODO: キャッシュを使用しないのであればキャッシュファイルを削除する。これは上位処理だな
-
             // NOTE: UTF8だと不正なUnicodeファイル名があるとエラーになるのでUTF16そのままで
             var bin = MemoryPackSerializer.Serialize(memento, MemoryPackSerializerOptions.Utf16);
 
             using var stream = File.OpenWrite(path);
-
-            var header = "NLRS0001"u8;
-            stream.Write(header);
+            FileHeader.Write(stream, DefaultFileHeader);
             Compress(stream, bin);
         }
 
         public static FileForestMemento? Load(string path)
         {
-            // TODO: キャッシュを使用しないのであれば何もしない。これは上位処理だな。
-
             try
             {
                 if (!File.Exists(path)) return null;
 
                 using var stream = File.OpenRead(path);
-                var header = new byte[8];
-                int n = stream.Read(header);
-                if (n != 8) return null;
 
-                // check header
-                var magic = header.AsSpan(0, 4);
-                if (!magic.SequenceEqual("NLRS"u8)) return null;
-                var version = int.Parse(header.AsSpan(4, 4));
-                if (version != 1) return null; // バージョン違いは読み込み失敗
+                var header = FileHeader.Read(stream);
+                if (header != DefaultFileHeader) return null;
 
                 var bin = Decompress(stream);
                 return MemoryPackSerializer.Deserialize<FileForestMemento>(bin);
@@ -78,5 +67,4 @@ namespace NeeLaboratory.IO.Search.Files
             }
         }
     }
-
 }
