@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace NeeLaboratory.IO.Search.Files
 {
-    public class FileSearchResultWatcher : IDisposable, ISearchResult<FileItem>
+    public class FileSearchResultWatcher : IDisposable, ISearchResult<FileContent>
     {
         /// <summary>
         /// 所属する検索エンジン
@@ -19,7 +19,7 @@ namespace NeeLaboratory.IO.Search.Files
         /// <summary>
         /// 監視する検索結果
         /// </summary>
-        private readonly SearchResult<FileItem> _result;
+        private readonly SearchResult<FileContent> _result;
 
         private SlimJobEngine _jobEngine;
 
@@ -29,7 +29,7 @@ namespace NeeLaboratory.IO.Search.Files
         /// </summary>
         /// <param name="engine"></param>
         /// <param name="result"></param>
-        public FileSearchResultWatcher(FileSearchEngine engine, SearchResult<FileItem> result)
+        public FileSearchResultWatcher(FileSearchEngine engine, SearchResult<FileContent> result)
         {
             _engine = engine;
             _result = result;
@@ -47,7 +47,7 @@ namespace NeeLaboratory.IO.Search.Files
         /// <summary>
         /// 検索結果変更
         /// </summary>
-        public event EventHandler<CollectionChangedEventArgs<FileItem>>? CollectionChanged;
+        public event EventHandler<CollectionChangedEventArgs<FileContent>>? CollectionChanged;
 
 
         // TODO: 大量のリクエストが同時に気たときにタスクが爆発する。一定間隔でまとめて処理するように！
@@ -56,52 +56,52 @@ namespace NeeLaboratory.IO.Search.Files
         {
             if (_disposedValue) return;
 
-            AddSearch(e.FileItem);
+            AddSearch(e.Content);
         }
 
         private void Tree_RemoveContentChanged(object? sender, FileTreeContentChangedEventArgs e)
         {
             if (_disposedValue) return;
 
-            RemoveSearch(e.FileItem);
+            RemoveSearch(e.Content);
         }
 
         private void Tree_ContentChanged(object? sender, FileTreeContentChangedEventArgs e)
         {
             if (_disposedValue) return;
 
-            AddSearch(e.FileItem);
+            AddSearch(e.Content);
         }
 
-        private void AddSearch(FileItem fileItem)
+        private void AddSearch(FileContent content)
         {
             _jobEngine.InvokeAsync(() =>
             {
-                if (_result.Items.Contains(fileItem)) return;
+                if (_result.Items.Contains(content)) return;
 
-                var entries = new List<FileItem>() { fileItem };
+                var entries = new List<FileContent>() { content };
                 var items = _engine.Search(_result.Keyword, entries, CancellationToken.None);
 
                 foreach (var item in items)
                 {
                     Trace($"Add: {item.Path}");
                     _result.Items.Add(item);
-                    CollectionChanged?.Invoke(this, new CollectionChangedEventArgs<FileItem>(CollectionChangedAction.Add, item));
+                    CollectionChanged?.Invoke(this, new CollectionChangedEventArgs<FileContent>(CollectionChangedAction.Add, item));
                 }
             });
         }
 
-        private void RemoveSearch(FileItem fileItem)
+        private void RemoveSearch(FileContent content)
         {
             _jobEngine.InvokeAsync(() =>
             {
-                if (!_result.Items.Contains(fileItem)) return;
+                if (!_result.Items.Contains(content)) return;
 
-                Trace($"Remove: {fileItem.Path}");
-                var isRemoved = _result.Items.Remove(fileItem);
+                Trace($"Remove: {content.Path}");
+                var isRemoved = _result.Items.Remove(content);
                 if (isRemoved)
                 {
-                    CollectionChanged?.Invoke(this, new CollectionChangedEventArgs<FileItem>(CollectionChangedAction.Remove, fileItem));
+                    CollectionChanged?.Invoke(this, new CollectionChangedEventArgs<FileContent>(CollectionChangedAction.Remove, content));
                 }
             });
         }
@@ -112,7 +112,7 @@ namespace NeeLaboratory.IO.Search.Files
         /// <summary>
         /// 検索結果項目
         /// </summary>
-        public ObservableCollection<FileItem> Items => _result.Items;
+        public ObservableCollection<FileContent> Items => _result.Items;
 
         /// <summary>
         /// 検索キーワード

@@ -30,7 +30,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
         private readonly string _defaultWindowTitle;
         private bool _isRenaming;
         private readonly ExternalProgramCollection _programs;
-        private FileItem? _selectedItem;
+        private FileContent? _selectedItem;
         private IntPtr _hWnd;
 
 
@@ -62,7 +62,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
         public Search Search => _model.Search;
 
 
-        public FileItem? SelectedItem
+        public FileContent? SelectedItem
         {
             get { return _selectedItem; }
             set { SetProperty(ref _selectedItem, value); }
@@ -273,7 +273,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
         private void Delete(System.Collections.IList? items)
         {
             if (items is null) return;
-            Delete(items.Cast<FileItem>().ToList(), true);
+            Delete(items.Cast<FileContent>().ToList(), true);
         }
 
         /// <summary>
@@ -281,7 +281,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
         /// </summary>
         /// <param name="items"></param>
         /// <param name="confirm"></param>
-        private void Delete(IList<FileItem> items, bool confirm)
+        private void Delete(IList<FileContent> items, bool confirm)
         {
             if (items.Count == 0) return;
 
@@ -311,7 +311,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
         /// </summary>
         /// <param name="file"></param>
         /// <param name="newValue"></param>
-        public void Rename(FileItem file, string newValue, bool confirm)
+        public void Rename(FileContent file, string newValue, bool confirm)
         {
             var folder = System.IO.Path.GetDirectoryName(file.Path) ?? "";
 
@@ -393,105 +393,105 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
         private void OpenPlace(System.Collections.IList? items)
         {
             if (items is null) return;
-            _model.OpenPlace(items.Cast<FileItem>().ToList());
+            _model.OpenPlace(items.Cast<FileContent>().ToList());
         }
 
         [RelayCommand]
         private void Copy(System.Collections.IList? items)
         {
             if (items is null) return;
-            _model.CopyFilesToClipboard(items.Cast<FileItem>().ToList());
+            _model.CopyFilesToClipboard(items.Cast<FileContent>().ToList());
         }
 
         [RelayCommand]
         private void CopyName(System.Collections.IList? items)
         {
             if (items is null) return;
-            _model.CopyNameToClipboard(items.Cast<FileItem>().ToList());
+            _model.CopyNameToClipboard(items.Cast<FileContent>().ToList());
         }
 
         [RelayCommand]
         public void OpenDefault(System.Collections.IList? items)
         {
             if (items is null) return;
-            _programs.ExecuteDefault(items.Cast<FileItem>().ToList());
+            _programs.ExecuteDefault(items.Cast<FileContent>().ToList());
         }
 
         [RelayCommand]
         public void OpenExternalProgram(System.Collections.IList? items)
         {
             if (items is null) return;
-            _programs.Execute(items.Cast<FileItem>().ToList());
+            _programs.Execute(items.Cast<FileContent>().ToList());
         }
 
         [RelayCommand]
         public void OpenSelectedExternalProgram(OpenSelectedExternalProgramArgs args)
         {
             if (args.Items is null) return;
-            _programs.Execute(args.Items.Cast<FileItem>().ToList(), args.ProgramId);
+            _programs.Execute(args.Items.Cast<FileContent>().ToList(), args.ProgramId);
         }
 
         [RelayCommand]
         public void OpenSelectedExternalProgram1(System.Collections.IList? items)
         {
             if (items is null) return;
-            _programs.Execute(items.Cast<FileItem>().ToList(), 1);
+            _programs.Execute(items.Cast<FileContent>().ToList(), 1);
         }
 
         [RelayCommand]
         public void OpenSelectedExternalProgram2(System.Collections.IList? items)
         {
             if (items is null) return;
-            _programs.Execute(items.Cast<FileItem>().ToList(), 2);
+            _programs.Execute(items.Cast<FileContent>().ToList(), 2);
         }
 
         [RelayCommand]
         public void OpenSelectedExternalProgram3(System.Collections.IList? items)
         {
             if (items is null) return;
-            _programs.Execute(items.Cast<FileItem>().ToList(), 3);
+            _programs.Execute(items.Cast<FileContent>().ToList(), 3);
         }
 
         [RelayCommand]
         public void OpenSelectedExternalProgram4(System.Collections.IList? items)
         {
             if (items is null) return;
-            _programs.Execute(items.Cast<FileItem>().ToList(), 4);
+            _programs.Execute(items.Cast<FileContent>().ToList(), 4);
         }
 
         [RelayCommand]
         public void OpenSelectedExternalProgram5(System.Collections.IList? items)
         {
             if (items is null) return;
-            _programs.Execute(items.Cast<FileItem>().ToList(), 5);
+            _programs.Execute(items.Cast<FileContent>().ToList(), 5);
         }
 
         [RelayCommand]
         public void OpenSelectedExternalProgram6(System.Collections.IList? items)
         {
             if (items is null) return;
-            _programs.Execute(items.Cast<FileItem>().ToList(), 6);
+            _programs.Execute(items.Cast<FileContent>().ToList(), 6);
         }
 
         [RelayCommand]
         public void OpenSelectedExternalProgram7(System.Collections.IList? items)
         {
             if (items is null) return;
-            _programs.Execute(items.Cast<FileItem>().ToList(), 7);
+            _programs.Execute(items.Cast<FileContent>().ToList(), 7);
         }
 
         [RelayCommand]
         public void OpenSelectedExternalProgram8(System.Collections.IList? items)
         {
             if (items is null) return;
-            _programs.Execute(items.Cast<FileItem>().ToList(), 8);
+            _programs.Execute(items.Cast<FileContent>().ToList(), 8);
         }
 
         [RelayCommand]
         public void OpenSelectedExternalProgram9(System.Collections.IList? items)
         {
             if (items is null) return;
-            _programs.Execute(items.Cast<FileItem>().ToList(), 9);
+            _programs.Execute(items.Cast<FileContent>().ToList(), 9);
         }
 
     }

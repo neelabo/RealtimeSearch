@@ -57,7 +57,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
             return null;
         }
 
-        public void Execute(IEnumerable<FileItem> files)
+        public void Execute(IEnumerable<FileContent> files)
         {
             try
             {
@@ -80,7 +80,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
             }
         }
 
-        public void Execute(IEnumerable<FileItem> files, int programId)
+        public void Execute(IEnumerable<FileContent> files, int programId)
         {
             if (_setting.ExternalPrograms.Count <= programId - 1) return;
 
@@ -95,7 +95,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
             }
         }
 
-        private void Execute(IEnumerable<FileItem> files, ExternalProgram program)
+        private void Execute(IEnumerable<FileContent> files, ExternalProgram program)
         {
             if (program.IsMultiArgumentEnabled)
             {
@@ -105,12 +105,12 @@ namespace NeeLaboratory.RealtimeSearch.Models
             {
                 foreach (var file in files)
                 {
-                    ExecuteProgram(new List<FileItem>() { file }, program);
+                    ExecuteProgram(new List<FileContent>() { file }, program);
                 }
             }
         }
 
-        private void ExecuteProgram(IEnumerable<FileItem> files, ExternalProgram program)
+        private void ExecuteProgram(IEnumerable<FileContent> files, ExternalProgram program)
         {
             if (program.ProgramType == ExternalProgramType.Normal)
             {
@@ -137,7 +137,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
             }
         }
 
-        private static string ReplaceKeyword(string s, IEnumerable<FileItem> files)
+        private static string ReplaceKeyword(string s, IEnumerable<FileContent> files)
         {
             if (files.Count() == 1)
             {
@@ -165,7 +165,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
             return s;
         }
 
-        public void ExecuteDefault(IEnumerable<FileItem> files)
+        public void ExecuteDefault(IEnumerable<FileContent> files)
         {
             try
             {

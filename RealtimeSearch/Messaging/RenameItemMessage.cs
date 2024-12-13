@@ -4,12 +4,12 @@ namespace NeeLaboratory.RealtimeSearch
 {
     public class RenameItemMessage
     {
-        public RenameItemMessage(FileItem item)
+        public RenameItemMessage(FileContent item)
         {
             Item = item;
         }
 
-        public FileItem Item { get; }
+        public FileContent Item { get; }
     }
 
 }

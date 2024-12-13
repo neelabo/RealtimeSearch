@@ -11,7 +11,7 @@ using System.Threading;
 namespace NeeLaboratory.IO.Search.Files
 {
     [NotifyPropertyChanged]
-    public partial class FileItem : ISearchItem, IComparable, INotifyPropertyChanged
+    public partial class FileContent : ISearchItem, IComparable, INotifyPropertyChanged
     {
         internal static partial class NativeMethods
         {
@@ -21,15 +21,15 @@ namespace NeeLaboratory.IO.Search.Files
         }
 
 
-        private FileItemState _state;
+        private FileContentState _state;
 
 
-        public FileItem(FileSystemInfo fileSystemInfo)
+        public FileContent(FileSystemInfo fileSystemInfo)
         {
             SetFileInfo(fileSystemInfo);
         }
 
-        public FileItem(bool isDirectory, string path, string name, DateTime lastWriteTime, long size, FileItemState state)
+        public FileContent(bool isDirectory, string path, string name, DateTime lastWriteTime, long size, FileContentState state)
         {
             IsDirectory = isDirectory;
             Path = path;
@@ -49,7 +49,7 @@ namespace NeeLaboratory.IO.Search.Files
         public long Size { get; private set; }
         public DateTime LastWriteTime { get; private set; }
 
-        public FileItemState State
+        public FileContentState State
         {
             get { return _state; }
             set { SetProperty(ref _state, value); }
@@ -107,7 +107,7 @@ namespace NeeLaboratory.IO.Search.Files
             Name = fileSystemInfo.Name;
             Size = fileSystemInfo is FileInfo fileInfo ? fileInfo.Length : -1;
             LastWriteTime = fileSystemInfo.LastWriteTime;
-            State = FileItemState.Stable;
+            State = FileContentState.Stable;
 
             RaisePropertyChanged(null);
         }
@@ -123,7 +123,7 @@ namespace NeeLaboratory.IO.Search.Files
         {
             if (obj == null) return 1;
 
-            FileItem other = (FileItem)obj;
+            FileContent other = (FileContent)obj;
             return NativeMethods.StrCmpLogicalW(Name, other.Name);
         }
 
@@ -153,7 +153,7 @@ namespace NeeLaboratory.IO.Search.Files
     }
 
 
-    public enum FileItemState
+    public enum FileContentState
     {
         Stable = 0,
         Known,

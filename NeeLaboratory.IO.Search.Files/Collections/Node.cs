@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace NeeLaboratory.Collections
 {
-    public class Node
+    public class Node<T>
     {
         private Lock _childLock = new();
 
@@ -22,16 +22,16 @@ namespace NeeLaboratory.Collections
 
         public string Name { get; set; }
 
-        public Node? Parent { get; set; }
+        public Node<T>? Parent { get; set; }
 
-        public List<Node>? Children { get; set; }
+        public List<Node<T>>? Children { get; set; }
 
         public string FullName => Path.Combine(Parent?.FullName ?? "", Name);
 
-        public object? Content { get; set; }
+        public T? Content { get; set; }
 
 
-        public bool HasParent(Node node)
+        public bool HasParent(Node<T> node)
         {
             return Parent != null && (Parent == node || Parent.HasParent(node));
         }
@@ -58,7 +58,7 @@ namespace NeeLaboratory.Collections
         /// <param name="name"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public Node? FindChild(string name)
+        public Node<T>? FindChild(string name)
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException();
 
@@ -71,7 +71,7 @@ namespace NeeLaboratory.Collections
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
-        public Node AddChild(Node node)
+        public Node<T> AddChild(Node<T> node)
         {
             lock (_childLock)
             {
@@ -83,7 +83,7 @@ namespace NeeLaboratory.Collections
 
                 if (Children is null)
                 {
-                    Children = new List<Node>();
+                    Children = new List<Node<T>>();
                 }
 
                 Children.Add(node);
@@ -99,12 +99,12 @@ namespace NeeLaboratory.Collections
         /// <returns>追加されたノード</returns>
         /// <exception cref="ArgumentException"><paramref name="name"/> が空</exception>
         /// <exception cref="InvalidOperationException">既に登録されている</exception>
-        public Node AddChild(string name)
+        public Node<T> AddChild(string name)
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException($"Argument is empty: {nameof(name)}");
             if (FindChild(name) != null) throw new ArgumentException($"Already exists: {nameof(name)}");
 
-            return AddChild(new Node(name));
+            return AddChild(new Node<T>(name));
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace NeeLaboratory.Collections
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
-        public Node? RemoveChild(Node node)
+        public Node<T>? RemoveChild(Node<T> node)
         {
             if (node.Parent != this) return null;
 
@@ -129,7 +129,7 @@ namespace NeeLaboratory.Collections
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public Node? RemoveChild(string name)
+        public Node<T>? RemoveChild(string name)
         {
             var node = FindChild(name);
             if (node is null) return null;
@@ -141,7 +141,7 @@ namespace NeeLaboratory.Collections
         /// ノード削除
         /// </summary>
         /// <param name="children"></param>
-        public void RemoveChildren(IEnumerable<Node> children)
+        public void RemoveChildren(IEnumerable<Node<T>> children)
         {
             foreach (var child in children)
             {
@@ -153,7 +153,7 @@ namespace NeeLaboratory.Collections
         /// 自身をノードから削除
         /// </summary>
         /// <returns></returns>
-        public Node? RemoveSelf()
+        public Node<T>? RemoveSelf()
         {
             if (this.Parent is null) return null;
             return this.Parent.RemoveChild(this);
@@ -167,7 +167,7 @@ namespace NeeLaboratory.Collections
         /// スレッドアンセーフなので使用側で ChildLock すること
         /// </remarks>
         /// <returns></returns>
-        public IEnumerable<Node> ChildCollection()
+        public IEnumerable<Node<T>> ChildCollection()
         {
             if (Children is not null)
             {
@@ -178,7 +178,7 @@ namespace NeeLaboratory.Collections
             }
         }
 
-        public IEnumerable<Node> WalkChildren()
+        public IEnumerable<Node<T>> WalkChildren()
         {
             if (Children is not null)
             {
@@ -192,7 +192,7 @@ namespace NeeLaboratory.Collections
             }
         }
 
-        public IEnumerable<Node> Walk()
+        public IEnumerable<Node<T>> Walk()
         {
             yield return this;
 
@@ -213,7 +213,7 @@ namespace NeeLaboratory.Collections
         /// </summary>
         /// <param name="depth"></param>
         /// <returns></returns>
-        public IEnumerable<(Node Node, int Depth)> WalkChildrenWithDepth(int depth = 0)
+        public IEnumerable<(Node<T> Node, int Depth)> WalkChildrenWithDepth(int depth = 0)
         {
             if (Children is not null)
             {
@@ -232,7 +232,7 @@ namespace NeeLaboratory.Collections
         /// </summary>
         /// <param name="depth"></param>
         /// <returns></returns>
-        public IEnumerable<(Node Node, int Depth)> WalkWithDepth(int depth = 0)
+        public IEnumerable<(Node<T> Node, int Depth)> WalkWithDepth(int depth = 0)
         {
             yield return (this, depth);
 

@@ -58,10 +58,10 @@ namespace RealtimeSearchUnitTest
 
         public int GetItemCount()
         {
-            return _engine.Tree.CollectFileItems().Count();
+            return _engine.Tree.CollectFileContents().Count();
         }
 
-        public async Task<SearchResult<FileItem>> SearchAsync()
+        public async Task<SearchResult<FileContent>> SearchAsync()
         {
             return await _engine.SearchAsync(_keyword, CancellationToken.None);
         }

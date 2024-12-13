@@ -178,12 +178,12 @@ namespace NeeLaboratory.RealtimeSearch.Models
             _history.Add(keyword);
         }
 
-        public void CopyFilesToClipboard(List<FileItem> files)
+        public void CopyFilesToClipboard(List<FileContent> files)
         {
             ClipboardTools.SetFileDropList(files.Select(e => e.Path).ToArray());
         }
 
-        public void CopyNameToClipboard(FileItem file)
+        public void CopyNameToClipboard(FileContent file)
         {
             var text = file.IsDirectory
                 ? System.IO.Path.GetFileName(file.Path)
@@ -191,19 +191,19 @@ namespace NeeLaboratory.RealtimeSearch.Models
             ClipboardTools.SetText(text);
         }
 
-        public void CopyNameToClipboard(List<FileItem> files)
+        public void CopyNameToClipboard(List<FileContent> files)
         {
             var text = string.Join(Environment.NewLine, files.Select(e => e.IsDirectory ? System.IO.Path.GetFileName(e.Path) : System.IO.Path.GetFileNameWithoutExtension(e.Path)));
             ClipboardTools.SetText(text);
         }
 
-        public void OpenPlace(List<FileItem> items)
+        public void OpenPlace(List<FileContent> items)
         {
             foreach (var item in items)
             {
-                if (item is FileItem file && (System.IO.File.Exists(file.Path) || System.IO.Directory.Exists(file.Path)))
+                if (System.IO.File.Exists(item.Path) || System.IO.Directory.Exists(item.Path))
                 {
-                    var startInfo = new ProcessStartInfo("explorer.exe", "/select,\"" + file.Path + "\"") { UseShellExecute = false };
+                    var startInfo = new ProcessStartInfo("explorer.exe", "/select,\"" + item.Path + "\"") { UseShellExecute = false };
                     Process.Start(startInfo);
                 }
             }
@@ -212,9 +212,9 @@ namespace NeeLaboratory.RealtimeSearch.Models
     }
 
 
-    public class SearchResultDecorator : ISearchResultDecorator<FileItem>
+    public class SearchResultDecorator : ISearchResultDecorator<FileContent>
     {
-        public void Decorate(SearchResult<FileItem> searchResult)
+        public void Decorate(SearchResult<FileContent> searchResult)
         {
             BindingOperations.EnableCollectionSynchronization(searchResult.Items, new object());
         }

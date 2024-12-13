@@ -144,8 +144,8 @@ namespace NeeLaboratory.RealtimeSearch.Views
 
         private void ListViewItem_MouseDoubleClick(object? sender, MouseButtonEventArgs e)
         {
-            if (((ListViewItem?)sender)?.Content is not FileItem file) return;
-            _vm.OpenExternalProgram(new List<FileItem>() { file });
+            if (((ListViewItem?)sender)?.Content is not FileContent file) return;
+            _vm.OpenExternalProgram(new List<FileContent>() { file });
         }
 
         private async void Keyword_KeyDown(object? sender, KeyEventArgs e)
@@ -191,7 +191,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
         // NOTE: 名前変更によって選択解除されてしまうことがあるので編集前に選択番号を記憶しておく
         private int _renameIndex;
 
-        private void PopupRenameTextBox(FileItem item)
+        private void PopupRenameTextBox(FileContent item)
         {
             if (item == null) return;
 
@@ -219,7 +219,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
             //Debug.WriteLine($"{ev.OldValue} => {ev.NewValue}");
             if (e.OldValue != e.NewValue)
             {
-                if (this.ResultListView.SelectedItem is FileItem file)
+                if (this.ResultListView.SelectedItem is FileContent file)
                 {
                     _vm.Rename(file, e.NewValue, true);
                 }
@@ -250,7 +250,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
             this.ResultListView.UpdateLayout();
 
             // リネーム発動
-            if (this.ResultListView.SelectedItem is FileItem item)
+            if (this.ResultListView.SelectedItem is FileContent item)
             {
                 PopupRenameTextBox(item);
             }
@@ -285,7 +285,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
                         var paths = new List<string>();
                         for (int i = 0; i < this.ResultListView.SelectedItems.Count; ++i)
                         {
-                            var path = (this.ResultListView.SelectedItems[i] as FileItem)?.Path;
+                            var path = (this.ResultListView.SelectedItems[i] as FileContent)?.Path;
                             if (path != null)
                             {
                                 paths.Add(path);

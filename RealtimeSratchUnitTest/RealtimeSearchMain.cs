@@ -112,22 +112,22 @@ namespace RealtimeSearchUnitTest
             engine.AddSearchAreas(new FileArea(_folderRoot, false));
             await engine.Tree.InitializeAsync(CancellationToken.None);
             //engine.DumpTree(true);
-            Assert.Equal(6, engine.Tree.CollectFileItems().Count());
+            Assert.Equal(6, engine.Tree.CollectFileContents().Count());
 
             engine.SetSearchAreas(new ObservableCollection<FileArea>() { new FileArea(_folderRoot, true) });
             await engine.Tree.InitializeAsync(CancellationToken.None);
             //engine.DumpTree(true);
-            Assert.Equal(12, engine.Tree.CollectFileItems().Count());
+            Assert.Equal(12, engine.Tree.CollectFileContents().Count());
 
             engine.SetSearchAreas(new ObservableCollection<FileArea>() { new FileArea(_folderRoot, true), new FileArea(_folderSub1, true) });
             await engine.Tree.InitializeAsync(CancellationToken.None);
-            Assert.Equal(12, engine.Tree.CollectFileItems().Count());
+            Assert.Equal(12, engine.Tree.CollectFileContents().Count());
 
             // ïœë•ÉGÉäÉAÅBNodeTreeÇÃåãçáÇ™î≠ê∂
             engine.SetSearchAreas(new ObservableCollection<FileArea>() { new FileArea(_folderRoot, false), new FileArea(_folderSub1, true) });
             await engine.Tree.InitializeAsync(CancellationToken.None);
             DumpTree(engine);
-            Assert.Equal(9, engine.Tree.CollectFileItems().Count());
+            Assert.Equal(9, engine.Tree.CollectFileContents().Count());
 
             context.AllowFolder = true;
             var result = await engine.SearchAsync("SubFolder1", CancellationToken.None);
@@ -136,7 +136,7 @@ namespace RealtimeSearchUnitTest
 
         private void DumpTree(FileSearchEngine engine)
         {
-            foreach (var item in engine.Tree.CollectFileItems())
+            foreach (var item in engine.Tree.CollectFileContents())
             {
                 _output.WriteLine($"{item.Path}");
             }

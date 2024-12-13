@@ -9,10 +9,10 @@ namespace NeeLaboratory.Collections
     /// <summary>
     /// パス木構造のみ管理
     /// </summary>
-    public class NodeTree
+    public class NodeTree<T>
     {
-        private readonly Node _root = new Node("");
-        private Node _trunk;
+        private readonly Node<T> _root = new Node<T>("");
+        private Node<T> _trunk;
 
         public NodeTree(string path)
         {
@@ -27,12 +27,12 @@ namespace NeeLaboratory.Collections
         }
 
 
-        public Node Root => _root;
+        public Node<T> Root => _root;
 
-        public Node Trunk => _trunk;
+        public Node<T> Trunk => _trunk;
 
 
-        public void SetTrunk(Node node)
+        public void SetTrunk(Node<T> node)
         {
             Debug.Assert(node.Name == Trunk.Name);
 
@@ -60,12 +60,12 @@ namespace NeeLaboratory.Collections
             return tokens;
         }
 
-        public Node? Find(string path)
+        public Node<T>? Find(string path)
         {
             return Find(path, true);
         }
 
-        public Node? Find(string path, bool inTrunk)
+        public Node<T>? Find(string path, bool inTrunk)
         {
             var node = _root;
             var tokens = SplitPath(path);
@@ -81,7 +81,7 @@ namespace NeeLaboratory.Collections
             return node;
         }
 
-        public Node? Add(string path)
+        public Node<T>? Add(string path)
         {
             var node = _root;
             var names = SplitPath(path);
@@ -110,7 +110,7 @@ namespace NeeLaboratory.Collections
             return isNew ? node : null;
         }
 
-        public Node? Remove(string path)
+        public Node<T>? Remove(string path)
         {
             var node = Find(path);
             if (node is null) return null;
@@ -120,7 +120,7 @@ namespace NeeLaboratory.Collections
             return node;
         }
 
-        public Node? Rename(string path, string name)
+        public Node<T>? Rename(string path, string name)
         {
             var node = Find(path);
             if (node is null) return null;
@@ -129,7 +129,7 @@ namespace NeeLaboratory.Collections
             return node;
         }
 
-        public IEnumerable<Node> WalkAll()
+        public IEnumerable<Node<T>> WalkAll()
         {
             return _trunk.WalkChildren();
         }

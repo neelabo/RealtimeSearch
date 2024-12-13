@@ -6,13 +6,13 @@ using System.Windows.Data;
 
 namespace NeeLaboratory.RealtimeSearch.Converters
 {
-    public class FileItemStateToVisibilityConverter : IValueConverter
+    public class FileContentStateToVisibilityConverter : IValueConverter
     {
         public bool Inverse { get; set; }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var positive = value is FileItemState state && state == FileItemState.Stable;
+            var positive = value is FileContentState state && state == FileContentState.Stable;
             return (positive ^ Inverse) ? Visibility.Visible : Visibility.Collapsed;
         }
 

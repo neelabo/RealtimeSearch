@@ -10,7 +10,7 @@ namespace NeeLaboratory.RealtimeSearch.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is FileItem file)
+            if (value is FileContent file)
             {
                 return ShellFileResource.CreateIcon(file.Path, file.IsDirectory);
             }

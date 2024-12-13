@@ -94,7 +94,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
             }
         }
 
-        public ISearchResultDecorator<FileItem>? SearchResultDecorator { get; set; }
+        public ISearchResultDecorator<FileContent>? SearchResultDecorator { get; set; }
 
 
         private void SearchEngine_IsCollectBusyPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -297,7 +297,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
             }
             else if (_searchEngine.IsCollectBusy)
             {
-                var indexing = $"{_searchEngine.Tree.Count} Indexing...";
+                var indexing = $"{_searchEngine.Tree.Count:#,0} Indexing...";
                 Information = string.IsNullOrEmpty(_message) ? indexing : $"{_message} ({indexing})";
             }
             else

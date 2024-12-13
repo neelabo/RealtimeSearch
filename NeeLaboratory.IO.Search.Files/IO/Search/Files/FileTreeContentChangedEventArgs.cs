@@ -6,19 +6,19 @@ namespace NeeLaboratory.IO.Search.Files
 {
     public class FileTreeContentChangedEventArgs : EventArgs
     {
-        public FileTreeContentChangedEventArgs(FileItem fileItem)
-            : this(fileItem, null)
+        public FileTreeContentChangedEventArgs(FileContent content)
+            : this(content, null)
         {
         }
 
-        public FileTreeContentChangedEventArgs(FileItem fileItem, FileItem? oldFileItem)
+        public FileTreeContentChangedEventArgs(FileContent content, FileContent? oldContent)
         {
-            FileItem = fileItem;
-            OldFileItem = oldFileItem;
+            Content = content;
+            OldContent = oldContent;
         }
 
-        public FileItem FileItem { get; }
-        public FileItem? OldFileItem { get; }
+        public FileContent Content { get; }
+        public FileContent? OldContent { get; }
     }
 
 }

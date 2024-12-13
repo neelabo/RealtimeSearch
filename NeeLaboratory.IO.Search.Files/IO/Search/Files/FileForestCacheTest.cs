@@ -9,7 +9,7 @@ namespace NeeLaboratory.IO.Search.Files
 {
     public static class FileForestCacheTest
     {
-        public static void Test(FileItemForest forest)
+        public static void Test(FileForest forest)
         {
             var trees = forest.Trees;
             foreach (var tree in trees)
@@ -36,26 +36,6 @@ namespace NeeLaboratory.IO.Search.Files
                 {
                     Debug.WriteLine(ex.ToString());
                 }
-
-
-#if false // for MessagePack
-                try
-                {
-                    var sw = Stopwatch.StartNew();
-                    var bin = MessagePackSerializer.Serialize(memento);
-                    var comp = Compress(bin);
-                    Debug.WriteLine($"MessagePack.Serialize: {sw.ElapsedMilliseconds}ms, Size={bin.Length:#,0}, Comp={comp.Length:#,0}");
-
-                    sw.Restart();
-                    bin = Decompress(comp);
-                    var val = MessagePackSerializer.Deserialize<FileItemForestMemento>(bin);
-                    Debug.WriteLine($"MessagePack.Deserialize: {sw.ElapsedMilliseconds}ms");
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.ToString());
-                }
-#endif
 
                 // for System.Text.Json
                 try

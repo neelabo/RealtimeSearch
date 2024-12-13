@@ -11,14 +11,14 @@ using System.Threading.Tasks;
 
 namespace NeeLaboratory.IO.Search.Files
 {
-    public class FileItemForest : IFileItemTree, IDisposable
+    public class FileForest : IFileTree, IDisposable
     {
-        private List<FileItemTree> _trees = new();
+        private List<FileTree> _trees = new();
         private bool _disposedValue;
         private bool _isCollectBusy;
 
 
-        public FileItemForest()
+        public FileForest()
         {
         }
 
@@ -30,7 +30,7 @@ namespace NeeLaboratory.IO.Search.Files
 
         public int Count => _trees.Sum(t => t.Count);
 
-        public List<FileItemTree> Trees => _trees;
+        public List<FileTree> Trees => _trees;
 
         public bool IsCollectBusy
         {
@@ -65,7 +65,7 @@ namespace NeeLaboratory.IO.Search.Files
             Debug.WriteLine($"UpdateTrees:");
             foreach (var tree in trees)
             {
-                Debug.WriteLine(tree.Path);
+                Debug.WriteLine(tree.Area);
             }
         }
 
@@ -76,10 +76,10 @@ namespace NeeLaboratory.IO.Search.Files
         }
 
 
-        private FileItemTree CreateTree(FileArea area, FileForestMemento? memento)
+        private FileTree CreateTree(FileArea area, FileForestMemento? memento)
         {
             var treeMemento = memento?.Trees?.FirstOrDefault(e => e.FileArea == area);
-            var tree = new FileItemTree(area, treeMemento);
+            var tree = new FileTree(area, treeMemento);
             tree.CollectBusyChanged += Tree_CollectBusyChanged;
             tree.AddContentChanged += Tree_AddContentChanged;
             tree.RemoveContentChanged += Tree_RemoveContentChanged;
@@ -87,7 +87,7 @@ namespace NeeLaboratory.IO.Search.Files
             return tree;
         }
 
-        private void RemoveTree(FileItemTree tree)
+        private void RemoveTree(FileTree tree)
         {
             tree.CollectBusyChanged -= Tree_CollectBusyChanged;
             tree.AddContentChanged -= Tree_AddContentChanged;
@@ -212,12 +212,12 @@ namespace NeeLaboratory.IO.Search.Files
             return disposables;
         }
 
-        public IEnumerable<FileItem> CollectFileItems()
+        public IEnumerable<FileContent> CollectFileContents()
         {
             var trees = _trees;
             foreach (var tree in trees)
             {
-                foreach (var item in tree.CollectFileItems())
+                foreach (var item in tree.CollectFileContents())
                 {
                     yield return item;
                 }
@@ -247,13 +247,7 @@ namespace NeeLaboratory.IO.Search.Files
             return new FileForestMemento(_trees.Select(e => e.CreateTreeMemento()).ToList());
         }
 
-#if false
-        public static List<FileItemTree> RestoreMemento(FileItemForestMemento memento)
-        {
-            if (memento.Trees is null) return new();
-            return memento.Trees.Select(e => FileItemTree.Restore(e)).WhereNotNull().ToList();
-        }
-#endif
+
     }
 
 }

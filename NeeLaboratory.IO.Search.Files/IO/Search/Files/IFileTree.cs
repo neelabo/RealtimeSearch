@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NeeLaboratory.IO.Search.Files
 {
-    public interface IFileItemTree
+    public interface IFileTree
     {
         event EventHandler<FileTreeContentChangedEventArgs>? AddContentChanged;
         event EventHandler<FileTreeContentChangedEventArgs>? RemoveContentChanged;
@@ -18,7 +18,7 @@ namespace NeeLaboratory.IO.Search.Files
         void Initialize(CancellationToken token);
         Task InitializeAsync(CancellationToken token);
         Task<IDisposable> LockAsync(CancellationToken token);
-        IEnumerable<FileItem> CollectFileItems();
+        IEnumerable<FileContent> CollectFileContents();
 
         void Wait(CancellationToken token);
         Task WaitAsync(CancellationToken token);
