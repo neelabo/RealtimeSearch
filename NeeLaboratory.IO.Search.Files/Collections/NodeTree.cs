@@ -16,9 +16,11 @@ namespace NeeLaboratory.Collections
 
         public NodeTree(string path)
         {
-            var node = _root;
+            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
+
             var names = SplitPath(path);
 
+            var node = _root;
             foreach (var name in names)
             {
                 node = node.AddChild(name);

@@ -41,9 +41,9 @@ namespace RealtimeSearchUnitTest
             var dispatcher = new SlimJobEngine("test");
 
             int a = 0;
-            var job1 = dispatcher.InvokeAsync(() => { Thread.Sleep(100);  a++; }, CancellationToken.None);
-            var job2 = dispatcher.InvokeAsync(() => { Thread.Sleep(100);  a++; }, CancellationToken.None);
-            var job3 = dispatcher.InvokeAsync(() => { Thread.Sleep(100);  a++; }, CancellationToken.None);
+            var job1 = dispatcher.InvokeAsync(() => { Thread.Sleep(100); a++; }, CancellationToken.None);
+            var job2 = dispatcher.InvokeAsync(() => { Thread.Sleep(100); a++; }, CancellationToken.None);
+            var job3 = dispatcher.InvokeAsync(() => { Thread.Sleep(100); a++; }, CancellationToken.None);
             Assert.Equal(0, a);
             await job3;
             Assert.Equal(SlimJobStates.Completed, job1.State);

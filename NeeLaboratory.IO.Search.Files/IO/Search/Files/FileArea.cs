@@ -26,36 +26,33 @@ namespace NeeLaboratory.IO.Search.Files
 
         public bool IncludeSubdirectories { get; init; }
 
+        public string GetName()
+        {
+            return LoosePath.GetFileName(Path);
+        }
 
         public bool Contains(FileArea other)
         {
             if (this == other) return false;
 
-            if (this.Path == other.Path) return true;
+            if (this.Path == other.Path)
+            {
+                return this.IncludeSubdirectories || other.IncludeSubdirectories == false;
+            }
 
-            if (this.Path.Length > other.Path.Length) return false;
+            if (this.Path.Length > other.Path.Length)
+            {
+                return false;
+            }
 
             if (IncludeSubdirectories)
             {
-                if (other.Path.StartsWith(this.Path))
-                {
-                    return other.Path[Path.Length] == '\\';
-                }
-                else
-                {
-                    return false;
-                }
+                var directoryName = LoosePath.TrimDirectoryEnd(Path);
+                return other.Path.StartsWith(directoryName);
             }
             else
             {
-                if (other.IncludeSubdirectories)
-                {
-                    return false;
-                }
-                else
-                {
-                    return Path == other.Path;
-                }
+                return false;
             }
         }
 

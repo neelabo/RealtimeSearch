@@ -35,7 +35,7 @@ namespace NeeLaboratory.IO.Search.Files
         private readonly FileArea _area;
 
 
-        public FileTree(FileArea area, FileTreeMemento? memento) : base(area.Path) // : base(area.Path, memento, CreateEnumerationOptions(area))
+        public FileTree(FileArea area, FileTreeMemento? memento) : base(area.Path)
         {
             _area = area;
 
@@ -52,13 +52,6 @@ namespace NeeLaboratory.IO.Search.Files
             _recurseSubdirectories = enumerationOptions.RecurseSubdirectories;
             _enumerationOptions = enumerationOptions.Clone();
             _enumerationOptions.RecurseSubdirectories = false;
-
-            // すべての Node の Content を保証する
-            foreach (var node in Root.Walk())
-            {
-                if (string.IsNullOrEmpty(node.Name)) continue;
-                EnsureContent(node);
-            }
         }
 
 
@@ -253,6 +246,7 @@ namespace NeeLaboratory.IO.Search.Files
 
             using var section = IsCollectBusy_EnterScope();
 
+            EnsureContent(Trunk);
             Trunk.ClearChildren();
             if (_recurseSubdirectories)
             {
@@ -318,7 +312,7 @@ namespace NeeLaboratory.IO.Search.Files
             if (content.State == FileContentState.Stable) return;
             token.ThrowIfCancellationRequested();
 
-            var info = CreateFileInfo(content.Path);
+            var info = CreateFileInfo(node);
             var isUpdate = false;
             if (info.Exists)
             {
@@ -645,7 +639,7 @@ namespace NeeLaboratory.IO.Search.Files
 
             Debug.Assert(node.FullName == file.FullName);
 
-            var content = CreateFileContent(node);
+            var content = EnsureContent(node);
             Trace($"Add: {content}");
             AddContentChanged?.Invoke(this, new FileTreeContentChangedEventArgs(content));
         }
@@ -668,8 +662,8 @@ namespace NeeLaboratory.IO.Search.Files
             if (node == null) return;
             Debug.Assert(info is null || info.FullName == node.FullName);
 
-            var content = GetFileContent(node);
-            content.SetFileInfo(info ?? CreateFileInfo(node.FullName));
+            var content = EnsureContent(node);
+            content.SetFileInfo(info ?? CreateFileInfo(node));
             Trace($"Update: {content}");
             ContentChanged?.Invoke(this, new FileTreeContentChangedEventArgs(content));
 
@@ -684,39 +678,25 @@ namespace NeeLaboratory.IO.Search.Files
 
         public IEnumerable<FileContent> CollectFileContents()
         {
-            return Trunk.WalkChildren().Select(e => GetFileContent(e));
+            return Trunk.WalkChildren().Select(e => EnsureContent(e));
         }
 
-        // TODO: 微妙
-        private FileContent GetFileContent(Node<FileContent> node)
-        {
-            if (node.Content is not null)
-            {
-                return node.Content;
-            }
-
-            return CreateFileContent(node);
-        }
-
-        private FileContent CreateFileContent(Node<FileContent> node)
-        {
-            Debug.Assert(node.Content is null);
-
-            var info = CreateFileInfo(node.FullName);
-            var content = new FileContent(info);
-            node.Content = content;
-            return content;
-        }
-
-        private void EnsureContent(Node<FileContent> node)
+        private FileContent EnsureContent(Node<FileContent> node)
         {
             if (node.Content is null)
             {
-                node.Content = new FileContent(CreateFileInfo(node.FullName));
+                node.Content = new FileContent(CreateFileInfo(node));
             }
+
+            return node.Content;
         }
-        
-        protected static FileSystemInfo CreateFileInfo(string path)
+
+        private static FileSystemInfo CreateFileInfo(Node<FileContent> node)
+        {
+            return CreateFileInfo(node.GetFullPath());
+        }
+
+        private static FileSystemInfo CreateFileInfo(string path)
         {
             var directory = new DirectoryInfo(path);
             if (directory.Exists) return directory;
@@ -810,7 +790,7 @@ namespace NeeLaboratory.IO.Search.Files
 
         private FileNodeMemento CreateFileNode(Node<FileContent> node, int depth)
         {
-            var content = GetFileContent(node);
+            var content = EnsureContent(node);
             return new FileNodeMemento(depth, content.IsDirectory, node.Name, content.LastWriteTime, content.Size);
         }
 
@@ -820,14 +800,15 @@ namespace NeeLaboratory.IO.Search.Files
             if (memento.FileArea is null) return null;
             if (memento.Nodes is null) return null;
 
-            var directory = System.IO.Path.GetDirectoryName(memento.FileArea.Path) ?? "";
+            var directory = LoosePath.GetDirectoryName(memento.FileArea.Path) ?? "";
 
             Node<FileContent> root = new Node<FileContent>("");
             Node<FileContent> current = root;
             int depth = -1;
             foreach (var node in memento.Nodes)
             {
-                Debug.Assert(node.Depth > 0 || System.IO.Path.GetFileName(memento.FileArea.Path) == node.Name);
+                memento.FileArea.Path.Split('\\', StringSplitOptions.RemoveEmptyEntries);
+                Debug.Assert(node.Depth > 0 || memento.FileArea.GetName() == node.Name);
 
                 while (node.Depth <= depth)
                 {
@@ -861,7 +842,7 @@ namespace NeeLaboratory.IO.Search.Files
         {
             foreach (var item in Trunk.WalkChildrenWithDepth())
             {
-                var content = GetFileContent(item.Node);
+                var content = EnsureContent(item.Node);
                 var fileNode = new FileNodeMemento(item.Depth, content.IsDirectory, item.Node.Name, content.LastWriteTime, content.Size);
                 Debug.WriteLine(fileNode);
             }
@@ -874,5 +855,21 @@ namespace NeeLaboratory.IO.Search.Files
         }
 
         #endregion Debug
+    }
+
+
+    public static class FileContentNodeExtensions
+    {
+        public static string GetFullPath(this Node<FileContent> node)
+        {
+            if (node.Parent is null && node.Name[1] == ':')
+            {
+                return node.Name + '\\';
+            }
+            else
+            {
+                return node.FullName;
+            }
+        }
     }
 }

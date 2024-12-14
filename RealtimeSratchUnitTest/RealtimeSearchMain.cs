@@ -243,7 +243,7 @@ namespace RealtimeSearchUnitTest
             // ƒtƒ@ƒCƒ‹íœ...
             File.Delete(fileAppend1Ex);
             File.Delete(fileAppend2Ex);
-            await Task.Delay(100);
+            await Task.Delay(200); // íœ”½‰f‚Í 100ms ‚Ù‚Ç’x‰„‚³‚ê‚é‚Ì‚Å
             await engine.Tree.WaitAsync(CancellationToken.None);
             await Task.Delay(100);
 
