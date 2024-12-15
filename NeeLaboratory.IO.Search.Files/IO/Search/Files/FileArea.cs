@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 
 namespace NeeLaboratory.IO.Search.Files
 {
-    [MemoryPackable]
+    [MemoryPackable(GenerateType.VersionTolerant)]
     public partial record class FileArea
     {
         public FileArea()
@@ -22,8 +22,10 @@ namespace NeeLaboratory.IO.Search.Files
             IncludeSubdirectories = includeSubdirectories;
         }
 
+        [MemoryPackOrder(0)]
         public string Path { get; init; } = "";
 
+        [MemoryPackOrder(1)]
         public bool IncludeSubdirectories { get; init; }
 
         public string GetName()

@@ -11,7 +11,7 @@ namespace NeeLaboratory.Collections
     /// </summary>
     public class NodeTree<T>
     {
-        private readonly Node<T> _root = new Node<T>("");
+        private readonly Node<T> _root = new("");
         private Node<T> _trunk;
 
         public NodeTree(string path)
@@ -37,6 +37,7 @@ namespace NeeLaboratory.Collections
         public void SetTrunk(Node<T> node)
         {
             Debug.Assert(node.Name == Trunk.Name);
+            Debug.Assert(node.Content is not null);
 
             var parent = Trunk.Parent;
             Debug.Assert(parent is not null);

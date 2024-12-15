@@ -1,13 +1,15 @@
-﻿//#define LOCAL_DEBUG
-
-using MemoryPack;
-
+﻿using MemoryPack;
 
 namespace NeeLaboratory.IO.Search.Files
 {
-    [MemoryPackable]
+    [MemoryPackable(GenerateType.VersionTolerant)]
     public partial class FileNodeMemento
     {
+        public FileNodeMemento(int depth, string name) : this(depth, false, name, default, 0)
+        {
+        }
+
+        [MemoryPackConstructor]
         public FileNodeMemento(int depth, bool isDirectory, string name, DateTime lastWriteTime, long size)
         {
             Depth = depth;
@@ -17,10 +19,19 @@ namespace NeeLaboratory.IO.Search.Files
             Size = size;
         }
 
+        [MemoryPackOrder(0)]
         public int Depth { get; set; }
+
+        [MemoryPackOrder(1)]
         public bool IsDirectory { get; set; }
+
+        [MemoryPackOrder(2)]
         public string Name { get; set; }
+
+        [MemoryPackOrder(3)]
         public DateTime LastWriteTime { get; set; }
+
+        [MemoryPackOrder(4)]
         public long Size { get; set; }
     }
 }

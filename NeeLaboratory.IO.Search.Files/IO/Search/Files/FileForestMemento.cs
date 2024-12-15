@@ -1,10 +1,9 @@
-﻿//#define LOCAL_DEBUG
-using MemoryPack;
+﻿using MemoryPack;
 
 
 namespace NeeLaboratory.IO.Search.Files
 {
-    [MemoryPackable]
+    [MemoryPackable(GenerateType.VersionTolerant)]
     public partial class FileForestMemento
     {
         public FileForestMemento(List<FileTreeMemento> trees)
@@ -12,6 +11,7 @@ namespace NeeLaboratory.IO.Search.Files
             Trees = trees ?? new();
         }
 
+        [MemoryPackOrder(0)]
         public List<FileTreeMemento> Trees { get; set; }
     }
 

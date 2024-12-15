@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NeeLaboratory.Collections;
 using NeeLaboratory.ComponentModel;
+using NeeLaboratory.Linq;
 
 namespace NeeLaboratory.IO.Search.Files
 {
@@ -52,6 +53,8 @@ namespace NeeLaboratory.IO.Search.Files
             _recurseSubdirectories = enumerationOptions.RecurseSubdirectories;
             _enumerationOptions = enumerationOptions.Clone();
             _enumerationOptions.RecurseSubdirectories = false;
+
+            Trunk.Content = CreateFileContent(Trunk);
         }
 
 
@@ -246,7 +249,6 @@ namespace NeeLaboratory.IO.Search.Files
 
             using var section = IsCollectBusy_EnterScope();
 
-            EnsureContent(Trunk);
             Trunk.ClearChildren();
             if (_recurseSubdirectories)
             {
@@ -637,11 +639,12 @@ namespace NeeLaboratory.IO.Search.Files
         {
             if (node == null) return;
 
-            Debug.Assert(node.FullName == file.FullName);
+            Debug.Assert(node.FullName.TrimEnd() == file.FullName);
+            Debug.Assert(node.Content is null);
 
-            var content = EnsureContent(node);
-            Trace($"Add: {content}");
-            AddContentChanged?.Invoke(this, new FileTreeContentChangedEventArgs(content));
+            node.Content = new FileContent(file);
+            //Trace($"Add: {node.Content}");
+            AddContentChanged?.Invoke(this, new FileTreeContentChangedEventArgs(node.Content));
         }
 
         protected void DetachContent(Node<FileContent>? node)
@@ -662,7 +665,10 @@ namespace NeeLaboratory.IO.Search.Files
             if (node == null) return;
             Debug.Assert(info is null || info.FullName.TrimEnd('\\') == node.FullName);
 
-            var content = EnsureContent(node);
+            var content = node.Content;
+            Debug.Assert(content is not null);
+            if (content is null) return;
+
             content.SetFileInfo(info ?? CreateFileInfo(node));
             Trace($"Update: {content}");
             ContentChanged?.Invoke(this, new FileTreeContentChangedEventArgs(content));
@@ -678,17 +684,12 @@ namespace NeeLaboratory.IO.Search.Files
 
         public IEnumerable<FileContent> CollectFileContents()
         {
-            return Trunk.WalkChildren().Select(e => EnsureContent(e));
+            return Trunk.WalkChildren().Select(e => e.Content).WhereNotNull();
         }
 
-        private FileContent EnsureContent(Node<FileContent> node)
+        private static FileContent CreateFileContent(Node<FileContent> node)
         {
-            if (node.Content is null)
-            {
-                node.Content = new FileContent(CreateFileInfo(node));
-            }
-
-            return node.Content;
+            return new FileContent(CreateFileInfo(node));
         }
 
         private static FileSystemInfo CreateFileInfo(Node<FileContent> node)
@@ -790,7 +791,9 @@ namespace NeeLaboratory.IO.Search.Files
 
         private FileNodeMemento CreateFileNode(Node<FileContent> node, int depth)
         {
-            var content = EnsureContent(node);
+            var content = node.Content;
+            Debug.Assert(content is not null);
+            if (content is null) return new FileNodeMemento(depth, node.Name);
             return new FileNodeMemento(depth, content.IsDirectory, node.Name, content.LastWriteTime, content.Size);
         }
 
@@ -842,8 +845,8 @@ namespace NeeLaboratory.IO.Search.Files
         {
             foreach (var item in Trunk.WalkChildrenWithDepth())
             {
-                var content = EnsureContent(item.Node);
-                var fileNode = new FileNodeMemento(item.Depth, content.IsDirectory, item.Node.Name, content.LastWriteTime, content.Size);
+                var content = item.Node.Content;
+                var fileNode = CreateFileNode(item.Node, item.Depth);
                 Debug.WriteLine(fileNode);
             }
         }
@@ -855,21 +858,5 @@ namespace NeeLaboratory.IO.Search.Files
         }
 
         #endregion Debug
-    }
-
-
-    public static class FileContentNodeExtensions
-    {
-        public static string GetFullPath(this Node<FileContent> node)
-        {
-            if (node.Parent is null && node.Name[1] == ':')
-            {
-                return node.Name + '\\';
-            }
-            else
-            {
-                return node.FullName;
-            }
-        }
     }
 }

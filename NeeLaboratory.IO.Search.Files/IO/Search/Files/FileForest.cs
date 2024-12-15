@@ -160,7 +160,6 @@ namespace NeeLaboratory.IO.Search.Files
                     {
                         tree.Dispose();
                     }
-                    _trees.Clear();
                 }
                 _disposedValue = true;
             }
