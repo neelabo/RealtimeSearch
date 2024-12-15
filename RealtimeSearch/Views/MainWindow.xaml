@@ -157,9 +157,11 @@
 
                     </Button>
 
-                    <Grid>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Margin="8,0" Text="{Binding CountMessage}" VerticalAlignment="Center" Visibility="{Binding CountMessage, Converter={StaticResource StringToVisibility}}"/>
+                        <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Background="#1888"/>
                         <TextBlock Margin="8,0" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Text="{Binding Search.Information}" TextDecorations="{x:Null}" />
-                    </Grid>
+                    </StackPanel>
                 </DockPanel>
             </Grid>
 

@@ -84,6 +84,12 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
             get => _model.ResultMessage;
             set => _model.ResultMessage = value;
         }
+        
+        public string CountMessage
+        {
+            get => _model.CountMessage;
+            set => _model.CountMessage = value;
+        }
 
         public bool IsRenaming
         {
@@ -147,6 +153,10 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
 
                 case nameof(_model.ResultMessage):
                     RaisePropertyChanged(nameof(ResultMessage));
+                    break;
+
+                case nameof(_model.CountMessage):
+                    RaisePropertyChanged(nameof(CountMessage));
                     break;
             }
         }

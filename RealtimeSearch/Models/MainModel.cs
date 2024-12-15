@@ -25,6 +25,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         private readonly WebSearch _webSearch;
         private readonly History _history;
         private string _resultMessage = "";
+        private string _countMessage = "";
         private readonly DispatcherTimer _timer;
 
 
@@ -84,6 +85,11 @@ namespace NeeLaboratory.RealtimeSearch.Models
             set { SetProperty(ref _resultMessage, value); }
         }
 
+        public string CountMessage
+        {
+            get { return _countMessage; }
+            set { SetProperty(ref _countMessage, value); }
+        }
 
 
         private void ProgressTimer_Tick(object? sender, EventArgs e)
@@ -150,14 +156,9 @@ namespace NeeLaboratory.RealtimeSearch.Models
         {
             SearchResultChanged?.Invoke(sender, EventArgs.Empty);
 
-            if (_search.SearchResult != null && _search.SearchResult.Items.Count == 0)
-            {
-                ResultMessage = $"条件に一致する項目はありません。";
-            }
-            else
-            {
-                ResultMessage = "";
-            }
+            var count = _search.SearchResult?.Items.Count ?? 0;
+            CountMessage = $"{count:#,0} 個の項目";
+            ResultMessage = count == 0 ? $"条件に一致する項目はありません。" : "";
         }
 
         public void StopClipboardWatch()

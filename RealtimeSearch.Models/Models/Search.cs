@@ -251,8 +251,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
                 SearchResult = new FileSearchResultWatcher(_searchEngine, searchResult);
                 SearchResultChanged?.Invoke(this, EventArgs.Empty);
 
-
-                SetMessage($"{SearchResult.Items.Count:#,0} 個の項目");
+                SetMessage("");
 
                 // 項目変更監視
                 SearchResult.Items.CollectionChanged += (s, e) => SearchResultChanged?.Invoke(s, e);
@@ -296,28 +295,21 @@ namespace NeeLaboratory.RealtimeSearch.Models
             }
         }
 
-
         private void SetMessage(string message)
         {
             _message = message;
             UpdateInformation();
         }
 
-        //private void ProgressTimer_Tick(object? sender, EventArgs e)
-        //{
-        //    UpdateInformation();
-        //    Debug.WriteLine($"Information = {Information}");
-        //}
-
         public void UpdateInformation()
         {
             if (_searchEngine.IsSearchBusy)
             {
-                Information = $"Searching...";
+                Information = $"検索中 ...";
             }
             else if (_searchEngine.IsCollectBusy)
             {
-                var indexing = $"{_searchEngine.Tree.Count:#,0} Indexing...";
+                var indexing = $"{_searchEngine.Tree.Count:#,0} 個のインデックス作成中 ...";
                 Information = string.IsNullOrEmpty(_message) ? indexing : $"{_message} ({indexing})";
             }
             else

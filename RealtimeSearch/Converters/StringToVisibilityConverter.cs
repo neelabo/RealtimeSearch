@@ -11,7 +11,7 @@ namespace NeeLaboratory.RealtimeSearch.Converters
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             var s = (string)value;
-            return string.IsNullOrEmpty(s) ? Visibility.Hidden : Visibility.Visible;
+            return string.IsNullOrEmpty(s) ? Visibility.Collapsed : Visibility.Visible;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
