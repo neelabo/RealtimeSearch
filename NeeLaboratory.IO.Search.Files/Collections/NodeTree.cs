@@ -45,22 +45,19 @@ namespace NeeLaboratory.Collections
             _trunk = node;
         }
 
-        private static IEnumerable<string> SplitPath(string path)
+        private static string[] SplitPath(string path)
         {
             var tokens = path.Split('\\', StringSplitOptions.RemoveEmptyEntries);
 
             // ネットワークパス用に先頭の区切り文字を戻す
-            if (tokens.Any())
+            if (tokens.Any() && path[0] == '\\')
             {
-                foreach (var c in path)
-                {
-                    if (c != '\\') break;
-                    tokens[0] = "\\" + tokens[0];
-                }
+                tokens[0] = string.Concat(path.TakeWhile(e => e == '\\').Concat(tokens[0]));
             }
 
             return tokens;
         }
+
 
         public Node<T>? Find(string path)
         {

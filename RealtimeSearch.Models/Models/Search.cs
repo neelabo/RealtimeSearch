@@ -24,7 +24,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         void Decorate(SearchResult<T> searchResult);
     }
 
-    public class Search : BindableBase
+    public class Search : BindableBase, IDisposable
     {
         private int _busyCount;
         private bool _isBusy;
@@ -36,6 +36,8 @@ namespace NeeLaboratory.RealtimeSearch.Models
         private FileSearchResultWatcher? _searchResult;
         private string _lastSearchKeyword = "";
         private string _message = "";
+        private bool _disposedValue;
+
 
         /// <summary>
         /// コンストラクタ
@@ -49,12 +51,6 @@ namespace NeeLaboratory.RealtimeSearch.Models
             _searchEngine.SubscribePropertyChanged(nameof(FileSearchEngine.IsSearchBusy), SearchEngine_IsSearchBusyPropertyChanged);
 
             _appConfig.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
-
-            //_timer = new DispatcherTimer
-            //{
-            //    Interval = TimeSpan.FromMilliseconds(1000)
-            //};
-            //_timer.Tick += ProgressTimer_Tick;
         }
 
 
@@ -96,6 +92,28 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
         public ISearchResultDecorator<FileContent>? SearchResultDecorator { get; set; }
 
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _searchCancellationTokenSource.Cancel();
+                    _searchCancellationTokenSource.Dispose();
+                    _searchResult?.Dispose();
+                    _searchEngine.Dispose();
+                }
+
+                _disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
 
         private void SearchEngine_IsCollectBusyPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
@@ -203,8 +221,10 @@ namespace NeeLaboratory.RealtimeSearch.Models
             _lastSearchKeyword = keyword;
 
             // 同時に実行可能なのは1検索のみ。以前の検索はキャンセルして新しい検索コマンドを発行
-            _searchCancellationTokenSource.Cancel();
+            var cts = _searchCancellationTokenSource;
             _searchCancellationTokenSource = new CancellationTokenSource();
+            cts.Cancel();
+            cts.Dispose();
 
             IncrementBusyCount();
             try

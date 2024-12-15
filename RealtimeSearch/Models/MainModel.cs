@@ -99,6 +99,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
         public void Closed()
         {
+            _search.Dispose();
             _search.SaveCache();
         }
 

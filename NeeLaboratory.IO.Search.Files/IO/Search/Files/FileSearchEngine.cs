@@ -80,6 +80,10 @@ namespace NeeLaboratory.IO.Search.Files
             {
                 if (disposing)
                 {
+                    _indexCancellationTokenSource?.Cancel();
+                    _indexCancellationTokenSource?.Dispose();
+                    _indexCancellationTokenSource = null;
+
                     _searchCancellationTokenSource?.Cancel();
                     _searchCancellationTokenSource?.Dispose();
                     _searchCancellationTokenSource = null;
@@ -125,13 +129,13 @@ namespace NeeLaboratory.IO.Search.Files
         public void AddSearchAreas(params FileArea[] areas)
         {
             _tree.AddSearchAreas(areas);
-            _ = IndexAsync(CancellationToken.None);
+            _ = IndexAsync();
         }
 
         public void SetSearchAreas(IEnumerable<FileArea> areas, FileForestMemento? memento = null)
         {
             _tree.SetSearchAreas(areas, memento);
-            _ = IndexAsync(CancellationToken.None);
+            _ = IndexAsync();
         }
 
 
@@ -156,24 +160,20 @@ namespace NeeLaboratory.IO.Search.Files
         }
 
 
-        public async Task IndexAsync(CancellationToken token)
+        public async Task IndexAsync()
         {
-            token.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
             _indexCancellationTokenSource?.Cancel();
             _indexCancellationTokenSource?.Dispose();
             _indexCancellationTokenSource = new CancellationTokenSource();
 
-            var job = _jobEngine.InvokeAsync(() => IndexInner(token));
+            var job = _jobEngine.InvokeAsync(() => IndexInner(_indexCancellationTokenSource.Token));
             await job;
             if (job.Exception is not null)
             {
                 throw job.Exception;
             }
-
-            // ##
-            //_tree.Test();
         }
 
         private void IndexInner(CancellationToken token)

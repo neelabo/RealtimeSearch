@@ -604,7 +604,7 @@ namespace NeeLaboratory.IO.Search.Files
 
         private void UpdateFile(string path, FileSystemInfo? info, CancellationToken token)
         {
-            Debug.Assert(info is null || info.FullName == path);
+            Debug.Assert(info is null || info.FullName.TrimEnd('\\') == path);
 
             if (_disposedValue) return;
             if (!_initialized) return;
@@ -615,7 +615,7 @@ namespace NeeLaboratory.IO.Search.Files
 
         private void UpdateFileCore(string path, FileSystemInfo? info, CancellationToken token)
         {
-            Debug.Assert(info is null || info.FullName == path);
+            Debug.Assert(info is null || info.FullName.TrimEnd('\\') == path);
 
             var node = Find(path);
             if (node is null)
@@ -660,7 +660,7 @@ namespace NeeLaboratory.IO.Search.Files
         protected void UpdateContent(Node<FileContent>? node, FileSystemInfo? info, bool isRecursive)
         {
             if (node == null) return;
-            Debug.Assert(info is null || info.FullName == node.FullName);
+            Debug.Assert(info is null || info.FullName.TrimEnd('\\') == node.FullName);
 
             var content = EnsureContent(node);
             content.SetFileInfo(info ?? CreateFileInfo(node));
