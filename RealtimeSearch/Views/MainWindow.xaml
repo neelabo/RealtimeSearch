@@ -75,6 +75,15 @@
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         </Style>
 
+        <Style x:Key="ToolBarButton" TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="24"/>
+        </Style>
+
+        <Style x:Key="ToolBarIconFont" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource IconFont}">
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+
     </Window.Resources>
 
     <Window.InputBindings>
@@ -89,21 +98,23 @@
 
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4" KeyboardNavigation.TabNavigation="Local">
 
-                <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="25" Height="25" Command="{Binding ShowSettingCommand}" ToolTip="設定" Margin="2,0,0,0" TabIndex="4">
-                    <Image Width="16" Height="16" Source="{StaticResource ic_settings_24px}"/>
+                <Button DockPanel.Dock="Right" Style="{StaticResource ToolBarButton}" Command="{Binding ShowSettingCommand}" ToolTip="設定" Margin="2,0,0,0" TabIndex="4">
+                    <TextBlock Style="{StaticResource ToolBarIconFont}" Text="&#xE713;" />
                 </Button>
 
                 <Border BorderBrush="#FFDDDDDD" BorderThickness="1" UseLayoutRounding="True" SnapsToDevicePixels="True">
                     <DockPanel>
-                        <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="25" Height="25" Command="{Binding WebSearchCommand}" ToolTip="Web検索(Ctrl+F)" TabIndex="3">
-                            <Image Width="16" Height="16" Source="{StaticResource ic_public_24px}"/>
+                        <Button DockPanel.Dock="Right" Style="{StaticResource ToolBarButton}" Command="{Binding WebSearchCommand}" ToolTip="Web検索(Ctrl+F)" TabIndex="3">
+                            <TextBlock Style="{StaticResource ToolBarIconFont}" Text="&#xF6FA;" />
+
                         </Button>
-                        <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="25" Height="25" Command="{Binding SearchCommand}" ToolTip="再検索(Ctrl+R)" TabIndex="2">
-                            <Image Width="16" Height="16" Source="{StaticResource ic_reflesh_24px}"/>
+                        <Button DockPanel.Dock="Right" Style="{StaticResource ToolBarButton}" Command="{Binding SearchCommand}" ToolTip="再検索(Ctrl+R)" TabIndex="2">
+                            <TextBlock Style="{StaticResource ToolBarIconFont}" Text="&#xE777;" />
                         </Button>
                         <ComboBox x:Name="keyword" Text="{Binding InputKeyword, UpdateSourceTrigger=PropertyChanged}" TabIndex="1"
-                              TextBoxBase.TextChanged="Keyword_TextChanged"
-                              VerticalAlignment="Center" KeyDown="Keyword_KeyDown" ItemsSource="{Binding History.Collection}" IsTextSearchCaseSensitive="True"
+                              TextBoxBase.TextChanged="Keyword_TextChanged" Margin="0,0,8,0"
+                                  VerticalContentAlignment="Center"
+                              VerticalAlignment="Stretch" KeyDown="Keyword_KeyDown" ItemsSource="{Binding History.Collection}" IsTextSearchCaseSensitive="True"
                               IsEditable="True" BorderThickness="0" BorderBrush="red" LostFocus="Keyword_LostFocus" LostKeyboardFocus="Keyword_LostFocus">
                             <ComboBox.ItemContainerStyle>
                                 <Style TargetType="ComboBoxItem">
@@ -136,23 +147,23 @@
 
                 <DockPanel>
 
-                    <Button x:Name="ToggleInforPanel" DockPanel.Dock="Right" Margin="0" Width="20" Height="20" VerticalAlignment="Center" TabIndex="3"
+                    <Button x:Name="ToggleInforPanel" DockPanel.Dock="Right" Margin="0" Width="32" Height="24" VerticalAlignment="Center" TabIndex="3"
                             Command="{Binding ToggleDetailVisibleCommand}"
                             ToolTip="ファイル詳細"
                             Style="{StaticResource IconButton}" >
                         <Grid Background="Transparent" >
-                            <Path Stroke="#414141" Stretch="Uniform" Margin="2">
-                                <Path.Style>
-                                    <Style TargetType="Path">
-                                        <Setter Property="Data" Value="m0,10 L10,0 20,10"/>
+                            <TextBlock>
+                                <TextBlock.Style >
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource IconFont}">
+                                        <Setter Property="Text" Value="&#xE70E;"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsDetailVisible}" Value="True">
-                                                <Setter Property="Data" Value="m0,0 L10,10 20,0"/>
+                                                <Setter Property="Text" Value="&#xE70D;"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
-                                </Path.Style>
-                            </Path>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </Grid>
 
                     </Button>
@@ -199,7 +210,7 @@
                         <DataTemplate x:Key="ItemFileNameTemplate">
                             <DockPanel ToolTip="{Binding Detail}" ToolTipService.InitialShowDelay="1000"
                                        ToolTipService.IsEnabled="{Binding ElementName=ResultListView, Path=DataContext.IsTipsVisible}">
-                                <CheckBox DockPanel.Dock="Right" Template="{StaticResource PushpinCheckBoxTemplate}" Width="16" Height="16" IsChecked="{Binding IsPushPin}" >
+                                <CheckBox DockPanel.Dock="Right" Template="{StaticResource PushpinCheckBoxTemplate}" Width="32" Height="16" IsChecked="{Binding IsPushPin}" >
                                     <CheckBox.Style>
                                         <Style TargetType="CheckBox">
                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -218,8 +229,8 @@
                                 <Grid  DockPanel.Dock="Left" Width="16" Margin="0,0,4,0">
                                     <Image Source="{Binding Converter={StaticResource FileInfoToIconConverter}}" Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     <Grid VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,-2,-2" Visibility="{Binding State, Converter={StaticResource FileContentStateToVisibilityConverter}}">
-                                        <TextBlock Text="&#xF136;" FontFamily="Segoe MDL2 Assets" Foreground="#F8F8F8"/>
-                                        <TextBlock Text="&#xF143;" FontFamily="Segoe MDL2 Assets" Foreground="SteelBlue"/>
+                                        <TextBlock Style="{StaticResource IconFont}" FontSize="12" Text="&#xF136;" Foreground="#F8F8F8"/>
+                                        <TextBlock Style="{StaticResource IconFont}" FontSize="12" Text="&#xF143;" Foreground="SteelBlue"/>
                                     </Grid>
                                 </Grid>
                                 

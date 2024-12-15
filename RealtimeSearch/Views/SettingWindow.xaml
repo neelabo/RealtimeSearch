@@ -9,7 +9,7 @@
 
     <Window.Resources>
         <Style TargetType="FrameworkElement" x:Key="Phrase">
-            <Setter Property="Margin" Value="20,0,0,10"/>
+            <Setter Property="Margin" Value="20,2,0,12"/>
         </Style>
 
         <Style TargetType="TextBlock" x:Key="Header">
@@ -33,9 +33,9 @@
                 <TabItem.Header>
                     <TextBlock Style="{StaticResource TabItemHeader}" Text="一般" />
                 </TabItem.Header>
-                <StackPanel Margin="4">
+                <StackPanel Margin="8">
 
-                    <TextBlock Text="設定" Style="{StaticResource Header}"/>
+                    <TextBlock Text="設定"/>
                     <StackPanel Style="{StaticResource Phrase}">
                         <CheckBox Margin="2" IsChecked="{Binding Setting.AllowFolder}" VerticalAlignment="Center" Content="フォルダーを含める"/>
                         <CheckBox Margin="2" IsChecked="{Binding Setting.IsMonitorClipboard}" VerticalAlignment="Center" Content="クリップボードを監視" ToolTip="クリップボードを監視し、コピーされたテキストで即座に検索を開始します"/>
@@ -43,7 +43,7 @@
                         <CheckBox Margin="2" IsChecked="{Binding Setting.UseCache}" VerticalAlignment="Center" Content="インデックスをキャッシュ" />
                     </StackPanel>
 
-                    <TextBlock Text="Web検索" Style="{StaticResource Header}"/>
+                    <TextBlock Text="Web検索"/>
                     <StackPanel Style="{StaticResource Phrase}">
                         <DockPanel Margin="2,2,2,5" LastChildFill="True">
                             <TextBlock MinWidth="80" Text="URL :" VerticalAlignment="Center" Margin="2"/>
@@ -69,12 +69,12 @@
 
                             <TextBlock Text="検索フォルダー" VerticalAlignment="Center" Margin="0,0,8,0"/>
 
-                            <Button Style="{StaticResource IconButton}" DockPanel.Dock="Left"  Command="{x:Static local:SettingWindow.AddCommand}" Width="20" Height="20" >
-                                <Image Width="16" Height="16" Source="{StaticResource ic_add_circle_outline_24px}"/>
+                            <Button Style="{StaticResource IconButton}" DockPanel.Dock="Left"  Command="{x:Static local:SettingWindow.AddCommand}" Width="32" Height="24" >
+                                <TextBlock Style="{StaticResource IconFont}" Text="&#xECC8;"/>
                             </Button>
 
-                            <Button Style="{StaticResource IconButton}" DockPanel.Dock="Left" Command="{x:Static local:SettingWindow.DelCommand}" Width="20" Height="20">
-                                <Image Width="16" Height="16" Source="{StaticResource ic_remove_circle_outline_24px}"/>
+                            <Button Style="{StaticResource IconButton}" DockPanel.Dock="Left" Command="{x:Static local:SettingWindow.DelCommand}" Width="32" Height="24">
+                                <TextBlock Style="{StaticResource IconFont}" Text="&#xECC9;"/>
                             </Button>
 
 
@@ -122,7 +122,7 @@
                 <TabItem.Header>
                     <TextBlock Style="{StaticResource TabItemHeader}" Text="外部アプリ" />
                 </TabItem.Header>
-                <DockPanel>
+                <DockPanel Margin="8">
 
                     <local:ExternalProgramSettingControl DockPanel.Dock="Bottom" Margin="5"
                                                          DataContext="{Binding ElementName=ExternalProgramListBox, Path=SelectedItem}"
@@ -130,9 +130,12 @@
 
                     <DockPanel x:Name="ExternalProgramPanel">
 
-                        <StackPanel  DockPanel.Dock="Top" Orientation="Horizontal" Margin="5">
-                            <Button Style="{StaticResource IconButton}" Command="{x:Static local:SettingWindow.AddExternalProgramCommand}" Width="20" Height="20" >
-                                <Image Width="16" Height="16" Source="{StaticResource ic_add_circle_outline_24px}"/>
+                        <StackPanel  DockPanel.Dock="Top" Orientation="Horizontal">
+
+                            <TextBlock Text="外部アプリ" VerticalAlignment="Center" Margin="0,0,8,0"/>
+
+                            <Button Style="{StaticResource IconButton}" Command="{x:Static local:SettingWindow.AddExternalProgramCommand}" Width="32" Height="24" >
+                                <TextBlock Style="{StaticResource IconFont}" Text="&#xECC8;" />
                             </Button>
                         </StackPanel>
 
@@ -166,8 +169,11 @@
             </TabItem>
         </TabControl>
 
-        <Button Style="{StaticResource IconButton}" HorizontalAlignment="Right " VerticalAlignment="Top" Command="{x:Static local:SettingWindow.HelpCommand}" Width="20" Height="20" Margin="0,2,5,0">
-            <Image Width="16" Height="16" Source="{StaticResource ic_help_24px}"/>
+        <Button Style="{StaticResource IconButton}" HorizontalAlignment="Right " VerticalAlignment="Top" Command="{x:Static local:SettingWindow.HelpCommand}" Width="32" Height="24" Margin="0,2,5,0">
+            <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Style="{StaticResource IconFont}" Text="&#xF136;" Foreground="SteelBlue"/>
+                <TextBlock Style="{StaticResource IconFont}" Text="&#xF142;" Foreground="White"/>
+            </Grid>
         </Button>
 
     </Grid>
