@@ -98,7 +98,7 @@
 
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4" KeyboardNavigation.TabNavigation="Local">
 
-                <Button DockPanel.Dock="Right" Style="{StaticResource ToolBarButton}" Command="{Binding ShowSettingCommand}" ToolTip="設定" Margin="2,0,0,0" TabIndex="4">
+                <Button DockPanel.Dock="Right" Style="{StaticResource ToolBarButton}" Command="{Binding ShowSettingCommand}" ToolTip="設定" Margin="4,0,2,0" TabIndex="4">
                     <TextBlock Style="{StaticResource ToolBarIconFont}" Text="&#xE713;" />
                 </Button>
 

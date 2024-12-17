@@ -8,9 +8,13 @@ namespace NeeLaboratory.RealtimeSearch.Converters
     [ValueConversion(typeof(object), typeof(Visibility))]
     internal class NullToVisibilityConverter : IValueConverter
     {
+        public Visibility NotNull { get; set; } = Visibility.Visible;
+        public Visibility Null { get; set; } = Visibility.Collapsed;
+
+
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            return value == null ? Visibility.Collapsed : Visibility.Visible;
+            return value == null ? Null : NotNull;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

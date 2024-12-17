@@ -76,12 +76,18 @@ namespace NeeLaboratory.RealtimeSearch.Views
         public AppConfig Setting { get; private set; }
 
 
-        public SettingWindow(AppConfig setting)
+        public SettingWindow()
+        {
+            InitializeComponent();
+            Setting = new AppConfig();
+        }
+
+        public SettingWindow(AppConfig setting, int index) : this()
         {
             Setting = setting;
-            UpdateCollectionViewSource();
+            this.SettingTab.SelectedIndex = index;
 
-            InitializeComponent();
+            UpdateCollectionViewSource();
 
             this.DataContext = this;
 
@@ -112,8 +118,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
 
             // del command
             DelCommand.InputGestures.Clear();
-            DelCommand.InputGestures.Add(new KeyGesture(Key.Delete));
-            SearchPathPanel.CommandBindings.Add(new CommandBinding(DelCommand, DelCommand_Executed, DelCommand_CanExecute));
+            SearchPathPanel.CommandBindings.Add(new CommandBinding(DelCommand, DelCommand_Executed));
 
             SearchPathList.Focus();
 
@@ -124,9 +129,9 @@ namespace NeeLaboratory.RealtimeSearch.Views
 
             DeleteExternalProgramCommand.InputGestures.Clear();
             DeleteExternalProgramCommand.InputGestures.Add(new KeyGesture(Key.Delete));
-            ExternalProgramListBox.CommandBindings.Add(new CommandBinding(DeleteExternalProgramCommand, DeleteExternalProgramCommand_Executed, (s, e) => e.CanExecute = true));
+            ExternalProgramListBox.CommandBindings.Add(new CommandBinding(DeleteExternalProgramCommand, DeleteExternalProgramCommand_Executed));
 
-            this.contextMenu01.UpdateInputGestureText();
+            //this.contextMenu01.UpdateInputGestureText();
         }
 
 
@@ -139,19 +144,11 @@ namespace NeeLaboratory.RealtimeSearch.Views
 
         private void DelCommand_Executed(object target, ExecutedRoutedEventArgs e)
         {
-            if (SelectedArea != null)
+            if (e.Parameter is FileArea area)
             {
-                Setting.SearchAreas.Remove(SelectedArea);
-                SelectedArea = null;
+                Setting.SearchAreas.Remove(area);
             }
         }
-
-
-        private void DelCommand_CanExecute(object target, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = SelectedArea != null;
-        }
-
 
         private void AddExternalProgramCommand_Executed(object target, ExecutedRoutedEventArgs e)
         {
@@ -164,10 +161,14 @@ namespace NeeLaboratory.RealtimeSearch.Views
 
         private void DeleteExternalProgramCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
+#if false
             if (sender is not ListBox listBox) return;
 
             var item = listBox.SelectedItem as ExternalProgram;
             if (item is null) return;
+#endif
+            if (e.Parameter is not ExternalProgram item) return;
+            var listBox = this.ExternalProgramListBox;
 
             var selectedIndex = listBox.SelectedIndex;
             Setting.ExternalPrograms.Remove(item);

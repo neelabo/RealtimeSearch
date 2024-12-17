@@ -85,7 +85,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
 
         private void ShowSettingWindow(object? sender, ShowSettingWindowMessage e)
         {
-            ShowSettingWindow();
+            ShowSettingWindow(e.Index);
         }
 
         private void RenameItem(object? sender, RenameItemMessage e)
@@ -174,9 +174,9 @@ namespace NeeLaboratory.RealtimeSearch.Views
         }
 
 
-        private void ShowSettingWindow()
+        private void ShowSettingWindow(int index)
         {
-            var window = new SettingWindow(AppModel.AppConfig)
+            var window = new SettingWindow(AppModel.AppConfig, index)
             {
                 Owner = this,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner

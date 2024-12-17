@@ -177,7 +177,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
             // 検索パスが設定されていなければ設定画面を開く
             if (_appConfig.SearchAreas.Count <= 0)
             {
-                _messenger.Send(this, new ShowSettingWindowMessage());
+                _messenger.Send(this, new ShowSettingWindowMessage() { Index = 1 });
             }
 
             _model.Loaded();
