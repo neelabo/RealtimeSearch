@@ -105,10 +105,17 @@ namespace NeeLaboratory.IO.Search.Files
             IsDirectory = fileSystemInfo.Attributes.HasFlag(FileAttributes.Directory);
             Path = fileSystemInfo.FullName;
             Name = fileSystemInfo.Name;
-            Size = fileSystemInfo is FileInfo fileInfo ? fileInfo.Length : -1;
             LastWriteTime = fileSystemInfo.LastWriteTime;
-            State = FileContentState.Stable;
+            try
+            {
+                Size = fileSystemInfo is FileInfo fileInfo ? fileInfo.Length : -1;
+            }
+            catch (FileNotFoundException)
+            {
+                Size = 0;
+            }
 
+            State = FileContentState.Stable;
             RaisePropertyChanged(null);
         }
 
@@ -154,9 +161,9 @@ namespace NeeLaboratory.IO.Search.Files
 
 
     public enum FileContentState
-    {
-        Stable = 0,
-        Known,
-        Unknown,
-    }
+{
+    Stable = 0,
+    Known,
+    Unknown,
+}
 }
