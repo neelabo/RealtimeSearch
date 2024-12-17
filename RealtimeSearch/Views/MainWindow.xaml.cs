@@ -80,7 +80,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
 
         private void ShowMessageBox(object? sender, ShowMessageBoxMessage e)
         {
-            e.Result = MessageBox.Show(e.Message, e.Caption, e.Button, e.Icon);
+            e.Result = MessageBox.Show(App.Current.MainWindow, e.Message, e.Caption, e.Button, e.Icon);
         }
 
         private void ShowSettingWindow(object? sender, ShowSettingWindowMessage e)
