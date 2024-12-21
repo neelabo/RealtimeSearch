@@ -42,7 +42,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
             {
                 new ExternalProgram(),
             };
-            WebSearchFormat = "https://www.google.co.jp/search?q=$(query)";
+            WebSearchFormat = "https://www.google.com/search?q=$(query)";
 
             Validate();
         }
