@@ -141,8 +141,8 @@
                                             <TextBlock Style="{StaticResource IconFont}" Text="&#xECC9;" />
                                         </Button>
                                         <StackPanel>
-                                            <TextBlock Text="{Binding Name}" FontWeight="Bold" />
-                                            <TextBlock Text="{Binding Program}" Foreground="Gray" />
+                                            <TextBlock Text="{Binding Name, Mode=OneWay}" FontWeight="Bold" />
+                                            <TextBlock Text="{Binding Program, Mode=OneWay}" Foreground="Gray" />
                                         </StackPanel>
                                     </DockPanel>
                                 </DataTemplate>

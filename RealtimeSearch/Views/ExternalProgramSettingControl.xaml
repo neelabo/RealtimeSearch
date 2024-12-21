@@ -80,7 +80,7 @@
 
             <DockPanel Margin="0,2">
                 <TextBlock MinWidth="80" Text="拡張子：" VerticalAlignment="Center" Margin="2"/>
-                <TextBox Text="{Binding Program.Extensions}" Margin="2" ToolTip="対応拡張子を登録します。例：&quot;bmp png jpg&quot;&#xa;定義されていない場合、全てのファイルが対象となります&#xa;この設定は「開く」で対応する外部アプリを決定するために使用されます"/>
+                <TextBox Text="{Binding Program.Extensions}" Margin="2" ToolTip="対応拡張子を登録します。例：&quot;.bmp .png .jpg&quot;&#xa;定義されていない場合、全てのファイルが対象となります&#xa;この設定は「開く」で対応する外部アプリを決定するために使用されます"/>
             </DockPanel>
 
             <CheckBox Margin="0,2" Content="パラメーターの複数ファイル展開" IsChecked="{Binding Program.IsMultiArgumentEnabled}" />

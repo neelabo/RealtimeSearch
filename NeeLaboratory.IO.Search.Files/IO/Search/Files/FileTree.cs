@@ -536,7 +536,7 @@ namespace NeeLaboratory.IO.Search.Files
                 CreateChildrenRecursive(node, directoryInfo, token);
             }
 
-            Validate();
+            //Validate();
         }
 
         private void RenameFile(string path, string oldPath, CancellationToken token)
@@ -572,7 +572,7 @@ namespace NeeLaboratory.IO.Search.Files
             // コンテンツ更新
             UpdateContent(node, null, true);
 
-            Validate();
+            //Validate();
         }
 
         private void RemoveFile(string path, CancellationToken token)
@@ -601,7 +601,7 @@ namespace NeeLaboratory.IO.Search.Files
                 DetachContent(n);
             }
 
-            Validate();
+            //Validate();
         }
 
         private void UpdateFile(string path, FileSystemInfo? info, CancellationToken token)

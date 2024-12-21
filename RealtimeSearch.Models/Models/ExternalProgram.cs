@@ -42,7 +42,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         private int _id;
         private ExternalProgramType _programType;
         private string _program = "";
-        private string _parameter = "";
+        private string _parameter = KeyFileQuote;
         private string _protocol = "";
         private string _extensions = "";
         private bool _isMultiArgumentEnabled;
@@ -86,8 +86,13 @@ namespace NeeLaboratory.RealtimeSearch.Models
         public string Program
         {
             get { return _program; }
-            set { SetProperty(ref _program, value.Trim()); }
-
+            set
+            {
+                if (SetProperty(ref _program, value.Trim()))
+                {
+                    RaisePropertyChanged(nameof(Name));
+                }
+            }
         }
 
         public string Parameter
@@ -97,9 +102,9 @@ namespace NeeLaboratory.RealtimeSearch.Models
             {
                 value ??= "";
                 var s = value.Trim();
-                if (!s.Contains("$(file)"))
+                if (!s.Contains(KeyFile))
                 {
-                    s = (s + " \"$(file)\"").Trim();
+                    s = (s + " " + KeyFileQuote).Trim();
                 }
                 _parameter = s;
                 RaisePropertyChanged();
@@ -117,9 +122,9 @@ namespace NeeLaboratory.RealtimeSearch.Models
             get { return _extensions; }
             set
             {
-                if (SetProperty(ref _extensions, value))
+                if (_extensions != value)
                 {
-                    CreateExtensionsList(_extensions);
+                    CreateExtensionsList(value);
                 }
             }
         }
@@ -146,6 +151,9 @@ namespace NeeLaboratory.RealtimeSearch.Models
             }
 
             _extensionsList = list;
+
+            _extensions = string.Join(' ', _extensionsList);
+            RaisePropertyChanged(nameof(Extensions));
         }
 
 
