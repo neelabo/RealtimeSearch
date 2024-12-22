@@ -70,7 +70,6 @@ namespace NeeLaboratory.RealtimeSearch.Views
         private readonly string _old = "";
         private string _new = "";
         private int _navigate;
-        private int _keyCount;
         private int _closing;
         private readonly Window _targetWindow;
         private Point _targetLocate;
@@ -214,12 +213,6 @@ namespace NeeLaboratory.RealtimeSearch.Views
 
         private void RenameTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            // 最初の方向入力に限りカーソル位置を固定する
-            if (_keyCount == 0 && (e.Key == Key.Up || e.Key == Key.Down || e.Key == Key.Left || e.Key == Key.Right))
-            {
-                this.RenameTextBox.Select(this.RenameTextBox.SelectionStart + this.RenameTextBox.SelectionLength, 0);
-                _keyCount++;
-            }
         }
 
         private void RenameTextBox_KeyDown(object sender, KeyEventArgs e)
