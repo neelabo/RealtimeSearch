@@ -32,6 +32,7 @@ namespace NeeLaboratory.RealtimeSearch.Clipboards
 
         private ClipboardListener? _clipboardListener;
         private readonly AppConfig _setting;
+        private string? _copyText;
 
 
         public ClipboardSearch(AppConfig setting)
@@ -63,6 +64,8 @@ namespace NeeLaboratory.RealtimeSearch.Clipboards
             //var obj = Clipboard.GetDataObject();
             //Debug.WriteLine($"Capture: {string.Join(',', obj.GetFormats())}");
 
+            if (!_setting.IsMonitorClipboard) return;
+
             // 自分のアプリからコピーした場合の変更は除外する
             nint activeWindow = NativeMethods.GetForegroundWindow();
             nint thisWindow = new WindowInteropHelper(window).Handle;
@@ -72,50 +75,54 @@ namespace NeeLaboratory.RealtimeSearch.Clipboards
                 return;
             }
 
-            // うまく動作しない時があるのでいったん無効化
-#if false
-            // Ctrl+V が押されているときはペースト動作に伴うクリップボード変更通知と判断し除外する
-            if (Keyboard.Modifiers == ModifierKeys.Control && (Keyboard.GetKeyStates(Key.V) & (KeyStates.Down | KeyStates.Toggled)) != 0)
-            {
-                Debug.WriteLine("paste action maybe.");
-                return;
-            }
-#endif
-
             // どうにも例外(CLIPBRD_E_CANT_OPEN)が発生してしまうのでリトライさせることにした
             for (int i = 0; i < 10; ++i)
             {
                 try
                 {
-                    if (_setting.IsMonitorClipboard)
+                    // text
+                    if (Clipboard.ContainsText())
                     {
-                        // text
-                        if (Clipboard.ContainsText())
+                        string text = Clipboard.GetText();
+
+                        // 自アプリからコピーしたテキストは無視す
+                        if (_copyText == text)
                         {
-                            string text = Clipboard.GetText();
-
-                            // 即時検索
-                            ClipboardChanged?.Invoke(this, new ClipboardChangedEventArgs()
-                            {
-                                Keyword = new Regex(@"\s+").Replace(text, " ").Trim()
-                            });
+                            Debug.WriteLine($"Clipboard: same text. {text}");
+                            return;
                         }
-                        // file
-                        else if (Clipboard.ContainsFileDropList())
+                        else
                         {
-                            var files = Clipboard.GetFileDropList();
-                            var file = files[0];
-
-                            var name = System.IO.Directory.Exists(file)
-                                ? System.IO.Path.GetFileName(file)
-                                : System.IO.Path.GetFileNameWithoutExtension(file);
-
-                            // 即時検索
-                            ClipboardChanged?.Invoke(this, new ClipboardChangedEventArgs()
-                            {
-                                Keyword = name ?? ""
-                            });
+                            _copyText = null;
                         }
+
+                        // 即時検索
+                        ClipboardChanged?.Invoke(this, new ClipboardChangedEventArgs()
+                        {
+                            Keyword = new Regex(@"\s+").Replace(text, " ").Trim()
+                        });
+                    }
+                    // file
+                    else if (Clipboard.ContainsFileDropList())
+                    {
+                        _copyText = null;
+
+                        var files = Clipboard.GetFileDropList();
+                        var file = files[0];
+
+                        var name = System.IO.Directory.Exists(file)
+                            ? System.IO.Path.GetFileName(file)
+                            : System.IO.Path.GetFileNameWithoutExtension(file);
+
+                        // 即時検索
+                        ClipboardChanged?.Invoke(this, new ClipboardChangedEventArgs()
+                        {
+                            Keyword = name ?? ""
+                        });
+                    }
+                    else
+                    {
+                        _copyText = null;
                     }
                     return;
                 }
@@ -127,5 +134,25 @@ namespace NeeLaboratory.RealtimeSearch.Clipboards
             }
             throw new ApplicationException("クリップボードの参照に失敗しました。");
         }
+
+        public void ResetClipboardText()
+        {
+            _copyText = null;
+        }
+
+        public void SetTextToClipboard(string text)
+        {
+            _copyText = text;
+            Clipboard.SetText(text);
+        }
+
+        public void SetFileDropListToClipboard(string[] files)
+        {
+            _copyText = null;
+            var fileDropList = new System.Collections.Specialized.StringCollection();
+            fileDropList.AddRange(files);
+            Clipboard.SetFileDropList(fileDropList);
+        }
+
     }
 }

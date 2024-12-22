@@ -21,15 +21,14 @@ namespace NeeLaboratory.RealtimeSearch.Models
         private readonly AppConfig _appConfig;
         private string _inputKeyword = "";
         private readonly DispatcherDelayValue<string> _keyword;
-        private Search _search;
+        private readonly Search _search;
         private readonly WebSearch _webSearch;
         private readonly History _history;
         private string _resultMessage = "";
         private string _countMessage = "";
         private readonly DispatcherTimer _timer;
-
-
         private ClipboardSearch? _clipboardSearch;
+
 
         public MainModel(AppConfig appConfig)
         {
@@ -129,6 +128,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
         public async Task SearchAsync(bool isForce)
         {
+            _clipboardSearch?.ResetClipboardText();
             await _search.SearchAsync(_keyword.Value.Trim(), isForce);
         }
 
@@ -182,7 +182,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
         public void CopyFilesToClipboard(List<FileContent> files)
         {
-            ClipboardTools.SetFileDropList(files.Select(e => e.Path).ToArray());
+            _clipboardSearch?.SetFileDropListToClipboard(files.Select(e => e.Path).ToArray());
         }
 
         public void CopyNameToClipboard(FileContent file)
@@ -190,13 +190,13 @@ namespace NeeLaboratory.RealtimeSearch.Models
             var text = file.IsDirectory
                 ? System.IO.Path.GetFileName(file.Path)
                 : System.IO.Path.GetFileNameWithoutExtension(file.Path);
-            ClipboardTools.SetText(text);
+            _clipboardSearch?.SetTextToClipboard(text);
         }
 
         public void CopyNameToClipboard(List<FileContent> files)
         {
             var text = string.Join(Environment.NewLine, files.Select(e => e.IsDirectory ? System.IO.Path.GetFileName(e.Path) : System.IO.Path.GetFileNameWithoutExtension(e.Path)));
-            ClipboardTools.SetText(text);
+            _clipboardSearch?.SetTextToClipboard(text);
         }
 
         public void OpenPlace(List<FileContent> items)
