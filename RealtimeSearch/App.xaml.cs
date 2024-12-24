@@ -1,22 +1,6 @@
-﻿// Copyright (c) 2015-2016 Mitsuhiro Ito (nee)
-//
-// This software is released under the MIT License.
-// http://opensource.org/licenses/mit-license.php
-
-using NeeLaboratory.IO.Search.Diagnostics;
-using NeeLaboratory.RealtimeSearch.Models;
-using NeeLaboratory.RealtimeSearch.Services;
+﻿using NeeLaboratory.RealtimeSearch.Models;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Threading;
 
 
 namespace NeeLaboratory.RealtimeSearch
@@ -37,7 +21,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             try
             {
-                _appModel = new AppModel(new AppSetting());
+                _appModel = new AppModel(AppSettings.Current);
                 AppModel.Instance = _appModel;
 
 #if false
@@ -81,10 +65,5 @@ namespace NeeLaboratory.RealtimeSearch
                 throw;
             }
         }
-    }
-
-    public class AppSetting : IAppSetting
-    {
-        public string? this[string key] => ConfigurationManager.AppSettings.Get(key);
     }
 }

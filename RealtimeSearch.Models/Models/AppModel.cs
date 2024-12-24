@@ -32,7 +32,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         private AppConfig _appConfig = new AppConfig();
 
 
-        public AppModel(IAppSetting appSetting)
+        public AppModel(IAppSettings appSetting)
         {
             _appInfo = new ApplicationInfoService(appSetting);
             _appInfo.Initialize();

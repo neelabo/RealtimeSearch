@@ -17,10 +17,10 @@ namespace NeeLaboratory.RealtimeSearch.Services
     /// </summary>
     public class ApplicationInfoService
     {
-        private IAppSetting _appSetting;
+        private IAppSettings _appSetting;
 
 
-        public ApplicationInfoService(IAppSetting appSetting)
+        public ApplicationInfoService(IAppSettings appSetting)
         {
             _appSetting = appSetting;
         }
@@ -171,7 +171,7 @@ namespace NeeLaboratory.RealtimeSearch.Services
             {
                 if (_isUseLocalApplicationDataFolder == null)
                 {
-                    _isUseLocalApplicationDataFolder = _appSetting["UseLocalApplicationData"] == "True";
+                    _isUseLocalApplicationDataFolder = _appSetting.UseLocalApplicationData;
                 }
                 return (bool)_isUseLocalApplicationDataFolder;
             }
@@ -185,7 +185,7 @@ namespace NeeLaboratory.RealtimeSearch.Services
             {
                 if (_packageType == null)
                 {
-                    _packageType = _appSetting["PackageType"] ?? "";
+                    _packageType = _appSetting.PackageType ?? "";
                     if (_packageType != ".msi") _packageType = ".zip";
                 }
                 return _packageType;
@@ -255,8 +255,4 @@ namespace NeeLaboratory.RealtimeSearch.Services
 #endif
     }
 
-    public interface IAppSetting
-    {
-        string? this[string key] { get; }
-    }
 }

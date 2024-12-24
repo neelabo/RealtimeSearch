@@ -1,9 +1,8 @@
-﻿using System;
+﻿using NeeLaboratory.Text.Json;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace NeeLaboratory.RealtimeSearch.Services
 {
@@ -48,13 +47,13 @@ namespace NeeLaboratory.RealtimeSearch.Services
 
         private static T? Read<T>(ReadOnlySpan<byte> json)
         {
-            return JsonSerializer.Deserialize<T>(json, CreateJsonSerializerOptions());
+            return JsonSerializer.Deserialize<T>(json, JsonSerializerTools.GetSerializerOptions());
         }
 
 
         public void Write<T>(string folderPath, string fileName, T content, bool isCreateBackup)
         {
-            var json = JsonSerializer.SerializeToUtf8Bytes(content, CreateJsonSerializerOptions());
+            var json = JsonSerializer.SerializeToUtf8Bytes(content, JsonSerializerTools.GetSerializerOptions());
 
             lock (_lock)
             {
@@ -77,23 +76,6 @@ namespace NeeLaboratory.RealtimeSearch.Services
                     File.WriteAllBytes(destinationPath, json);
                 }
             }
-        }
-
-
-        private static JsonSerializerOptions CreateJsonSerializerOptions()
-        {
-            var options = new JsonSerializerOptions
-            {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = true,
-                IgnoreReadOnlyProperties = true,
-                ReadCommentHandling = JsonCommentHandling.Skip,
-                AllowTrailingCommas = true
-            };
-
-            options.Converters.Add(new JsonStringEnumConverter());
-
-            return options;
         }
     }
 }
