@@ -1,0 +1,70 @@
+﻿<UserControl x:Class="NeeLaboratory.RealtimeSearch.Views.SettingExternalAppControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:NeeLaboratory.RealtimeSearch.Views"
+             xmlns:converters="clr-namespace:NeeLaboratory.RealtimeSearch.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" Null="Hidden"/>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" False="Hidden"/>
+    </UserControl.Resources>
+
+    <Grid Margin="8">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel x:Name="ExternalProgramPanel" Grid.Row="0">
+            <DockPanel.CommandBindings>
+                <CommandBinding Command="{x:Static local:SettingExternalAppControl.AddExternalProgramCommand}" Executed="AddExternalProgramCommand_Executed"/>
+            </DockPanel.CommandBindings>
+
+            <StackPanel  DockPanel.Dock="Top" Orientation="Horizontal">
+                <Button Style="{StaticResource IconButton}" Command="{x:Static local:SettingExternalAppControl.AddExternalProgramCommand}" Width="32" Height="24" >
+                    <TextBlock Style="{StaticResource IconFont}" Text="&#xECC8;" />
+                </Button>
+                <TextBlock Text="外部アプリ" VerticalAlignment="Center" Margin="2,0"/>
+            </StackPanel>
+
+            <ListBox x:Name="ExternalProgramListBox" ItemsSource="{Binding CollectionViewSource.View}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     Margin="0,2"
+                     SelectedItem="{Binding SelectedItem}">
+                <ListBox.CommandBindings>
+                    <CommandBinding Command="{x:Static local:SettingExternalAppControl.DeleteExternalProgramCommand}" Executed="DeleteExternalProgramCommand_Executed"/>
+                </ListBox.CommandBindings>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="32" Height="24"
+                                                 Command="{x:Static local:SettingExternalAppControl.DeleteExternalProgramCommand}" CommandParameter="{Binding}"
+                                                 Visibility="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <TextBlock Style="{StaticResource IconFont}" Text="&#xECC9;" />
+                            </Button>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Name, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <!--
+                            <StackPanel>
+                                <TextBlock Text="{Binding Name, Mode=OneWay}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding Program, Mode=OneWay}" Foreground="Gray" TextTrimming="CharacterEllipsis"  />
+                            </StackPanel>
+                            -->
+                        </DockPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+        </DockPanel>
+
+        <local:ExternalProgramSettingControl Grid.Row="1" Margin="0"
+                                                         DataContext="{Binding ElementName=ExternalProgramListBox, Path=SelectedItem}"
+                                                         Visibility="{Binding ElementName=ExternalProgramListBox, Path=SelectedItem, Converter={StaticResource NullToVisibilityConverter}}"
+                                                         Header="{Binding Name}" Program="{Binding}" />
+
+    </Grid>
+</UserControl>
