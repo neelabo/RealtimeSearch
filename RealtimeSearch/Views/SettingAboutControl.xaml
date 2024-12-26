@@ -21,11 +21,11 @@
             </StackPanel>
 
             <TextBlock Margin="0,8">
-                <Hyperlink NavigateUri="License" RequestNavigate="Hyperlink_RequestNavigate" >ライセンス情報</Hyperlink>
+                <Hyperlink NavigateUri="ReadMe.html" RequestNavigate="Hyperlink_RequestNavigate" >ライセンス情報</Hyperlink>
             </TextBlock>
             
             <TextBlock Margin="0,8">
-                <Hyperlink NavigateUri="SearchOptions" RequestNavigate="Hyperlink_RequestNavigate">検索オプションについて</Hyperlink>
+                <Hyperlink NavigateUri="SearchOption.html" RequestNavigate="Hyperlink_RequestNavigate">検索オプション ヘルプ</Hyperlink>
             </TextBlock>
 
         </StackPanel>

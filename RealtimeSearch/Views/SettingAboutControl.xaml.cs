@@ -30,24 +30,20 @@ namespace NeeLaboratory.RealtimeSearch.Views
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             Debug.WriteLine($"{e.Uri.OriginalString}");
-
-            switch (e.Uri.OriginalString)
-            {
-                case "License":
-                    OpenManual(0);
-                    break;
-                case "SearchOptions":
-                    OpenManual(1);
-                    break;
-                default:
-                    throw new InvalidOperationException();
-            }
+            OpenManual(e.Uri.OriginalString);
         }
 
-        private void OpenManual(int id)
+        private void OpenManual(string fileName)
         {
-            // help command
-            var readmeUri = "file://" + AppModel.AppInfo.AssemblyLocation.Replace('\\', '/').TrimEnd('/') + $"/README.html";
+            // TODO: check culture
+            if (true)
+            {
+                var name = System.IO.Path.GetFileNameWithoutExtension(fileName);
+                var ext = System.IO.Path.GetExtension(fileName);
+                fileName = name + ".ja-jp" + ext;
+            }
+
+            var readmeUri = System.IO.Path.Combine(AppModel.AppInfo.AssemblyLocation, fileName);
 
             try
             {
@@ -56,7 +52,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show( $"{ex.Message}", "ヘルプを開けませんでした", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.Message, "", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
