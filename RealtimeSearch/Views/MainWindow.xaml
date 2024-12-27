@@ -5,6 +5,7 @@
     xmlns:converters="clr-namespace:NeeLaboratory.RealtimeSearch.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:properties="clr-namespace:NeeLaboratory.RealtimeSearch.TextResource"
     mc:Ignorable="d"
     x:Class="NeeLaboratory.RealtimeSearch.Views.MainWindow"
     Title="{Binding WindowTitle}"
@@ -98,7 +99,7 @@
 
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4" KeyboardNavigation.TabNavigation="Local">
 
-                <Button DockPanel.Dock="Right" Style="{StaticResource ToolBarButton}" Command="{Binding ShowSettingCommand}" ToolTip="設定" Margin="4,0,2,0" TabIndex="4">
+                <Button DockPanel.Dock="Right" Style="{StaticResource ToolBarButton}" Command="{Binding ShowSettingCommand}" ToolTip="{properties:TextBinding Button.Settings}" Margin="4,0,2,0" TabIndex="4">
                     <TextBlock Style="{StaticResource ToolBarIconFont}" Text="&#xE713;" />
                 </Button>
 
@@ -188,7 +189,7 @@
 
 
             <Grid>
-                <ListView x:Name="ResultListView" Foreground="Black" ButtonBase.Click="GridViewColumnHeader_ClickHandler"
+                <ListView x:Name="ResultListView" Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" ButtonBase.Click="GridViewColumnHeader_ClickHandler"
                           BorderThickness="0" TabIndex="2"
                           ItemsSource="{Binding Search.SearchResult.Items}"
                           SelectedItem="{Binding SelectedItem}"
@@ -254,14 +255,16 @@
                     <ListView.View>
                         <GridView ColumnHeaderTemplate="{StaticResource HeaderTemplateNormal}">
 
-                            <GridViewColumn Width="280" CellTemplate="{StaticResource ItemFileNameTemplate}">
-                                <GridViewColumnHeader Content="名前" Tag="."/>
+                            <GridViewColumn Width="280" CellTemplate="{StaticResource ItemFileNameTemplate}" >
+                                <GridViewColumnHeader Content="{properties:TextBinding Item.Name}" Tag="."/>
                             </GridViewColumn>
 
-                            <GridViewColumn Header="更新日時" Width="96" DisplayMemberBinding="{Binding LastWriteTime, StringFormat=yyyy/MM/dd HH:mm}" />
+                            <GridViewColumn Width="96" DisplayMemberBinding="{Binding LastWriteTime, StringFormat=yyyy/MM/dd HH:mm}" >
+                                <GridViewColumnHeader Content="{properties:TextBinding Item.LastWriteTime}" Tag="LastWriteTime" />
+                            </GridViewColumn>
 
                             <GridViewColumn Width="96" >
-                                <GridViewColumnHeader Content="種類" Tag="Extension" />
+                                <GridViewColumnHeader Content="{properties:TextBinding Item.Type}" Tag="Extension" />
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Converter={StaticResource FileInfoToTypeNameConverter}}" />
@@ -270,10 +273,12 @@
                             </GridViewColumn>
 
                             <GridViewColumn Width="96" CellTemplate="{StaticResource ItemSizeTemplate}" >
-                                <GridViewColumnHeader Content="サイズ" Tag="Size" />
+                                <GridViewColumnHeader Content="{properties:TextBinding Item.Size}" Tag="Size" />
                             </GridViewColumn>
 
-                            <GridViewColumn Header="フォルダー" Width="96" DisplayMemberBinding="{Binding DirectoryName}" />
+                            <GridViewColumn Width="96" DisplayMemberBinding="{Binding DirectoryName}" >
+                                <GridViewColumnHeader Content="{properties:TextBinding Item.Folder}" Tag="Folder"/>
+                            </GridViewColumn>
 
                         </GridView>
                     </ListView.View>
@@ -322,7 +327,7 @@
                     Visibility="{Binding Search.IsBusy, Converter={StaticResource BoolToVisibility}}">
                     <StackPanel Orientation="Horizontal" Margin="10">
                         <Grid Width="34"/>
-                        <TextBlock x:Name="textBlock_Busy" Text="処理中です" Foreground="Gray"/>
+                        <TextBlock x:Name="textBlock_Busy" Text="{properties:TextBinding Message.Processing}" Foreground="Gray"/>
                         <TextBlock x:Name="BusyText" Margin="2,0" Width="30" Foreground="Gray">
                             <TextBlock.Triggers>
                                 <EventTrigger RoutedEvent="TextBlock.Loaded">

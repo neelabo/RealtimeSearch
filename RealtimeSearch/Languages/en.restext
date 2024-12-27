@@ -1,0 +1,37 @@
+SettingWindow.Title=Settings
+Setting.General=General
+Setting.SearchArea=Search area
+Setting.ExternalApp=External apps
+Setting.Help=Help
+
+Item.Name=Name
+Item.LastWriteTime=Date modified
+Item.Type=Type
+Item.Size=Size
+Item.Folder=Folder
+
+Button.Refresh=Refresh
+Button.WebSearch=Web Search
+Button.Settings=Settings
+
+Status.Items:1={0} item
+Status.Items={0} items
+
+Status.Searching=Searching ...
+Status.Indexing={0} indexing ...
+Status.RegexError=Regexp error.
+Status.DateTimeError=Date and time designation is incorrect.
+Status.FlagError=Flag is invalid.
+Status.OptionError=Option is invalid.
+
+Message.NoMatch=There are no items matching the criteria.
+Message.Processing=Processing
+
+Menu.Open=_Open
+Menu.OpenDefault=Open in defaul_t app
+Menu.OpenFileLocation=Open file locat_ion
+Menu.Delete=_Delete
+Menu.Rename=Rena_me
+Menu.Copy=_Copy
+Menu.CopyName=Copy _as name
+Menu.Property=P_roperty

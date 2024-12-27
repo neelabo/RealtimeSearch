@@ -1,0 +1,36 @@
+SettingWindow.Title=設定
+Setting.General=一般
+Setting.SearchArea=検索範囲
+Setting.ExternalApp=外部アプリ
+Setting.Help=ヘルプ
+
+Item.Name=名前
+Item.LastWriteTime=更新日時
+Item.Type=種類
+Item.Size=サイズ
+Item.Folder=フォルダー
+
+Button.Refresh=更新
+Button.WebSearch=Web 検索
+Button.Settings=設定
+
+Status.Items={0} 個の項目
+Status.Searching=検索中 ...
+Status.Indexing={0} 個のインデックス作成中 ...
+Status.RegexError=正規表現エラー
+Status.DateTimeError=日時指定が不正です
+Status.FlagError=フラグ指定が不正です
+Status.OptionError=不正なオプションです
+
+Message.NoMatch=条件に一致する項目はありません。
+Message.Processing=処理中
+
+Menu.Open=開く(_O)
+Menu.OpenDefault=既定のアプリで開く(_T)
+Menu.OpenFileLocation=ファイルの場所を開く(_I)
+Menu.Delete=削除(_D)
+Menu.Rename=名前の変更(_M)
+Menu.Copy=コピー(_C)
+Menu.CopyName=名前をコピー(_A)
+Menu.Property=プロパティ(_R)
+

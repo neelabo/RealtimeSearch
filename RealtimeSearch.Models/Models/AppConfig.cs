@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -28,6 +29,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
     public class AppConfig : BindableBase, ISearchContext
     {
+        private string _language = CultureInfo.CurrentCulture.Name;
         private bool _isMonitorClipboard;
         private bool _isTopmost;
         private bool _isDetailVisible;
@@ -50,16 +52,23 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
         public ObservableCollection<FileArea> SearchAreas { get; set; }
 
+
+        public string Language
+        {
+            get { return _language; }
+            set { SetProperty(ref _language, value); }
+        }
+
         public bool IsMonitorClipboard
         {
             get { return _isMonitorClipboard; }
-            set { _isMonitorClipboard = value; RaisePropertyChanged(); }
+            set { SetProperty(ref _isMonitorClipboard, value); }
         }
 
         public bool IsTopmost
         {
             get { return _isTopmost; }
-            set { _isTopmost = value; RaisePropertyChanged(); }
+            set { SetProperty(ref _isTopmost, value); }
         }
 
         public bool AllowFolder
@@ -71,7 +80,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         public bool IsDetailVisible
         {
             get { return _isDetailVisible; }
-            set { if (_isDetailVisible != value) { _isDetailVisible = value; RaisePropertyChanged(); } }
+            set { SetProperty(ref _isDetailVisible, value); }
         }
 
         public string WebSearchFormat { set; get; }

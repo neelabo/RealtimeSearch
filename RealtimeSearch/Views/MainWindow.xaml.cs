@@ -1,5 +1,6 @@
 ﻿using NeeLaboratory.IO.Search.Files;
 using NeeLaboratory.RealtimeSearch.Models;
+using NeeLaboratory.RealtimeSearch.TextResource;
 using NeeLaboratory.RealtimeSearch.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -385,7 +386,8 @@ namespace NeeLaboratory.RealtimeSearch.Views
         // カラムヘッダ文字列取得
         private static string? GetColumnHeaderText(GridViewColumn column)
         {
-            return (column.Header as string) ?? (column.Header as GridViewColumnHeader)?.Content as string;
+            return (column.Header as GridViewColumnHeader)?.Tag as string;
+            //return (column.Header as string) ?? (column.Header as GridViewColumnHeader)?.Content as string;
         }
 
         // リストビューカラム状態保存
@@ -444,33 +446,34 @@ namespace NeeLaboratory.RealtimeSearch.Views
             var selectedItems = this.ResultListView.SelectedItems;
 
             contextMenu.Items.Clear();
-            contextMenu.Items.Add(CreateMenuItem("開く(_O)", _vm.OpenExternalProgramCommand, selectedItems, new KeyGesture(Key.Enter)));
-            contextMenu.Items.Add(CreateMenuItem("既定のアプリで開く", _vm.OpenDefaultCommand, selectedItems, new KeyGesture(Key.Enter, ModifierKeys.Control)));
+            contextMenu.Items.Add(CreateMenuItem(ResourceService.GetString("@Menu.Open"), _vm.OpenExternalProgramCommand, selectedItems, new KeyGesture(Key.Enter)));
+            contextMenu.Items.Add(CreateMenuItem(ResourceService.GetString("@Menu.OpenDefault"), _vm.OpenDefaultCommand, selectedItems, new KeyGesture(Key.Enter, ModifierKeys.Control)));
             contextMenu.Items.Add(new Separator());
             for (int i = 0; i < _vm.Programs.Count; i++)
             {
                 var program = _vm.Programs[i];
+                var header = MenuItemTools.IntegerToAccessKey(i + 1) + " " + MenuItemTools.EscapeMenuItemString(program.Name);
                 if (i < 9)
                 {
-                    contextMenu.Items.Add(CreateMenuItem(program.Name, _vm.OpenSelectedExternalProgramCommand, new OpenSelectedExternalProgramArgs(selectedItems, i + 1), new KeyGesture(Key.D1 + i, ModifierKeys.Control)));
+                    contextMenu.Items.Add(CreateMenuItem(header, _vm.OpenSelectedExternalProgramCommand, new OpenSelectedExternalProgramArgs(selectedItems, i + 1), new KeyGesture(Key.D1 + i, ModifierKeys.Control)));
                 }
                 else
                 {
-                    contextMenu.Items.Add(CreateMenuItem(program.Name, _vm.OpenSelectedExternalProgramCommand, new OpenSelectedExternalProgramArgs(selectedItems, i + 1)));
+                    contextMenu.Items.Add(CreateMenuItem(header, _vm.OpenSelectedExternalProgramCommand, new OpenSelectedExternalProgramArgs(selectedItems, i + 1)));
                 }
             }
 
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("ファイルの場所を開く(_I)", _vm.OpenPlaceCommand, selectedItems));
+            contextMenu.Items.Add(CreateMenuItem(ResourceService.GetString("@Menu.OpenFileLocation"), _vm.OpenPlaceCommand, selectedItems));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("ファイルをコピーする(_C)", _vm.CopyCommand, selectedItems, new KeyGesture(Key.C, ModifierKeys.Control)));
-            contextMenu.Items.Add(CreateMenuItem("名前をコピーする", _vm.CopyNameCommand, selectedItems, new KeyGesture(Key.C, ModifierKeys.Control | ModifierKeys.Shift)));
+            contextMenu.Items.Add(CreateMenuItem(ResourceService.GetString("@Menu.Copy"), _vm.CopyCommand, selectedItems, new KeyGesture(Key.C, ModifierKeys.Control)));
+            contextMenu.Items.Add(CreateMenuItem(ResourceService.GetString("@Menu.CopyName"), _vm.CopyNameCommand, selectedItems, new KeyGesture(Key.C, ModifierKeys.Control | ModifierKeys.Shift)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("削除(_D)", _vm.DeleteCommand, selectedItems, new KeyGesture(Key.Delete)));
+            contextMenu.Items.Add(CreateMenuItem(ResourceService.GetString("@Menu.Delete"), _vm.DeleteCommand, selectedItems, new KeyGesture(Key.Delete)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("名前の変更(_M)", _vm.RenameCommand, null, new KeyGesture(Key.F2)));
+            contextMenu.Items.Add(CreateMenuItem(ResourceService.GetString("@Menu.Rename"), _vm.RenameCommand, null, new KeyGesture(Key.F2)));
             contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("プロパティ(_R)", _vm.ShowPropertyCommand));
+            contextMenu.Items.Add(CreateMenuItem(ResourceService.GetString("@Menu.Property"), _vm.ShowPropertyCommand));
         }
 
         private MenuItem CreateMenuItem(string header, ICommand command, object? commandParameter = null, KeyGesture? keyGesture = null)

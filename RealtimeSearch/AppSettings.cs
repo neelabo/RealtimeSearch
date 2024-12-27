@@ -32,9 +32,9 @@ namespace NeeLaboratory.RealtimeSearch
         /// パッケージタイプ
         /// </summary>
         /// <remarks>
-        /// Dev, Canary, Beta, Zip, Msi, Appx
+        /// .dev, .canary, .beta, .zip, .msi, .appx
         /// </remarks>
-        public string PackageType { get; set; } = "Dev";
+        public string PackageType { get; set; } = ".dev";
 
         /// <summary>
         /// 自己完結型アプリか

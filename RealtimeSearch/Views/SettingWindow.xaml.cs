@@ -1,4 +1,5 @@
 ﻿using NeeLaboratory.RealtimeSearch.Models;
+using NeeLaboratory.RealtimeSearch.TextResource;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -34,10 +35,10 @@ namespace NeeLaboratory.RealtimeSearch.Views
         {
             this.NavicationView.ItemsSource = new List<NavigationItem>
             {
-                new NavigationItem("一般", "\uE713", new SettingGeneralControl(setting)),
-                new NavigationItem("検索範囲", "\uE8B7", new SettingSearchAreaControl(setting)),
-                new NavigationItem("外部アプリ", "\uE8A9", new SettingExternalAppControl(setting)),
-                new NavigationItem("ヘルプ", "\uE9CE", new SettingAboutControl()),
+                new NavigationItem(ResourceService.GetString("@Setting.General"), "\uE713", new SettingGeneralControl(setting)),
+                new NavigationItem(ResourceService.GetString("@Setting.SearchArea"), "\uE8B7", new SettingSearchAreaControl(setting)),
+                new NavigationItem(ResourceService.GetString("@Setting.ExternalApp"), "\uE8A9", new SettingExternalAppControl(setting)),
+                new NavigationItem(ResourceService.GetString("@Setting.Help"), "\uE9CE", new SettingAboutControl()),
             };
 
             this.NavicationView.SelectedIndex = index;

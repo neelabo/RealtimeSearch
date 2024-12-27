@@ -17,10 +17,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Languages\en.restext" />
+    <None Remove="Languages\ja.restext" />
     <None Remove="Resources\App.ico" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Languages\en.restext">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Languages\ja.restext">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="RealtimeSearch.settings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

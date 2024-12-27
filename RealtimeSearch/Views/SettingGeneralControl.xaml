@@ -15,8 +15,15 @@
 
     <StackPanel Margin="8">
 
+        <TextBlock Text="言語"/>
+        <StackPanel Style="{StaticResource Phrase}">
+            <ComboBox ItemsSource="{Binding CultureList}" DisplayMemberPath="NativeName" SelectedValuePath="Name" SelectedValue="{Binding Setting.Language}" MinWidth="300" HorizontalAlignment="Left" />
+        </StackPanel>
+
         <TextBlock Text="設定"/>
         <StackPanel Style="{StaticResource Phrase}">
+
+
             <CheckBox Margin="2" IsChecked="{Binding Setting.AllowFolder}" VerticalAlignment="Center" Content="フォルダーを含める"/>
             <CheckBox Margin="2" IsChecked="{Binding Setting.IsMonitorClipboard}" VerticalAlignment="Center" Content="クリップボードを監視" ToolTip="クリップボードを監視し、コピーされたテキストで即座に検索を開始します"/>
             <CheckBox Margin="2" IsChecked="{Binding Setting.IsTopmost}" VerticalAlignment="Center" Content="常に手前に表示"/>

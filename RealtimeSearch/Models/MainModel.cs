@@ -1,6 +1,8 @@
 ﻿using NeeLaboratory.Generators;
 using NeeLaboratory.IO.Search.Files;
 using NeeLaboratory.RealtimeSearch.Clipboards;
+using NeeLaboratory.RealtimeSearch.TextResource;
+using NeeLaboratory.Resources;
 using NeeLaboratory.Threading;
 using NeeLaboratory.Windows.Input;
 using System;
@@ -157,8 +159,8 @@ namespace NeeLaboratory.RealtimeSearch.Models
             SearchResultChanged?.Invoke(sender, EventArgs.Empty);
 
             var count = _search.SearchResult?.Items.Count ?? 0;
-            CountMessage = $"{count:#,0} 個の項目";
-            ResultMessage = count == 0 ? $"条件に一致する項目はありません。" : "";
+            CountMessage = TextResources.GetFormatString("Status.Items", count);
+            ResultMessage = count == 0 ? TextResources.GetString("Message.NoMatch") : "";
         }
 
         public void StopClipboardWatch()

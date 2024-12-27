@@ -1,5 +1,7 @@
 ﻿using NeeLaboratory.RealtimeSearch.Models;
+using NeeLaboratory.RealtimeSearch.TextResource;
 using System;
+using System.Globalization;
 using System.Windows;
 
 
@@ -24,6 +26,7 @@ namespace NeeLaboratory.RealtimeSearch
                 _appModel = new AppModel(AppSettings.Current);
                 AppModel.Instance = _appModel;
 
+                InitializeTextResource();
 #if false
                 // logger
                 //var sw = new StreamWriter("TraceLog.txt");
@@ -64,6 +67,26 @@ namespace NeeLaboratory.RealtimeSearch
                 MessageBox.Show(ex.Message, AppModel.ApplicationName, MessageBoxButton.OK, MessageBoxImage.Error);
                 throw;
             }
+        }
+
+
+        /// <summary>
+        /// 言語リソース初期化
+        /// </summary>
+        private void InitializeTextResource()
+        {
+            CultureInfo culture;
+            try
+            {
+                culture = CultureInfo.GetCultureInfo(AppModel.AppConfig.Language);
+            }
+            catch (CultureNotFoundException)
+            {
+                culture = CultureInfo.CurrentCulture;
+            }
+            TextResources.Initialize(culture);
+            AppModel.AppConfig.Language = TextResources.Culture.Name;
+            //InputGestureDisplayString.Initialize(TextResources.Resource);
         }
     }
 }
