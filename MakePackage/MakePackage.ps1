@@ -293,7 +293,7 @@ function New-Readme($packageDir, $culture, $target)
 	Copy-Item "$readmeSource\Canary.md" $readmeDir
 	Copy-Item "$readmeSource\Environment.md" $readmeDir
 	Copy-Item "$readmeSource\Contact.md" $readmeDir
-	Copy-Item "$readmeSource\SearchOption.md" $readmeDir
+	Copy-Item "$readmeSource\SearchOptions.md" $readmeDir
 
 	Copy-Item "$solutionDir\LICENSE.md" $readmeDir
 	Copy-Item "$solutionDir\LICENSE.ja-jp.md" $readmeDir
@@ -324,11 +324,11 @@ function New-Readme($packageDir, $culture, $target)
 	Replace-Content "$readmeDir\Contact.md" "<VERSION/>" "$postfix"
 	Replace-Content "$readmeDir\ChangeLog.md" "<VERSION/>" "$postfix"
 
-	$readmeHtml = "ReadMe.html"
+	$readmeHtml = "README.html"
 
 	if (-not ($culture -eq "en-us"))
 	{
-		$readmeHtml = "ReadMe.$culture.html"
+		$readmeHtml = "README.$culture.html"
 	}
 
 	$inputs = @()
@@ -362,16 +362,16 @@ function New-Readme($packageDir, $culture, $target)
 	}
 
 
-	$searchOptionHtml = "SearchOption.html"
-	$searchOptionTitle = "$product Search Option"
+	$searchOptionHtml = "SearchOptions.html"
+	$searchOptionTitle = "$product Search Options"
 	if (-not ($culture -eq "en-us"))
 	{
-		$searchOptionHtml = "SearchOption.$culture.html"
+		$searchOptionHtml = "SearchOptions.$culture.html"
 		$searchOptionTitle = "$product 検索オプション"
 	}
 
 	$searchOptionInputs = @()
-	$searchOptionInputs += "$readmeDir\SearchOption.md"
+	$searchOptionInputs += "$readmeDir\SearchOptions.md"
 	$searchOptionOutput = "$packageDir\$searchOptionHtml"
 
 	pandoc -s -t html5 -o $searchOptionOutput --metadata title="$searchOptionTitle" -H $css $searchOptionInputs

@@ -1,33 +1,34 @@
-## 動作環境
+## Environment
 
   * Windows 10, 64bit
 
-## インストール・アンインストール方法
+## How to install/uninstall
 
-### ZIP版
+### ZIP version
 
 - RealtimeSearch4.0.zip
 
-  インストール不要です。ZIPを展開し、そのまま `RealtimeSearch.exe` を起動してください。  
-  アンインストールはフォルダごと削除するだけです。
+  No installation required, just extract the ZIP and run `RealtimeSearch.exe`.  
+  To uninstall, simply delete the entire folder.
 
-### ZIP版  (フレームワーク依存)
+### ZIP version  (framework dependent)
 
 - RealtimeSearch4.0-fd.zip
 
-  機能はZIP版と同じですが、動作させるために “.NET 9.0 Desktop Runtime - Windows x64” のインストールが必要になります。 起動時のメッセージに従って Microsoft のページから “.NET 9.0 Desktop Runtime - Windows x64” をダウンロードしてインストールしてください。
+  Same as the ZIP version.
+  "NET 9.0 Desktop Runtime - Windows x64” is required to run the software. Follow the startup message to download and install the software from the Microsoft page.
 
-### インストーラー版
+### Installer version
 
 - RealtimeSearch4.0.msi
 
-  MSIインストーラーを実行し、その指示に従ってインストールしてください。
-  アンインストールもOSの標準方法で行います。
+  Run the MSI installer and follow its instructions to install.
+  Uninstallation is also performed using standard OS methods.
 
-## クイックスタート
+## Quick Start
 
-  まず、設定ウィンドウで検索を行うフォルダーを追加します。  
-  メインウィンドウ上部のテキストボックスに検索キーワードを入力すれば検索が始まります。  
-  検索結果のファイルのコンテキストメニューから各種操作ができます。
+  First, add folders to be searched in the settings. 
+  Enter search terms in the text box at the top of the main window to start the search.
+  Various operations can be performed from the context menu of the search result files.
 
 

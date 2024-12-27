@@ -1,12 +1,12 @@
 ## 連絡先
 
- 不具合がありましたらこちらのブログのコメントにてご連絡ください。
+ 不具合を見つけたらプロジェクト ページに課題として投稿してください。 (ログインが必要です)
+
+  * [RealtimeSearch (Bitbucket)](https://bitbucket.org/neelabo/realtimesearch)
  
-  * [ヨクアルナニカ](https://yokuarunanika.blogspot.jp/)
- 
- バグ報告はこちらでも受け付けております。`ErrorLog.txt`を添付する場合はこちらがお薦めです。
- 
-   * [RealtimeSearchプロジェクト 課題投稿](https://bitbucket.org/neelabo/realtimesearch/issues/new)
+ こちらのブログのコメントでもご報告いただけます。
+
+  * [ヨクアルナニカ](https://yokuarunanika.blogspot.com/)
  
 メールでの連絡先
 

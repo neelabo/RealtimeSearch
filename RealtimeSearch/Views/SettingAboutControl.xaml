@@ -22,13 +22,13 @@
             </StackPanel>
 
             <TextBlock Margin="0,8">
-                <Hyperlink NavigateUri="ReadMe.html" RequestNavigate="Hyperlink_RequestNavigate">
+                <Hyperlink NavigateUri="README.html" RequestNavigate="Hyperlink_RequestNavigate">
                     <TextBlock Text="{tres:TextBinding Setting.LicenseInfo}"/>
                 </Hyperlink>
             </TextBlock>
             
             <TextBlock Margin="0,8">
-                <Hyperlink NavigateUri="SearchOption.html" RequestNavigate="Hyperlink_RequestNavigate">
+                <Hyperlink NavigateUri="SearchOptions.html" RequestNavigate="Hyperlink_RequestNavigate">
                     <TextBlock Text="{tres:TextBinding Setting.SearchOption}"/>
                 </Hyperlink>
             </TextBlock>

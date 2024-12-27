@@ -15,7 +15,7 @@
 
 - RealtimeSearch4.0-fd.zip
 
-  機能はZIP版と同じですが、動作させるために “.NET 9.0 Desktop Runtime - Windows x64” のインストールが必要になります。 起動時のメッセージに従って Microsoft のページから “.NET 9.0 Desktop Runtime - Windows x64” をダウンロードしてインストールしてください。
+  機能はZIP版と同じですが、動作させるために “.NET 9.0 Desktop Runtime - Windows x64” のインストールが必要になります。 起動時のメッセージに従ってダウンロードしてインストールしてください。
 
 ### インストーラー版
 

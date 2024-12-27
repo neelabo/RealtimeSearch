@@ -1,10 +1,10 @@
 <ANNOUNCE/>
 
-## ソフトの概要
+## Overview
 
-  ファイル検索を行うツールです。
+  A tool to perform file searches.
 
-  * クリップボード監視機能があります。
-  * 検索フォルダをインデックス化し、インクリメンタルサーチを行います。
-  * あいまい検索により検索しやすくなっています。
+  * Clipboard monitoring is available.
+  * Indexes search folders and performs incremental search.
+  * The fuzzy search makes it easy to search.
 
