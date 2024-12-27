@@ -19,6 +19,7 @@ using NeeLaboratory.RealtimeSearch.Clipboards;
 using NeeLaboratory.RealtimeSearch.Windows;
 using NeeLaboratory.Threading;
 using CommunityToolkit.Mvvm.Input;
+using NeeLaboratory.IO;
 
 namespace NeeLaboratory.RealtimeSearch.ViewModels
 {

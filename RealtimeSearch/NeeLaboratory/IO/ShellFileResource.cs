@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
 
-namespace NeeLaboratory.RealtimeSearch
+namespace NeeLaboratory.IO
 {
     /// <summary>
     /// ファイルシステム静的メソッド
