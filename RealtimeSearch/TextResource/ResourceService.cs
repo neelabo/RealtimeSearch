@@ -207,5 +207,18 @@ namespace NeeLaboratory.RealtimeSearch.TextResource
                 return '@' + key;
             }
         }
+
+        public static string GetFormatString(string key, object? arg0)
+        {
+            if (string.IsNullOrWhiteSpace(key) || key[0] != '@')
+            {
+                return key ?? "";
+            }
+            else
+            {
+                return TextResources.GetFormatString(key[1..], arg0);
+            }
+        }
+
     }
 }

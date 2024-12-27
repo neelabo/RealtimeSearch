@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NeeLaboratory.RealtimeSearch.TextResource;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -82,7 +83,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
         }
 
         public static readonly DependencyProperty NoteProperty =
-            DependencyProperty.Register(nameof(Note), typeof(string), typeof(DirectoryNameBox), new PropertyMetadata("フォルダのパスを入力してください"));
+            DependencyProperty.Register(nameof(Note), typeof(string), typeof(DirectoryNameBox), new PropertyMetadata(""));
 
 
 
@@ -98,7 +99,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
             {
                 var dialog = new Microsoft.Win32.OpenFolderDialog
                 {
-                    Title = Title ?? "フォルダ選択",
+                    Title = Title ?? ResourceService.GetString("@FolderNameBox.FolderTitle"),
                     InitialDirectory = Text
                 };
 
@@ -117,7 +118,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
             {
                 var dialog = new Microsoft.Win32.OpenFileDialog
                 {
-                    Title = Title ?? "ファイル選択"
+                    Title = Title ?? ResourceService.GetString("@FolderNameBox.FileTitle")
                 };
                 if (System.IO.File.Exists(Text))
                 {

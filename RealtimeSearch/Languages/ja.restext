@@ -1,6 +1,7 @@
 SettingWindow.Title=設定
 Setting.General=一般
-Setting.SearchArea=検索範囲
+Setting.SearchArea=検索フォルダー
+Setting.SearchArea.Empty=検索するフォルダを登録してください。
 Setting.ExternalApp=外部アプリ
 Setting.Help=ヘルプ
 
@@ -14,9 +15,9 @@ Button.Refresh=更新
 Button.WebSearch=Web 検索
 Button.Settings=設定
 
-Status.Items={0} 個の項目
+Status.Items={0:#,0} 個の項目
 Status.Searching=検索中 ...
-Status.Indexing={0} 個のインデックス作成中 ...
+Status.Indexing={0:#,0} 個のインデックス作成中 ...
 Status.RegexError=正規表現エラー
 Status.DateTimeError=日時指定が不正です
 Status.FlagError=フラグ指定が不正です
@@ -33,4 +34,52 @@ Menu.Rename=名前の変更(_M)
 Menu.Copy=コピー(_C)
 Menu.CopyName=名前をコピー(_A)
 Menu.Property=プロパティ(_R)
+
+
+Setting.Settings=設定
+Setting.Language=言語
+Setting.Language.Remarks=※次の起動から適用されます。
+Setting.AllowFolder=フォルダーを含める
+Setting.IsMonitorClipboard=クリップボードを監視
+Setting.IsTopmost=常に手前に表示
+Setting.UseCache=インデックスをキャッシュ
+Setting.WebSearchFormat=Web 検索
+Setting.WebSearchFormat.Tips=$(query) が検索キーワードに置換されます。
+Setting.VersionInfo=バージョン情報
+Setting.LicenseInfo=ライセンス情報
+Setting.SearchOption=検索オプション ヘルプ
+
+Setting.AddSearchFolder=検索フォルダーの追加
+
+App.Name=名前
+App.ProgramType=種類
+App.Program=プログラム
+App.Program.Tips=指定がない場合は既定のアプリを起動します。
+App.Program.Empty=プログラムのパスを入力してください
+App.Protocol=プロトコル
+App.Protocol.Tips=$(file) がファイルパスに置換されます。\n$(uri) がURIエンコードされたファイルパスに置換されます。
+App.Parameter=パラメーター
+App.Parameter.Tips=$(file) がファイルパスに置換されます。
+App.IsMultiArgumentEnabled=パラメーターの複数ファイル展開
+App.Extensions=拡張子
+App.Extensions.Tips=空白区切りで複数拡張子を定義します。
+
+App.SelectProgram=プログラムの選択
+
+
+ExternalProgramType.Normal=アプリケーション
+ExternalProgramType.Uri=プロトコル
+
+Message.ConfirmDeleteFile=このファイルをごみ箱に移動しますか？
+Message.ConfirmDeleteFiles=これらの {0} 個の項目をごみ箱に移しますか？
+Message.DeleteFailed=ファイル削除に失敗しました
+
+Message.ConfirmFolderMerge=この宛先には既に '{0}' フォルダーが存在します。\n\n同じ名前のファイルがある場合、かっこで囲まれた番号が付加され、区別されます。\n\nフォルダーを統合しますか？
+Message.ConfirmFolderMerge.Title=フォルダーの上書き確認
+Message.FolderMergeFailed=フォルダーの統合に失敗しました
+Message.RenameFailed=名前の変更に失敗しました
+
+FolderNameBox.FolderTitle=フォルダー選択
+FolderNameBox.FileTitle=ファイル選択
+
 

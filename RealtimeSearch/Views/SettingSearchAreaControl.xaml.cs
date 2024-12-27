@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using NeeLaboratory.IO.Search.Files;
 using NeeLaboratory.RealtimeSearch.Models;
+using NeeLaboratory.RealtimeSearch.TextResource;
 using NeeLaboratory.RealtimeSearch.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -47,9 +48,10 @@ namespace NeeLaboratory.RealtimeSearch.Views
 
             var dialog = new OpenFolderDialog()
             {
-                Title = "検索フォルダーの追加",
+                Title = ResourceService.GetString("@Setting.AddSearchFolder"),
                 InitialDirectory = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal)
             };
+
 
             var result = dialog.ShowDialog();
             if (result == true)

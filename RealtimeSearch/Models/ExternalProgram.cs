@@ -1,4 +1,5 @@
 ﻿using NeeLaboratory.Generators;
+using NeeLaboratory.RealtimeSearch.TextResource;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,15 +19,16 @@ namespace NeeLaboratory.RealtimeSearch.Models
         Uri,
     }
 
+#if false
     public static class ExternalProgramTypeExtensions
     {
         public static readonly Dictionary<ExternalProgramType, string> ExternalProgramTypeNames = new()
         {
-            [ExternalProgramType.Normal] = "外部プログラム",
+            [ExternalProgramType.Normal] = ResourceService.GetString(@"ExternalProgramType.Normal") "外部プログラム",
             [ExternalProgramType.Uri] = "プロトコル起動",
         };
     }
-
+#endif
 
     [NotifyPropertyChanged]
     public partial class ExternalProgram : INotifyPropertyChanged

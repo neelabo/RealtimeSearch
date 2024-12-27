@@ -5,8 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:NeeLaboratory.RealtimeSearch.Views"
         xmlns:converters="clr-namespace:NeeLaboratory.RealtimeSearch.Converters"
+        xmlns:tres="clr-namespace:NeeLaboratory.RealtimeSearch.TextResource"
         mc:Ignorable="d"
-        Title="設定" Height="480" Width="800" MinHeight="360" MinWidth="500">
+        Title="{tres:TextBinding SettingWindow.Title}" Height="480" Width="800" MinHeight="360" MinWidth="500">
 
     <Window.CommandBindings>
         <CommandBinding Command="{x:Static local:SettingWindow.CloseCommand}" Executed="CloseCommand_Executed"/>

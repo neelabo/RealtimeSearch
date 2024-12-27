@@ -25,6 +25,7 @@
         <converters:FileInfoToIconConverter x:Key="FileInfoToIconConverter" />
         <converters:FileInfoToTypeNameConverter x:Key="FileInfoToTypeNameConverter" />
         <converters:FileContentStateToVisibilityConverter x:Key="FileContentStateToVisibilityConverter" Inverse="True"/>
+        <local:FileContentToDetailConverter x:Key="FileContentToDetailConverter"/>
 
         <Style TargetType="{x:Type ListViewItem}">
 
@@ -89,7 +90,9 @@
 
     <Window.InputBindings>
         <KeyBinding Key="F" Modifiers="Ctrl" Command="{Binding WebSearchCommand}"/>
+        <!--
         <KeyBinding Key="R" Modifiers="Ctrl" Command="{Binding SearchCommand}"/>
+        -->
         <KeyBinding Key="F5" Command="{Binding SearchCommand}"/>
     </Window.InputBindings>
 
@@ -99,17 +102,17 @@
 
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4" KeyboardNavigation.TabNavigation="Local">
 
-                <Button DockPanel.Dock="Right" Style="{StaticResource ToolBarButton}" Command="{Binding ShowSettingCommand}" ToolTip="{tres:TextBinding Button.Settings}" Margin="4,0,2,0" TabIndex="4">
+                <Button x:Name="SettingsButton" DockPanel.Dock="Right" Style="{StaticResource ToolBarButton}" Command="{Binding ShowSettingCommand}" ToolTip="{tres:TextBinding Button.Settings}" Margin="4,0,2,0" TabIndex="4">
                     <TextBlock Style="{StaticResource ToolBarIconFont}" Text="&#xE713;" />
                 </Button>
 
                 <Border BorderBrush="#FFDDDDDD" BorderThickness="1" UseLayoutRounding="True" SnapsToDevicePixels="True">
                     <DockPanel>
-                        <Button DockPanel.Dock="Right" Style="{StaticResource ToolBarButton}" Command="{Binding WebSearchCommand}" ToolTip="Web検索(Ctrl+F)" TabIndex="3">
+                        <Button x:Name="WebSearchButton" DockPanel.Dock="Right" Style="{StaticResource ToolBarButton}" Command="{Binding WebSearchCommand}" TabIndex="3">
                             <TextBlock Style="{StaticResource ToolBarIconFont}" Text="&#xF6FA;" />
 
                         </Button>
-                        <Button DockPanel.Dock="Right" Style="{StaticResource ToolBarButton}" Command="{Binding SearchCommand}" ToolTip="再検索(Ctrl+R)" TabIndex="2">
+                        <Button x:Name="RefreshButton" DockPanel.Dock="Right" Style="{StaticResource ToolBarButton}" Command="{Binding SearchCommand}" TabIndex="2">
                             <TextBlock Style="{StaticResource ToolBarIconFont}" Text="&#xE777;" />
                         </Button>
                         <ComboBox x:Name="keyword" Text="{Binding InputKeyword, UpdateSourceTrigger=PropertyChanged}" TabIndex="1"
@@ -182,7 +185,7 @@
                     Visibility="{Binding IsDetailVisible, Converter={StaticResource BoolToVisibility}}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <TextBox IsReadOnly="True" BorderThickness="0" Margin="5" Background="Transparent" IsTabStop="False"
-                            Text="{Binding ElementName=ResultListView, Path=SelectedItem.Detail, Mode=OneWay}">
+                            Text="{Binding ElementName=ResultListView, Path=SelectedItem, Mode=OneWay, Converter={StaticResource FileContentToDetailConverter}}">
                     </TextBox>
                 </ScrollViewer>
             </Border>

@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:NeeLaboratory.RealtimeSearch.Views"
              xmlns:converters="clr-namespace:NeeLaboratory.RealtimeSearch.Converters"
              xmlns:models="clr-namespace:NeeLaboratory.RealtimeSearch.Models"
+             xmlns:tres="clr-namespace:NeeLaboratory.RealtimeSearch.TextResource"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
 
@@ -36,13 +37,13 @@
         <StackPanel Margin="16,0,0,0">
 
             <DockPanel Style="{StaticResource RecordStyle}" LastChildFill="True">
-                <TextBlock Style="{StaticResource ItemHeader}" Text="名前"/>
+                <TextBlock Style="{StaticResource ItemHeader}" Text="{tres:TextBinding App.Name}"/>
                 <TextBox Text="{Binding Program.Name}" />
             </DockPanel>
 
             <DockPanel Style="{StaticResource RecordStyle}" LastChildFill="True">
-                <TextBlock Style="{StaticResource ItemHeader}" Text="種類"/>
-                <ComboBox ItemsSource="{x:Static models:ExternalProgramTypeExtensions.ExternalProgramTypeNames}" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding Program.ProgramType}" />
+                <TextBlock Style="{StaticResource ItemHeader}" Text="{tres:TextBinding App.ProgramType}"/>
+                <ComboBox x:Name="ExternalProgramTypeComboBox" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding Program.ProgramType}" />
             </DockPanel>
 
             <Grid>
@@ -59,21 +60,21 @@
                     </StackPanel.Style>
 
                     <DockPanel Style="{StaticResource RecordStyle}" LastChildFill="True">
-                        <TextBlock Style="{StaticResource ItemHeader}" Text="プログラム"/>
-                        <local:DirectoryNameBox x:Name="ExAppPath" Margin="0" SelectDirectory="False" Title="プログラムの選択" Filter="EXE|*.exe|すべてのファイル|*.*"
-                            ToolTip="プログラムのパスを指定します&#xa;指定がない場合は既定のアプリを起動します"
-                            Note="プログラムのパスを入力してください"
+                        <TextBlock Style="{StaticResource ItemHeader}" Text="{tres:TextBinding App.Program}"/>
+                        <local:DirectoryNameBox x:Name="ExAppPath" Margin="0" SelectDirectory="False" Title="{tres:TextBinding App.SelectProgram}" Filter="EXE|*.exe|All|*.*"
+                            ToolTip="{tres:TextBinding App.Program.Tips}"
+                            Note="{tres:TextBinding App.Program.Empty}"
                             Text="{Binding Program.Program, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
                     </DockPanel>
 
                     <DockPanel Style="{StaticResource RecordStyle}" DockPanel.Dock="Top" IsEnabled="{Binding Program.Program, Converter={StaticResource StringNotNullOrWhiteSpaceToBoolean}}" >
-                        <TextBlock Style="{StaticResource ItemHeader}" Text="パラメーター"/>
-                        <TextBox Text="{Binding Program.Parameter}" Margin="0" ToolTip="$(file) がファイルパスに置換されます。&#xa;定義されていない場合 &quot;$(file)&quot; が自動追加されます"/>
+                        <TextBlock Style="{StaticResource ItemHeader}" Text="{tres:TextBinding App.Parameter}"/>
+                        <TextBox Text="{Binding Program.Parameter}" Margin="0" ToolTip="{tres:TextBinding App.Parameter.Tips}"/>
                     </DockPanel>
 
                     <DockPanel Style="{StaticResource RecordStyle}">
                         <TextBlock Style="{StaticResource ItemHeader}"/>
-                        <CheckBox Content="パラメーターの複数ファイル展開" IsChecked="{Binding Program.IsMultiArgumentEnabled}" />
+                        <CheckBox Content="{tres:TextBinding App.IsMultiArgumentEnabled}" IsChecked="{Binding Program.IsMultiArgumentEnabled}" />
                     </DockPanel>
 
                 </StackPanel>
@@ -92,21 +93,21 @@
 
                     <DockPanel Style="{StaticResource RecordStyle}" DockPanel.Dock="Top" >
 
-                        <TextBlock Style="{StaticResource ItemHeader}" Text="プロトコル"/>
-                        <TextBox Text="{Binding Program.Protocol}" Margin="0" ToolTip="$(file) がファイルパスに置換されます。&#xa;$(uri) がURIエンコードされたファイルパスに置換されます。" />
+                        <TextBlock Style="{StaticResource ItemHeader}" Text="{tres:TextBinding App.Protocol}"/>
+                        <TextBox Text="{Binding Program.Protocol}" Margin="0" ToolTip="{tres:TextBinding App.Protocol.Tips}" />
                     </DockPanel>
 
                     <DockPanel Style="{StaticResource RecordStyle}">
                         <TextBlock Style="{StaticResource ItemHeader}"/>
-                        <CheckBox Content="パラメーターの複数ファイル展開" IsChecked="{Binding Program.IsMultiArgumentEnabled}" />
+                        <CheckBox Content="{tres:TextBinding App.IsMultiArgumentEnabled}" IsChecked="{Binding Program.IsMultiArgumentEnabled}" />
                     </DockPanel>
 
                 </StackPanel>
             </Grid>
 
             <DockPanel Style="{StaticResource RecordStyle}">
-                <TextBlock Style="{StaticResource ItemHeader}" Text="拡張子"/>
-                <TextBox Text="{Binding Program.Extensions}" Margin="0" ToolTip="対応拡張子を登録します。例：&quot;.bmp .png .jpg&quot;&#xa;定義されていない場合、全てのファイルが対象となります&#xa;この設定は「開く」で対応する外部アプリを決定するために使用されます"/>
+                <TextBlock Style="{StaticResource ItemHeader}" Text="{tres:TextBinding App.Extensions}"/>
+                <TextBox Text="{Binding Program.Extensions}" Margin="0" ToolTip="{tres:TextBinding App.Extensions.Tips}"/>
             </DockPanel>
 
         </StackPanel>

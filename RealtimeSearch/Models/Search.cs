@@ -14,6 +14,7 @@ using NeeLaboratory.IO.Search;
 using NeeLaboratory.IO.Search.Files;
 using NeeLaboratory.ComponentModel;
 using NeeLaboratory.RealtimeSearch.Services;
+using NeeLaboratory.RealtimeSearch.TextResource;
 
 namespace NeeLaboratory.RealtimeSearch.Models
 {
@@ -264,19 +265,19 @@ namespace NeeLaboratory.RealtimeSearch.Models
             {
                 if (e is SearchKeywordRegularExpressionException ex1)
                 {
-                    SetMessage("正規表現エラー: " + ex1.InnerException?.Message);
+                    SetMessage(ResourceService.GetString("@Status.RegexError") + ": " + ex1.InnerException?.Message);
                 }
                 else if (e is SearchKeywordDateTimeException ex2)
                 {
-                    SetMessage("日時指定が不正です");
+                    SetMessage(ResourceService.GetString("@Status.DateTimeError"));
                 }
                 else if (e is SearchKeywordBooleanException ex3)
                 {
-                    SetMessage("フラグ指定が不正です");
+                    SetMessage(ResourceService.GetString("@Status.FlagError"));
                 }
                 else if (e is SearchKeywordOptionException ex4)
                 {
-                    SetMessage("不正なオプションです: " + ex4.Option);
+                    SetMessage(ResourceService.GetString("@Status.OptionError") + ": " + ex4.Option);
                 }
                 else
                 {
@@ -304,11 +305,11 @@ namespace NeeLaboratory.RealtimeSearch.Models
         {
             if (_searchEngine.IsSearchBusy)
             {
-                Information = $"検索中 ...";
+                Information = ResourceService.GetString("@Status.Searching");
             }
             else if (_searchEngine.IsCollectBusy)
             {
-                var indexing = $"{_searchEngine.Tree.Count:#,0} 個のインデックス作成中 ...";
+                var indexing = ResourceService.GetFormatString("@Status.Indexing", _searchEngine.Tree.Count);
                 Information = string.IsNullOrEmpty(_message) ? indexing : $"{_message} ({indexing})";
             }
             else

@@ -48,6 +48,8 @@ namespace NeeLaboratory.RealtimeSearch.Views
             InitializeComponent();
 
             this.Root.DataContext = this;
+
+            ExternalProgramTypeComboBox.ItemsSource = AliasNameExtensions.GetAliasNameDictionary<ExternalProgramType>();
         }
     }
 

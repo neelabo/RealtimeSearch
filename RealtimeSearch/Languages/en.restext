@@ -1,6 +1,7 @@
 SettingWindow.Title=Settings
 Setting.General=General
-Setting.SearchArea=Search area
+Setting.SearchArea=Search folders
+Setting.SearchArea.Empty=Register folders to be searched.
 Setting.ExternalApp=External apps
 Setting.Help=Help
 
@@ -15,10 +16,10 @@ Button.WebSearch=Web Search
 Button.Settings=Settings
 
 Status.Items:1={0} item
-Status.Items={0} items
+Status.Items={0:#,0} items
 
-Status.Searching=Searching ...
-Status.Indexing={0} indexing ...
+Status.Searching=Search ...
+Status.Indexing={0:#,0} indexing ...
 Status.RegexError=Regexp error.
 Status.DateTimeError=Date and time designation is incorrect.
 Status.FlagError=Flag is invalid.
@@ -35,3 +36,49 @@ Menu.Rename=Rena_me
 Menu.Copy=_Copy
 Menu.CopyName=Copy _as name
 Menu.Property=P_roperty
+
+Setting.Settings=Settings
+Setting.Language=Language
+Setting.Language.Remarks=* This will be applied from the next startup.
+Setting.AllowFolder=Include folders
+Setting.IsMonitorClipboard=Monitor clipboard
+Setting.IsTopmost=Always in front
+Setting.UseCache=Cache indexes
+Setting.WebSearchFormat=Web search
+Setting.WebSearchFormat.Tips=$(query) is replaced by the search keyword.
+Setting.VersionInfo=Version information
+Setting.LicenseInfo=License 
+Setting.SearchOption=Search options help
+
+Setting.AddSearchFolder=Add search folder
+
+App.Name=Name
+App.ProgramType=Type
+App.Program=Program
+App.Program.Tips=If not specified, it is the default application.
+App.Program.Empty=Please enter the program path
+App.Protocol=Protocol
+App.Protocol.Tips=$(file) is replaced with the file path.\n$(uri) is replaced with the URI-encoded file path.
+App.Parameter=Parameter
+App.Parameter.Tips=$(file) is replaced with the file path.
+App.IsMultiArgumentEnabled=Expand to multiple file names
+App.Extensions=Extensions
+App.Extensions.Tips=If there is more than one, separate them with a space.
+
+App.SelectProgram=Select Program
+
+ExternalProgramType.Normal=Application
+ExternalProgramType.Uri=Protocol
+
+Message.ConfirmDeleteFile=Move this file to the Recycle Bin?
+Message.ConfirmDeleteFiles=Move these {0} items to the Recycle Bin?
+Message.DeleteFailed=Failed to delete files.
+
+Message.ConfirmFolderMerge=This destination already contains a folder named '{0}'.\n\nIf there are files with the same name, bracketed numbers are added to distinguish them.\n\nDo you still want to merge folders?
+Message.ConfirmFolderMerge.Title=Confirm Folder Replace
+Message.FolderMergeFailed=Folder merge failed.
+Message.RenameFailed=Rename failed.
+
+FolderNameBox.FolderTitle=Select Folder
+FolderNameBox.FileTitle=Select File
+

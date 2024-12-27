@@ -70,6 +70,7 @@ namespace NeeLaboratory.IO.Search.Files
             }
         }
 
+#if false
         public string Detail
         {
             get
@@ -79,6 +80,7 @@ namespace NeeLaboratory.IO.Search.Files
                 return $"{Name}\n{sizeText}Date: {dateText}\nFolder: {DirectoryName}";
             }
         }
+#endif
 
         /// <summary>
         /// PushPinフラグ

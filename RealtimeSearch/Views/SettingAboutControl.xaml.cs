@@ -1,5 +1,6 @@
 ﻿using NeeLaboratory.RealtimeSearch.Models;
 using NeeLaboratory.RealtimeSearch.Services;
+using NeeLaboratory.RealtimeSearch.TextResource;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -36,8 +37,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
 
         private void OpenManual(string fileName)
         {
-            // TODO: check culture
-            if (true)
+            if (TextResources.Culture.Name == "ja")
             {
                 var name = System.IO.Path.GetFileNameWithoutExtension(fileName);
                 var ext = System.IO.Path.GetExtension(fileName);

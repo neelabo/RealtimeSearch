@@ -259,7 +259,7 @@ function New-Package($platform, $productName, $productDir, $packageDir)
 {
 	$temp = New-Item $packageDir -ItemType Directory
 
-	Copy-Item $productDir\* $packageDir -Recurse -Exclude ("*.pdb", "$product.settings.json")
+	Copy-Item $productDir\* $packageDir -Recurse -Exclude ("*.pdb", "$product.config.json")
 
 	# fix native dll
 	#if ($platform -eq "x86")
@@ -272,7 +272,7 @@ function New-Package($platform, $productName, $productDir, $packageDir)
 	#}
 
 	# custom config
-	New-ConfigForZip $productDir "$productName.settings.json" $packageDir
+	New-ConfigForZip $productDir "$productName.config.json" $packageDir
 
 	# generate README.html
 	New-Readme $packageDir "en-us" ".zip"
@@ -510,7 +510,7 @@ function New-PackageAppend($packageDir, $packageAppendDir)
 	New-EmptyFolder $packageAppendDir
 
 	# configure customize
-	New-ConfigForMsi $packageDir "${product}.settings.json" $packageAppendDir
+	New-ConfigForMsi $packageDir "${product}.config.json" $packageAppendDir
 
 	# icons
 	Copy-Item "$projectDir\Resources\App.ico" $packageAppendDir
@@ -575,7 +575,7 @@ function New-Msi($arch, $packageDir, $packageAppendDir, $packageMsi)
 			$xml.Wix.Fragment[1].ComponentGroup.RemoveChild($node)
 		}
 
-		# remove $product.settings.json
+		# remove $product.config.json
 		$node = $xml.Wix.Fragment[0].DirectoryRef.Component | Where-Object{$_.File.Source -match "$product\.settings\.json"}
 		if ($null -ne $node)
 		{
@@ -673,7 +673,7 @@ function New-Appx($arch, $packageDir, $packageAppendDir, $appx)
 
 	# update assembly
 	Copy-Item $packageDir $contentDir -Recurse -Force
-	New-ConfigForAppx $packageDir "${product}.settings.json" $contentDir
+	New-ConfigForAppx $packageDir "${product}.config.json" $contentDir
 
 	# generate README.html
 	New-Readme $contentDir "en-us" ".appx"
@@ -759,7 +759,7 @@ function New-DevPackage($packageDir, $devPackageDir, $devPackage, $target)
 {
 	# update assembly
 	Copy-Item $packageDir $devPackageDir -Recurse
-	New-ConfigForDevPackage $packageDir "${product}.settings.json" $target $devPackageDir
+	New-ConfigForDevPackage $packageDir "${product}.config.json" $target $devPackageDir
 
 	# generate README.html
 	New-Readme $devPackageDir "en-us" $target

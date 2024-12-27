@@ -4,13 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:NeeLaboratory.RealtimeSearch.Views"
+             xmlns:tres="clr-namespace:NeeLaboratory.RealtimeSearch.TextResource"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid Margin="8">
 
         <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top">
 
-            <TextBlock Text="バージョン情報"/>
+            <TextBlock Text="{tres:TextBinding Setting.VersionInfo}"/>
 
             <StackPanel Orientation="Horizontal" Margin="0,20" >
                 <Image Source="/Resources/App.ico" Width="32" Height="32" Margin="16,8" VerticalAlignment="Center"/>
@@ -21,11 +22,15 @@
             </StackPanel>
 
             <TextBlock Margin="0,8">
-                <Hyperlink NavigateUri="ReadMe.html" RequestNavigate="Hyperlink_RequestNavigate" >ライセンス情報</Hyperlink>
+                <Hyperlink NavigateUri="ReadMe.html" RequestNavigate="Hyperlink_RequestNavigate">
+                    <TextBlock Text="{tres:TextBinding Setting.LicenseInfo}"/>
+                </Hyperlink>
             </TextBlock>
             
             <TextBlock Margin="0,8">
-                <Hyperlink NavigateUri="SearchOption.html" RequestNavigate="Hyperlink_RequestNavigate">検索オプション ヘルプ</Hyperlink>
+                <Hyperlink NavigateUri="SearchOption.html" RequestNavigate="Hyperlink_RequestNavigate">
+                    <TextBlock Text="{tres:TextBinding Setting.SearchOption}"/>
+                </Hyperlink>
             </TextBlock>
 
         </StackPanel>

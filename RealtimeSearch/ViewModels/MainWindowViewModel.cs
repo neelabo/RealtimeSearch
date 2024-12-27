@@ -21,6 +21,7 @@ using NeeLaboratory.Threading;
 using CommunityToolkit.Mvvm.Input;
 using NeeLaboratory.IO;
 using NeeLaboratory.RealtimeSearch.Services;
+using NeeLaboratory.RealtimeSearch.TextResource;
 
 namespace NeeLaboratory.RealtimeSearch.ViewModels
 {
@@ -300,8 +301,8 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
             if (confirm)
             {
                 var text = (items.Count == 1)
-                    ? $"このファイルをごみ箱に移動しますか？\n\n{items[0].Path}"
-                    : $"これらの {items.Count} 個の項目をごみ箱に移しますか？";
+                    ? ResourceService.GetString("@Message.ConfirmDeleteFile") + "\n\n" + items[0].Path
+                    : ResourceService.GetFormatString("@Message.ConfirmDeleteFiles", items.Count);
                 var dialogMessage = new ShowMessageBoxMessage(text, null, MessageBoxButton.OKCancel, MessageBoxImage.Question);
                 _messenger.Send(this, dialogMessage);
                 if (dialogMessage.Result != MessageBoxResult.OK) return;
@@ -313,7 +314,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
             }
             catch (Exception ex)
             {
-                _messenger.Send(this, new ShowMessageBoxMessage($"ファイル削除に失敗しました\n\n原因: {ex.Message}", MessageBoxImage.Error));
+                _messenger.Send(this, new ShowMessageBoxMessage(ResourceService.GetString("@Message.DeleteFailed") + "\n\n" + ex.Message, MessageBoxImage.Error));
             }
         }
 
@@ -335,8 +336,8 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
             {
                 if (confirm)
                 {
-                    var msg = $"この宛先には既に '{newValue}' フォルダーが存在します。\n\n同じ名前のファイルがある場合、かっこで囲まれた番号が付加され、区別されます。\n\nフォルダーを統合しますか？";
-                    var messageBox = new ShowMessageBoxMessage(msg, "フォルダーの上書き確認", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+                    var msg = ResourceService.GetFormatString("@Message.ConfirmFolderMerge", newValue);
+                    var messageBox = new ShowMessageBoxMessage(msg, ResourceService.GetString("@Message.ConfirmFolderMerge.Title"), MessageBoxButton.OKCancel, MessageBoxImage.Warning);
                     _messenger.Send(this, messageBox);
                     if (messageBox.Result != MessageBoxResult.OK) return;
                 }
@@ -347,7 +348,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    _messenger.Send(this, new ShowMessageBoxMessage($"フォルダーの統合に失敗しました\n\n原因: {ex.Message}", MessageBoxImage.Error));
+                    _messenger.Send(this, new ShowMessageBoxMessage(ResourceService.GetString("@Message.FolderMergeFailed") + "\n\n" + ex.Message, MessageBoxImage.Error));
                 }
             }
             else
@@ -358,7 +359,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    _messenger.Send(this, new ShowMessageBoxMessage($"名前の変更に失敗しました\n\n原因: {ex.Message}", MessageBoxImage.Error));
+                    _messenger.Send(this, new ShowMessageBoxMessage(ResourceService.GetString("@Message.RenameFailed") + "\n\n" + ex.Message, MessageBoxImage.Error));
                 }
             }
         }

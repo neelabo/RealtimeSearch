@@ -1,4 +1,5 @@
-﻿using NeeLaboratory.IO.Search.Files;
+﻿using NeeLaboratory.IO.Search;
+using NeeLaboratory.IO.Search.Files;
 using NeeLaboratory.RealtimeSearch.Models;
 using NeeLaboratory.RealtimeSearch.TextResource;
 using NeeLaboratory.RealtimeSearch.ViewModels;
@@ -17,6 +18,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Xml.Linq;
 
 namespace NeeLaboratory.RealtimeSearch.Views
 {
@@ -56,6 +58,9 @@ namespace NeeLaboratory.RealtimeSearch.Views
             this.Deactivated += (s, e) => this.RenameManager.Stop();
 
             RestoreListViewMemento(AppModel.Settings.ListViewColumnMemento);
+
+            this.WebSearchButton.ToolTip = ResourceService.GetString("@Button.WebSearch") + " (" + new KeyGesture(Key.F, ModifierKeys.Control).GetDisplayStringForCulture(CultureInfo.CurrentCulture) + ")";
+            this.RefreshButton.ToolTip = ResourceService.GetString("@Button.Refresh") + " (" + new KeyGesture(Key.F5).GetDisplayStringForCulture(CultureInfo.CurrentCulture) + ")";
 
 #if false
             // 実験
@@ -489,4 +494,31 @@ namespace NeeLaboratory.RealtimeSearch.Views
         #endregion ContextMenu
     }
 
+
+    public class FileContentToDetailConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is FileContent content)
+            {
+                //var nameText = ResourceService.GetString("@Item.Name") + ": " + content.Name;
+                //var sizeText = ResourceService.GetString("@Item.Size") + ": " + (content.Size >= 0 ? $"{(content.Size + 1024 - 1) / 1024:#,0} KB" : "--");
+                //var dateText = ResourceService.GetString("@Item.LastWriteTime") + ": " + content. LastWriteTime.ToString(SearchDateTimeTools.DateTimeFormat);
+                //var folderText = ResourceService.GetString("@Item.Folder") + ": " + content.DirectoryName;
+
+                var nameText = content.Name;
+                var sizeText = (content.Size >= 0 ? $"{(content.Size + 1024 - 1) / 1024:#,0} KB" : "--");
+                var dateText = content.LastWriteTime.ToString(SearchDateTimeTools.DateTimeFormat);
+                var folderText = content.DirectoryName;
+                return nameText + "\n" + sizeText + "\n" + dateText + "\n" + folderText;
+            }
+        
+            return "";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
