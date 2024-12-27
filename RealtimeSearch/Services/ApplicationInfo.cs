@@ -15,19 +15,28 @@ namespace NeeLaboratory.RealtimeSearch.Services
     /// <summary>
     /// アプリ全体の設定
     /// </summary>
-    public class ApplicationInfoService
+    public class ApplicationInfo
     {
-        private IAppSettings _appSetting;
+        public static ApplicationInfo Current { get; } = new ApplicationInfo();
+
+        private string? _localApplicationDataPath;
+        private bool? _isUseLocalApplicationDataFolder;
+        private string? _packageType;
 
 
-        public ApplicationInfoService(IAppSettings appSetting)
+        private ApplicationInfo()
         {
-            _appSetting = appSetting;
+            ProcessModule? module = Process.GetCurrentProcess().MainModule;
+            if (module is null) throw new InvalidOperationException();
+
+            var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+
+            ValidateProductInfo(assembly, module);
         }
 
 
         /// <summary>
-        /// 
+        /// アセンブリの場所
         /// </summary>
         public string AssemblyLocation { get; private set; } = "";
 
@@ -51,23 +60,68 @@ namespace NeeLaboratory.RealtimeSearch.Services
         /// </summary>
         public int ProductVersionNumber { get; private set; }
 
-        //
-        public static int GenerateProductVersionNumber(int major, int minor, int build)
+        /// <summary>
+        /// ユーザデータフォルダ
+        /// </summary>
+        public string LocalApplicationDataPath
         {
-            return major << 16 | minor << 8 | build;
+            get
+            {
+                if (_localApplicationDataPath == null)
+                {
+                    // configファイルの設定で LocalApplicationData を使用するかを判定。インストール版用
+                    if (IsUseLocalApplicationDataFolder)
+                    {
+                        _localApplicationDataPath = GetFileSystemPath(Environment.SpecialFolder.LocalApplicationData, true);
+                    }
+                    else
+                    {
+                        _localApplicationDataPath = Path.Combine(AssemblyLocation, "Profile");
+                        CreateFolder(_localApplicationDataPath);
+                    }
+                }
+                return _localApplicationDataPath;
+            }
         }
 
-        /// <summary>
-        /// いろいろ初期化
-        /// </summary>
-        public void Initialize()
+        // データ保存にアプリケーションデータフォルダを使用するか
+        public bool IsUseLocalApplicationDataFolder
         {
-            ProcessModule? module = Process.GetCurrentProcess().MainModule;
-            if (module is null) throw new InvalidOperationException();
+            get
+            {
+                if (_isUseLocalApplicationDataFolder == null)
+                {
+                    _isUseLocalApplicationDataFolder = AppConfig.Current.UseLocalApplicationData;
+                }
+                return (bool)_isUseLocalApplicationDataFolder;
+            }
+        }
 
-            var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+        // パッケージの種類(拡張子)
+        public string PackageType
+        {
+            get
+            {
+                if (_packageType == null)
+                {
+                    _packageType = AppConfig.Current.PackageType ?? "";
+                    if (_packageType != ".msi") _packageType = ".zip";
+                }
+                return _packageType;
+            }
+        }
 
-            ValidateProductInfo(assembly, module);
+
+        /// <summary>
+        /// プロダクトバージョン生成
+        /// </summary>
+        /// <param name="major"></param>
+        /// <param name="minor"></param>
+        /// <param name="build"></param>
+        /// <returns></returns>
+        public int GenerateProductVersionNumber(int major, int minor, int build)
+        {
+            return major << 16 | minor << 8 | build;
         }
 
         /// <summary>
@@ -98,32 +152,6 @@ namespace NeeLaboratory.RealtimeSearch.Services
             {
                 ProductVersion = $"{version.Major}.{version.Minor}.{version.Build}";
                 ProductVersionNumber = GenerateProductVersionNumber(version.Major, version.Minor, version.Build);
-            }
-        }
-
-
-        /// <summary>
-        /// ユーザデータフォルダ
-        /// </summary>
-        private string? _localApplicationDataPath;
-        public string LocalApplicationDataPath
-        {
-            get
-            {
-                if (_localApplicationDataPath == null)
-                {
-                    // configファイルの設定で LocalApplicationData を使用するかを判定。インストール版用
-                    if (IsUseLocalApplicationDataFolder)
-                    {
-                        _localApplicationDataPath = GetFileSystemPath(Environment.SpecialFolder.LocalApplicationData, true);
-                    }
-                    else
-                    {
-                        _localApplicationDataPath = Path.Combine(AssemblyLocation, "Profile");
-                        CreateFolder(_localApplicationDataPath);
-                    }
-                }
-                return _localApplicationDataPath;
             }
         }
 
@@ -162,36 +190,6 @@ namespace NeeLaboratory.RealtimeSearch.Services
             }
             return path;
         }
-
-        // データ保存にアプリケーションデータフォルダを使用するか
-        private bool? _isUseLocalApplicationDataFolder;
-        public bool IsUseLocalApplicationDataFolder
-        {
-            get
-            {
-                if (_isUseLocalApplicationDataFolder == null)
-                {
-                    _isUseLocalApplicationDataFolder = _appSetting.UseLocalApplicationData;
-                }
-                return (bool)_isUseLocalApplicationDataFolder;
-            }
-        }
-
-        // パッケージの種類(拡張子)
-        private string? _packageType;
-        public string PackageType
-        {
-            get
-            {
-                if (_packageType == null)
-                {
-                    _packageType = _appSetting.PackageType ?? "";
-                    if (_packageType != ".msi") _packageType = ".zip";
-                }
-                return _packageType;
-            }
-        }
-
 
         // 全ユーザデータ削除
         private bool RemoveApplicationDataCore()

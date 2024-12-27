@@ -1,4 +1,5 @@
 ﻿using NeeLaboratory.RealtimeSearch.Models;
+using NeeLaboratory.RealtimeSearch.Services;
 using NeeLaboratory.Resources;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace NeeLaboratory.RealtimeSearch.TextResource
     /// </summary>
     internal class TextResources
     {
-        private static readonly Lazy<FileLanguageResource> _languageResource = new(() => new FileLanguageResource(Path.Combine(AppModel.AppInfo.AssemblyLocation, "Languages")));
+        private static readonly Lazy<FileLanguageResource> _languageResource = new(() => new FileLanguageResource(Path.Combine(ApplicationInfo.Current.AssemblyLocation, "Languages")));
         private static bool _initialized;
 
         public static CultureInfo Culture => Resource.Culture;

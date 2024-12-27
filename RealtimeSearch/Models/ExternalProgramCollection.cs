@@ -11,11 +11,11 @@ namespace NeeLaboratory.RealtimeSearch.Models
 {
     public class ExternalProgramCollection : BindableBase, IEnumerable<ExternalProgram>
     {
-        private readonly AppConfig _setting;
+        private readonly AppSettings _setting;
         private string _error = "";
 
 
-        public ExternalProgramCollection(AppConfig setting)
+        public ExternalProgramCollection(AppSettings setting)
         {
             _setting = setting;
         }

@@ -20,13 +20,14 @@ using NeeLaboratory.RealtimeSearch.Windows;
 using NeeLaboratory.Threading;
 using CommunityToolkit.Mvvm.Input;
 using NeeLaboratory.IO;
+using NeeLaboratory.RealtimeSearch.Services;
 
 namespace NeeLaboratory.RealtimeSearch.ViewModels
 {
     public partial class MainWindowViewModel : BindableBase
     {
         private readonly MainModel _model;
-        private readonly AppConfig _appConfig;
+        private readonly AppSettings _settings;
         private readonly Messenger _messenger;
         private readonly string _defaultWindowTitle;
         private bool _isRenaming;
@@ -35,21 +36,21 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
         private IntPtr _hWnd;
 
 
-        public MainWindowViewModel(AppConfig appConfig, Messenger messenger)
+        public MainWindowViewModel(AppSettings settings, Messenger messenger)
         {
-            _appConfig = appConfig;
-            _appConfig.PropertyChanged += Setting_PropertyChanged;
+            _settings = settings;
+            _settings.PropertyChanged += Setting_PropertyChanged;
 
             _messenger = messenger;
             
-            _model = new MainModel(_appConfig);
+            _model = new MainModel(_settings);
             _model.PropertyChanged += Model_PropertyChanged;
 
 
-            _programs = new ExternalProgramCollection(_appConfig);
+            _programs = new ExternalProgramCollection(_settings);
             _programs.AddPropertyChanged(nameof(_programs.Error), Programs_ErrorChanged);
 
-            _defaultWindowTitle = AppModel.AppInfo.ProductName;
+            _defaultWindowTitle = ApplicationInfo.Current.ProductName;
         }
 
 
@@ -106,23 +107,23 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
 
         public bool IsTipsVisible
         {
-            get { return !_appConfig.IsDetailVisible && !IsRenaming; }
+            get { return !_settings.IsDetailVisible && !IsRenaming; }
         }
 
         public bool IsDetailVisible
         {
-            get { return _appConfig.IsDetailVisible; }
-            set { _appConfig.IsDetailVisible = value; }
+            get { return _settings.IsDetailVisible; }
+            set { _settings.IsDetailVisible = value; }
         }
 
         public bool IsTopmost
         {
-            get { return _appConfig.IsTopmost; }
+            get { return _settings.IsTopmost; }
             set
             {
-                if (_appConfig.IsTopmost != value)
+                if (_settings.IsTopmost != value)
                 {
-                    _appConfig.IsTopmost = value;
+                    _settings.IsTopmost = value;
                     RaisePropertyChanged(nameof(IsTopmost));
                 }
             }
@@ -130,8 +131,8 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
 
         public bool AllowFolder
         {
-            get { return _appConfig.AllowFolder; }
-            set { _appConfig.AllowFolder = value; }
+            get { return _settings.AllowFolder; }
+            set { _settings.AllowFolder = value; }
         }
 
         public ExternalProgramCollection Programs => _programs;
@@ -176,7 +177,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
             FileSystem.SetOwnerWindowHandle(_hWnd);
 
             // 検索パスが設定されていなければ設定画面を開く
-            if (_appConfig.SearchAreas.Count <= 0)
+            if (_settings.SearchAreas.Count <= 0)
             {
                 _messenger.Send(this, new ShowSettingWindowMessage() { Index = 1 });
             }
@@ -213,16 +214,16 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
         {
             switch (e.PropertyName)
             {
-                case nameof(_appConfig.IsDetailVisible):
+                case nameof(_settings.IsDetailVisible):
                     RaisePropertyChanged(nameof(IsDetailVisible));
                     RaisePropertyChanged(nameof(IsTipsVisible));
                     break;
 
-                case nameof(_appConfig.IsTopmost):
+                case nameof(_settings.IsTopmost):
                     RaisePropertyChanged(nameof(IsTopmost));
                     break;
 
-                case nameof(_appConfig.AllowFolder):
+                case nameof(_settings.AllowFolder):
                     RaisePropertyChanged(nameof(AllowFolder));
                     _ = SearchAsync(true);
                     break;
@@ -232,17 +233,17 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
 
         public void RestoreWindowPlacement(Window window)
         {
-            WindowPlacementTools.RestoreWindowPlacement(window, _appConfig.WindowPlacement);
+            WindowPlacementTools.RestoreWindowPlacement(window, _settings.WindowPlacement);
         }
 
         public void StoreWindowPlacement(Window window)
         {
-            _appConfig.WindowPlacement = WindowPlacementTools.StoreWindowPlacement(window, true);
+            _settings.WindowPlacement = WindowPlacementTools.StoreWindowPlacement(window, true);
         }
 
         public void StoreListViewCondition(List<ListViewColumnMemento> listViewColumnMementos)
         {
-            _appConfig.ListViewColumnMemento = listViewColumnMementos;
+            _settings.ListViewColumnMemento = listViewColumnMementos;
         }
 
         // キーワード即時設定
@@ -384,7 +385,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
         [RelayCommand]
         private void ToggleDetailVisible()
         {
-            _appConfig.IsDetailVisible = !_appConfig.IsDetailVisible;
+            _settings.IsDetailVisible = !_settings.IsDetailVisible;
         }
 
         [RelayCommand]

@@ -33,7 +33,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
             InitializeComponent();
         }
 
-        public SettingSearchAreaControl(AppConfig setting)
+        public SettingSearchAreaControl(AppSettings setting)
         {
             InitializeComponent();
             _vm = new SettingSearchAreaViewModel(setting);

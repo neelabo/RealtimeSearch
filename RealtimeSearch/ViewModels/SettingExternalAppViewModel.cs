@@ -12,7 +12,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
         private ExternalProgram? _selectedItem;
 
 
-        public SettingExternalAppViewModel(AppConfig setting)
+        public SettingExternalAppViewModel(AppSettings setting)
         {
             Setting = setting;
 
@@ -23,7 +23,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
         public event PropertyChangedEventHandler? PropertyChanged;
 
 
-        public AppConfig Setting { get; }
+        public AppSettings Setting { get; }
 
 
         public CollectionViewSource? CollectionViewSource

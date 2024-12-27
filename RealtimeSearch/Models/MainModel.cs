@@ -20,7 +20,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
     [NotifyPropertyChanged]
     public partial class MainModel : INotifyPropertyChanged
     {
-        private readonly AppConfig _appConfig;
+        private readonly AppSettings _settings;
         private string _inputKeyword = "";
         private readonly DispatcherDelayValue<string> _keyword;
         private readonly Search _search;
@@ -32,20 +32,20 @@ namespace NeeLaboratory.RealtimeSearch.Models
         private ClipboardSearch? _clipboardSearch;
 
 
-        public MainModel(AppConfig appConfig)
+        public MainModel(AppSettings settings)
         {
-            _appConfig = appConfig;
+            _settings = settings;
 
             _keyword = new DispatcherDelayValue<string>("");
             _keyword.ValueChanged += async (s, e) => await SearchAsync(false);
 
-            _search = new Search(appConfig);
+            _search = new Search(settings);
             _search.SubscribePropertyChanged(nameof(Search.IsCollectBusy), Search_IsCollectBusyChanged);
             _search.SubscribePropertyChanged(nameof(Search.IsSearchBusy), Search_IsSearchBusyChanged);
             _search.SearchResultChanged += Search_SearchResultChanged;
             _search.SearchResultDecorator = new SearchResultDecorator();
 
-            _webSearch = new WebSearch(appConfig);
+            _webSearch = new WebSearch(settings);
 
             _history = new History();
             BindingOperations.EnableCollectionSynchronization(_history.Collection, new object());
@@ -123,7 +123,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         public void StartClipboardWatch(Window window)
         {
             // クリップボード監視
-            _clipboardSearch = new ClipboardSearch(_appConfig);
+            _clipboardSearch = new ClipboardSearch(_settings);
             _clipboardSearch.ClipboardChanged += ClipboardSearch_ClipboardChanged;
             _clipboardSearch.Start(window);
         }

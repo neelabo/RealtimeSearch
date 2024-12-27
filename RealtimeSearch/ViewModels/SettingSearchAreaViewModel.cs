@@ -15,7 +15,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
         private FileArea? _selectedArea;
 
 
-        public SettingSearchAreaViewModel(AppConfig setting)
+        public SettingSearchAreaViewModel(AppSettings setting)
         {
             Setting = setting;
             UpdateCollectionViewSource();
@@ -25,7 +25,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
         public event PropertyChangedEventHandler? PropertyChanged;
 
 
-        public AppConfig Setting { get; }
+        public AppSettings Setting { get; }
 
 
         public CollectionViewSource? CollectionViewSource

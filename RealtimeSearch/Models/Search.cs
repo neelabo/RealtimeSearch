@@ -8,13 +8,12 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
-//using System.Windows.Threading;
-//using System.Windows.Data;
 using System.IO;
 using System.Collections.Specialized;
 using NeeLaboratory.IO.Search;
 using NeeLaboratory.IO.Search.Files;
 using NeeLaboratory.ComponentModel;
+using NeeLaboratory.RealtimeSearch.Services;
 
 namespace NeeLaboratory.RealtimeSearch.Models
 {
@@ -29,7 +28,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         private int _busyCount;
         private bool _isBusy;
         private string _information = "";
-        private readonly AppConfig _appConfig;
+        private readonly AppSettings _settings;
         //private readonly DispatcherTimer _timer;
         private readonly FileSearchEngine _searchEngine;
         private CancellationTokenSource _searchCancellationTokenSource = new();
@@ -42,15 +41,15 @@ namespace NeeLaboratory.RealtimeSearch.Models
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        public Search(AppConfig appConfig)
+        public Search(AppSettings settings)
         {
-            _appConfig = appConfig;
+            _settings = settings;
 
-            _searchEngine = new FileSearchEngine(_appConfig);
+            _searchEngine = new FileSearchEngine(_settings);
             _searchEngine.SubscribePropertyChanged(nameof(FileSearchEngine.IsCollectBusy), SearchEngine_IsCollectBusyPropertyChanged);
             _searchEngine.SubscribePropertyChanged(nameof(FileSearchEngine.IsSearchBusy), SearchEngine_IsSearchBusyPropertyChanged);
 
-            _appConfig.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
+            _settings.SearchAreas.CollectionChanged += SearchAreas_CollectionChanged;
         }
 
 
@@ -142,7 +141,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
             var keyword = SearchResult?.Keyword;
             SearchResult = null;
 
-            _searchEngine.SetSearchAreas(_appConfig.SearchAreas, memento);
+            _searchEngine.SetSearchAreas(_settings.SearchAreas, memento);
 
             // 再検索
             if (!string.IsNullOrWhiteSpace(keyword))
@@ -154,7 +153,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         // TODO: Cache file name
         public FileForestMemento? LoadCache()
         {
-            if (_appConfig.UseCache)
+            if (_settings.UseCache)
             {
                 var fileName = GetCacheFileName();
                 return FileForestCache.Load(fileName);
@@ -168,7 +167,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         public void SaveCache()
         {
             var fileName = GetCacheFileName();
-            if (_appConfig.UseCache)
+            if (_settings.UseCache)
             {
                 FileForestCache.Save(fileName, _searchEngine.Tree.CreateMemento());
             }
@@ -180,7 +179,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
         private string GetCacheFileName()
         {
-            return System.IO.Path.Combine(AppModel.AppInfo.LocalApplicationDataPath, FileForestCache.CacheFileName);
+            return System.IO.Path.Combine(ApplicationInfo.Current.LocalApplicationDataPath, FileForestCache.CacheFileName);
         }
 
         /// <summary>

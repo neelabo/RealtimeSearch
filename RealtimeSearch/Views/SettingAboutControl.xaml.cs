@@ -1,4 +1,5 @@
 ﻿using NeeLaboratory.RealtimeSearch.Models;
+using NeeLaboratory.RealtimeSearch.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -43,7 +44,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
                 fileName = name + ".ja-jp" + ext;
             }
 
-            var readmeUri = System.IO.Path.Combine(AppModel.AppInfo.AssemblyLocation, fileName);
+            var readmeUri = System.IO.Path.Combine(ApplicationInfo.Current.AssemblyLocation, fileName);
 
             try
             {

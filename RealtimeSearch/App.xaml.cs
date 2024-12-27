@@ -23,7 +23,7 @@ namespace NeeLaboratory.RealtimeSearch
         {
             try
             {
-                _appModel = new AppModel(AppSettings.Current);
+                _appModel = new AppModel();
                 AppModel.Instance = _appModel;
 
                 InitializeTextResource();
@@ -78,14 +78,14 @@ namespace NeeLaboratory.RealtimeSearch
             CultureInfo culture;
             try
             {
-                culture = CultureInfo.GetCultureInfo(AppModel.AppConfig.Language);
+                culture = CultureInfo.GetCultureInfo(AppModel.Settings.Language);
             }
             catch (CultureNotFoundException)
             {
                 culture = CultureInfo.CurrentCulture;
             }
             TextResources.Initialize(culture);
-            AppModel.AppConfig.Language = TextResources.Culture.Name;
+            AppModel.Settings.Language = TextResources.Culture.Name;
             //InputGestureDisplayString.Initialize(TextResources.Resource);
         }
     }

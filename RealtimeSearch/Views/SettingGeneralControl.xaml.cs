@@ -27,7 +27,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
             InitializeComponent();
         }
 
-        public SettingGeneralControl(AppConfig setting)
+        public SettingGeneralControl(AppSettings setting)
         {
             InitializeComponent();
             this.DataContext = new SettingGeneralViewModel(setting);

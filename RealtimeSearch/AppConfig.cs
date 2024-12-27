@@ -7,20 +7,20 @@ using System.Windows;
 
 namespace NeeLaboratory.RealtimeSearch
 {
-    public class AppSettings : IAppSettings
+    public class AppConfig 
     {
-        private static AppSettings? _current;
-        public static AppSettings Current
+        private static AppConfig? _current;
+        public static AppConfig Current
         {
             get
             {
                 if (_current == null)
                 {
-                    var fileName = "/RealtimeSearch.settings.json";
+                    var fileName = "/RealtimeSearch.config.json";
                     var resource_uri = new Uri(fileName, UriKind.Relative);
                     var info = Application.GetContentStream(resource_uri) ?? throw new FileNotFoundException($"File not found: {fileName}");
                     using var stream = info.Stream;
-                    _current = JsonSerializer.Deserialize<AppSettings>(stream, JsonSerializerTools.GetSerializerOptions());
+                    _current = JsonSerializer.Deserialize<AppConfig>(stream, JsonSerializerTools.GetSerializerOptions());
                     if (_current is null) throw new FormatException($"Cannot read: {fileName}");
                 }
                 return _current;

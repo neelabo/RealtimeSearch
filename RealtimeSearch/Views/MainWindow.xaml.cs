@@ -44,7 +44,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
             messenger.Register<ShowSettingWindowMessage>(ShowSettingWindow);
             messenger.Register<RenameItemMessage>(RenameItem);
 
-            _vm = new MainWindowViewModel(AppModel.AppConfig, messenger);
+            _vm = new MainWindowViewModel(AppModel.Settings, messenger);
             this.DataContext = _vm;
 
             _vm.SearchResultChanged += ViewModel_FilesChanged;
@@ -55,7 +55,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
             this.MouseRightButtonDown += (s, e) => this.RenameManager.Stop();
             this.Deactivated += (s, e) => this.RenameManager.Stop();
 
-            RestoreListViewMemento(AppModel.AppConfig.ListViewColumnMemento);
+            RestoreListViewMemento(AppModel.Settings.ListViewColumnMemento);
 
 #if false
             // 実験
@@ -177,7 +177,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
 
         private void ShowSettingWindow(int index)
         {
-            var window = new SettingWindow(AppModel.AppConfig, index)
+            var window = new SettingWindow(AppModel.Settings, index)
             {
                 Owner = this,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
@@ -387,7 +387,6 @@ namespace NeeLaboratory.RealtimeSearch.Views
         private static string? GetColumnHeaderText(GridViewColumn column)
         {
             return (column.Header as GridViewColumnHeader)?.Tag as string;
-            //return (column.Header as string) ?? (column.Header as GridViewColumnHeader)?.Content as string;
         }
 
         // リストビューカラム状態保存

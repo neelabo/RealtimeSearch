@@ -12,10 +12,10 @@ namespace NeeLaboratory.RealtimeSearch.Services
     public class PersistAndRestoreService
     {
         private readonly IFileService _fileService;
-        private readonly ApplicationInfoService _appInfo;
+        private readonly ApplicationInfo _appInfo;
 
 
-        public PersistAndRestoreService(IFileService fileService, ApplicationInfoService appInfo)
+        public PersistAndRestoreService(IFileService fileService, ApplicationInfo appInfo)
         {
             _fileService = fileService;
             _appInfo = appInfo;
@@ -28,11 +28,11 @@ namespace NeeLaboratory.RealtimeSearch.Services
 
 
         // TODO ASync
-        public AppConfig? Load()
+        public AppSettings? Load()
         {
             try
             {
-                return _fileService.Read<AppConfig>(FolderPath, AppConfigFileName);
+                return _fileService.Read<AppSettings>(FolderPath, AppConfigFileName);
             }
             catch (Exception ex)
             {
@@ -42,11 +42,11 @@ namespace NeeLaboratory.RealtimeSearch.Services
         }
 
         // TODO: ASync
-        public void Save(AppConfig appConfig)
+        public void Save(AppSettings settings)
         {
             try
             {
-                _fileService.Write(FolderPath, AppConfigFileName, appConfig, false);
+                _fileService.Write(FolderPath, AppConfigFileName, settings, false);
             }
             catch (Exception ex)
             {

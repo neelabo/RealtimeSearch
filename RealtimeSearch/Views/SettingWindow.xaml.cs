@@ -31,7 +31,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
         }
 
 
-        public SettingWindow(AppConfig setting, int index) : this()
+        public SettingWindow(AppSettings setting, int index) : this()
         {
             this.NavicationView.ItemsSource = new List<NavigationItem>
             {

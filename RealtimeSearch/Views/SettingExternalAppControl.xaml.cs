@@ -33,7 +33,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
             InitializeComponent();
         }
 
-        public SettingExternalAppControl(AppConfig setting)
+        public SettingExternalAppControl(AppSettings setting)
         {
             InitializeComponent();
             _vm = new SettingExternalAppViewModel(setting);

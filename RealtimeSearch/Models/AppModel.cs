@@ -22,40 +22,30 @@ namespace NeeLaboratory.RealtimeSearch.Models
         }
 
 
-        public static AppConfig AppConfig => Instance._appConfig;
-
-        public static ApplicationInfoService AppInfo => Instance._appInfo;
+        public static AppSettings Settings => Instance._settings;
 
 
         private readonly PersistAndRestoreService _persistAndRestoreService;
-        private readonly ApplicationInfoService _appInfo;
-        private AppConfig _appConfig = new AppConfig();
+        private readonly AppSettings _settings;
 
 
-        public AppModel(IAppSettings appSetting)
+        public AppModel()
         {
-            _appInfo = new ApplicationInfoService(appSetting);
-            _appInfo.Initialize();
-
-            _persistAndRestoreService = new PersistAndRestoreService(new FileService(), _appInfo);
+            _persistAndRestoreService = new PersistAndRestoreService(new FileService(), ApplicationInfo.Current);
 
             // カレントフォルダ設定
             //System.Environment.CurrentDirectory = Config.LocalApplicationDataPath;
 
             // 設定ファイル読み込み
-            var appConfig = _persistAndRestoreService.Load();
-            appConfig?.Validate();
-            if (appConfig != null)
-            {
-                _appConfig = appConfig;
-            }
+            var settings = _persistAndRestoreService.Load();
+            _settings = settings?.Validate() ?? new AppSettings();
         }
 
 
         public void Dispose()
         {
             // 設定ファイル保存
-            _persistAndRestoreService.Save(_appConfig);
+            _persistAndRestoreService.Save(_settings);
         }
     }
 }

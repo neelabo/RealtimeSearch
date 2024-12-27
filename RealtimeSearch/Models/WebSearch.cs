@@ -5,12 +5,12 @@ namespace NeeLaboratory.RealtimeSearch.Models
 {
     public class WebSearch
     {
-        private readonly AppConfig _appConfig;
+        private readonly AppSettings _settings;
 
 
-        public WebSearch(AppConfig appConfig)
+        public WebSearch(AppSettings settings)
         {
-            _appConfig = appConfig;
+            _settings = settings;
         }
 
 
@@ -25,7 +25,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
             query = query.Replace("+", "%2B");
             query = Regex.Replace(query, @"\s+", "+");
 
-            string url = _appConfig.WebSearchFormat.Replace("$(query)", query);
+            string url = _settings.WebSearchFormat.Replace("$(query)", query);
             Debug.WriteLine(url);
 
             var startInfo = new ProcessStartInfo(url) { UseShellExecute = true };

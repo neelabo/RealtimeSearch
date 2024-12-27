@@ -31,11 +31,11 @@ namespace NeeLaboratory.RealtimeSearch.Clipboards
 
 
         private ClipboardListener? _clipboardListener;
-        private readonly AppConfig _setting;
+        private readonly AppSettings _setting;
         private string? _copyText;
 
 
-        public ClipboardSearch(AppConfig setting)
+        public ClipboardSearch(AppSettings setting)
         {
             _setting = setting;
         }

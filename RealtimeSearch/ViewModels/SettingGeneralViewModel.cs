@@ -10,14 +10,14 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
     [NotifyPropertyChanged]
     public partial class SettingGeneralViewModel : INotifyPropertyChanged
     {
-        public SettingGeneralViewModel(AppConfig setting)
+        public SettingGeneralViewModel(AppSettings setting)
         {
             Setting = setting;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public AppConfig Setting { get; }
+        public AppSettings Setting { get; }
         
         public List<CultureItem> CultureList { get; } = TextResources.LanguageResource.Cultures.Select(e => new CultureItem(e.Name, e.NativeName)).ToList();
     }

@@ -27,7 +27,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
     }
 
 
-    public class AppConfig : BindableBase, ISearchContext
+    public class AppSettings : BindableBase, ISearchContext
     {
         private string _language = CultureInfo.CurrentCulture.Name;
         private bool _isMonitorClipboard;
@@ -36,7 +36,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         private bool _allowFolder;
 
 
-        public AppConfig()
+        public AppSettings()
         {
             SearchAreas = new ObservableCollection<FileArea>();
             IsMonitorClipboard = true;
@@ -108,9 +108,10 @@ namespace NeeLaboratory.RealtimeSearch.Models
             AllowFolder = !AllowFolder;
         }
 
-        public void Validate()
+        public AppSettings Validate()
         {
             ValidateExternalProgramsIndex();
+            return this;
         }
 
         public void ValidateExternalProgramsIndex()
