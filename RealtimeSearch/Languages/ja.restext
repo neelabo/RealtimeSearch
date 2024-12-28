@@ -1,85 +1,69 @@
-SettingWindow.Title=設定
-Setting.General=一般
-Setting.SearchArea=検索フォルダー
-Setting.SearchArea.Empty=検索するフォルダを登録してください。
-Setting.ExternalApp=外部アプリ
-Setting.Help=ヘルプ
-
-Item.Name=名前
-Item.LastWriteTime=更新日時
-Item.Type=種類
-Item.Size=サイズ
-Item.Folder=フォルダー
-
+App.Extensions=拡張子
+App.Extensions.Tips=空白区切りで複数拡張子を定義します。
+App.IsMultiArgumentEnabled=パラメーターの複数ファイル展開
+App.Name=名前
+App.Parameter=パラメーター
+App.Parameter.Tips=$(file) がファイルパスに置換されます。
+App.Program=プログラム
+App.Program.Empty=プログラムのパスを入力してください
+App.Program.Tips=指定がない場合は既定のアプリを起動します。
+App.ProgramType=種類
+App.Protocol=プロトコル
+App.Protocol.Tips=$(file) がファイルパスに置換されます。\n$(uri) がURIエンコードされたファイルパスに置換されます。
+App.SelectProgram=プログラムの選択
 Button.Refresh=更新
-Button.WebSearch=Web 検索
 Button.Settings=設定
-
-Status.Items={0:#,0} 個の項目
-Status.Searching=検索中 ...
-Status.Indexing={0:#,0} 個のインデックス作成中 ...
-Status.RegexError=正規表現エラー
-Status.DateTimeError=日時指定が不正です
-Status.FlagError=フラグ指定が不正です
-Status.OptionError=不正なオプションです
-
-Message.NoMatch=条件に一致する項目はありません。
-Message.Processing=処理中
-
+Button.WebSearch=Web 検索
+ExternalProgramType.Normal=アプリケーション
+ExternalProgramType.Uri=プロトコル
+FolderNameBox.FileTitle=ファイル選択
+FolderNameBox.FolderTitle=フォルダー選択
+Item.Folder=フォルダー
+Item.LastWriteTime=更新日時
+Item.Name=名前
+Item.Size=サイズ
+Item.Type=種類
+Menu.Copy=コピー(_C)
+Menu.CopyName=名前をコピー(_A)
+Menu.Delete=削除(_D)
 Menu.Open=開く(_O)
 Menu.OpenDefault=既定のアプリで開く(_T)
 Menu.OpenFileLocation=ファイルの場所を開く(_I)
-Menu.Delete=削除(_D)
-Menu.Rename=名前の変更(_M)
-Menu.Copy=コピー(_C)
-Menu.CopyName=名前をコピー(_A)
 Menu.Property=プロパティ(_R)
-
-
-Setting.Settings=設定
-Setting.Language=言語
-Setting.Language.Remarks=※次の起動から適用されます。
-Setting.AllowFolder=フォルダーを含める
-Setting.IsMonitorClipboard=クリップボードを監視
-Setting.IsTopmost=常に手前に表示
-Setting.UseCache=インデックスをキャッシュ
-Setting.WebSearchFormat=Web 検索
-Setting.WebSearchFormat.Tips=$(query) が検索キーワードに置換されます。
-Setting.VersionInfo=バージョン情報
-Setting.LicenseInfo=ライセンス情報
-Setting.SearchOption=検索オプション ヘルプ
-
-Setting.AddSearchFolder=検索フォルダーの追加
-
-App.Name=名前
-App.ProgramType=種類
-App.Program=プログラム
-App.Program.Tips=指定がない場合は既定のアプリを起動します。
-App.Program.Empty=プログラムのパスを入力してください
-App.Protocol=プロトコル
-App.Protocol.Tips=$(file) がファイルパスに置換されます。\n$(uri) がURIエンコードされたファイルパスに置換されます。
-App.Parameter=パラメーター
-App.Parameter.Tips=$(file) がファイルパスに置換されます。
-App.IsMultiArgumentEnabled=パラメーターの複数ファイル展開
-App.Extensions=拡張子
-App.Extensions.Tips=空白区切りで複数拡張子を定義します。
-
-App.SelectProgram=プログラムの選択
-
-
-ExternalProgramType.Normal=アプリケーション
-ExternalProgramType.Uri=プロトコル
-
+Menu.Rename=名前の変更(_M)
 Message.ConfirmDeleteFile=このファイルをごみ箱に移動しますか？
 Message.ConfirmDeleteFiles=これらの {0} 個の項目をごみ箱に移しますか？
-Message.DeleteFailed=ファイル削除に失敗しました
-
 Message.ConfirmFolderMerge=この宛先には既に '{0}' フォルダーが存在します。\n\n同じ名前のファイルがある場合、かっこで囲まれた番号が付加され、区別されます。\n\nフォルダーを統合しますか？
 Message.ConfirmFolderMerge.Title=フォルダーの上書き確認
+Message.DeleteFailed=ファイル削除に失敗しました
 Message.FolderMergeFailed=フォルダーの統合に失敗しました
+Message.NoMatch=条件に一致する項目はありません。
+Message.Processing=処理中
 Message.RenameFailed=名前の変更に失敗しました
-
-FolderNameBox.FolderTitle=フォルダー選択
-FolderNameBox.FileTitle=ファイル選択
-
-
+Setting.AddSearchFolder=検索フォルダーの追加
+Setting.AllowFolder=検索結果にフォルダーを含める
+Setting.ExternalApp=外部アプリ
+Setting.General=一般
+Setting.Help=ヘルプ
+Setting.IsMonitorClipboard=クリップボードを監視
+Setting.IsTopmost=常に手前に表示
+Setting.Language=言語
+Setting.Language.Remarks=※次の起動から適用されます。
+Setting.LicenseInfo=ライセンス情報
+Setting.ProjectPage=プロジェクト ページ
+Setting.SearchArea=検索フォルダー
+Setting.SearchArea.Empty=検索するフォルダを登録してください。
+Setting.SearchOption=検索オプション ヘルプ
+Setting.Settings=設定
+Setting.UseCache=インデックスをキャッシュ
+Setting.VersionInfo=バージョン情報
+Setting.WebSearchFormat=Web 検索
+Setting.WebSearchFormat.Tips=$(query) が検索キーワードに置換されます。
+SettingWindow.Title=設定
+Status.DateTimeError=日時指定が不正です
+Status.FlagError=フラグ指定が不正です
+Status.Indexing={0:#,0} 個のインデックス作成中 ...
+Status.Items={0:#,0} 個の項目
+Status.OptionError=不正なオプションです
+Status.RegexError=正規表現エラー
+Status.Searching=検索中 ...

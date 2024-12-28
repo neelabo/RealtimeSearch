@@ -9,5 +9,5 @@
 ### MemoryPack
 
 * Copyright (c) 2022 Cysharp, Inc.
-* URL [MemoryPack] https://github.com/Cysharp/MemoryPack
+* URL [MemoryPack](https://github.com/Cysharp/MemoryPack)
 * License: [MIT License](https://github.com/Cysharp/MemoryPack/blob/main/LICENSE.md)

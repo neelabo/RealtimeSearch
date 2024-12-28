@@ -59,5 +59,19 @@ namespace NeeLaboratory.RealtimeSearch.Views
             }
         }
 
+        private void Hyperlink_RequestWeb(object sender, RequestNavigateEventArgs e)
+        {
+            Debug.WriteLine($"{e.Uri.OriginalString}");
+            try
+            {
+                var startInfo = new ProcessStartInfo(e.Uri.OriginalString) { UseShellExecute = true };
+                Process.Start(startInfo);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
     }
 }

@@ -1,84 +1,70 @@
-SettingWindow.Title=Settings
-Setting.General=General
-Setting.SearchArea=Search folders
-Setting.SearchArea.Empty=Register folders to be searched.
-Setting.ExternalApp=External apps
-Setting.Help=Help
-
-Item.Name=Name
-Item.LastWriteTime=Date modified
-Item.Type=Type
-Item.Size=Size
-Item.Folder=Folder
-
+App.Extensions=Extensions
+App.Extensions.Tips=If there is more than one, separate them with a space.
+App.IsMultiArgumentEnabled=Expand to multiple file names
+App.Name=Name
+App.Parameter=Parameter
+App.Parameter.Tips=$(file) is replaced with the file path.
+App.Program=Program
+App.Program.Empty=Please enter the program path
+App.Program.Tips=If not specified, it is the default application.
+App.ProgramType=Type
+App.Protocol=Protocol
+App.Protocol.Tips=$(file) is replaced with the file path.\n$(uri) is replaced with the URI-encoded file path.
+App.SelectProgram=Select Program
 Button.Refresh=Refresh
-Button.WebSearch=Web Search
 Button.Settings=Settings
-
-Status.Items:1={0} item
-Status.Items={0:#,0} items
-
-Status.Searching=Search ...
-Status.Indexing={0:#,0} indexing ...
-Status.RegexError=Regexp error.
-Status.DateTimeError=Date and time designation is incorrect.
-Status.FlagError=Flag is invalid.
-Status.OptionError=Option is invalid.
-
-Message.NoMatch=There are no items matching the criteria.
-Message.Processing=Processing
-
+Button.WebSearch=Web Search
+ExternalProgramType.Normal=Application
+ExternalProgramType.Uri=Protocol
+FolderNameBox.FileTitle=Select File
+FolderNameBox.FolderTitle=Select Folder
+Item.Folder=Folder
+Item.LastWriteTime=Date modified
+Item.Name=Name
+Item.Size=Size
+Item.Type=Type
+Menu.Copy=_Copy
+Menu.CopyName=Copy _as name
+Menu.Delete=_Delete
 Menu.Open=_Open
 Menu.OpenDefault=Open in defaul_t app
 Menu.OpenFileLocation=Open file locat_ion
-Menu.Delete=_Delete
-Menu.Rename=Rena_me
-Menu.Copy=_Copy
-Menu.CopyName=Copy _as name
 Menu.Property=P_roperty
-
-Setting.Settings=Settings
-Setting.Language=Language
-Setting.Language.Remarks=* This will be applied from the next startup.
-Setting.AllowFolder=Include folders
-Setting.IsMonitorClipboard=Monitor clipboard
-Setting.IsTopmost=Always in front
-Setting.UseCache=Cache indexes
-Setting.WebSearchFormat=Web search
-Setting.WebSearchFormat.Tips=$(query) is replaced by the search keyword.
-Setting.VersionInfo=Version information
-Setting.LicenseInfo=License 
-Setting.SearchOption=Search options help
-
-Setting.AddSearchFolder=Add search folder
-
-App.Name=Name
-App.ProgramType=Type
-App.Program=Program
-App.Program.Tips=If not specified, it is the default application.
-App.Program.Empty=Please enter the program path
-App.Protocol=Protocol
-App.Protocol.Tips=$(file) is replaced with the file path.\n$(uri) is replaced with the URI-encoded file path.
-App.Parameter=Parameter
-App.Parameter.Tips=$(file) is replaced with the file path.
-App.IsMultiArgumentEnabled=Expand to multiple file names
-App.Extensions=Extensions
-App.Extensions.Tips=If there is more than one, separate them with a space.
-
-App.SelectProgram=Select Program
-
-ExternalProgramType.Normal=Application
-ExternalProgramType.Uri=Protocol
-
+Menu.Rename=Rena_me
 Message.ConfirmDeleteFile=Move this file to the Recycle Bin?
 Message.ConfirmDeleteFiles=Move these {0} items to the Recycle Bin?
-Message.DeleteFailed=Failed to delete files.
-
 Message.ConfirmFolderMerge=This destination already contains a folder named '{0}'.\n\nIf there are files with the same name, bracketed numbers are added to distinguish them.\n\nDo you still want to merge folders?
 Message.ConfirmFolderMerge.Title=Confirm Folder Replace
+Message.DeleteFailed=Failed to delete files.
 Message.FolderMergeFailed=Folder merge failed.
+Message.NoMatch=There are no items matching the criteria.
+Message.Processing=Processing
 Message.RenameFailed=Rename failed.
-
-FolderNameBox.FolderTitle=Select Folder
-FolderNameBox.FileTitle=Select File
-
+Setting.AddSearchFolder=Add search folder
+Setting.AllowFolder=Include folders in search results
+Setting.ExternalApp=External apps
+Setting.General=General
+Setting.Help=Help
+Setting.IsMonitorClipboard=Monitor clipboard
+Setting.IsTopmost=Always in front
+Setting.Language=Language
+Setting.Language.Remarks=* This will be applied from the next startup.
+Setting.LicenseInfo=License 
+Setting.ProjectPage=Project page
+Setting.SearchArea=Search folders
+Setting.SearchArea.Empty=Register folders to be searched.
+Setting.SearchOption=Search options help
+Setting.Settings=Settings
+Setting.UseCache=Cache indexes
+Setting.VersionInfo=Version information
+Setting.WebSearchFormat=Web search
+Setting.WebSearchFormat.Tips=$(query) is replaced by the search keyword.
+SettingWindow.Title=Settings
+Status.DateTimeError=Date and time designation is incorrect.
+Status.FlagError=Flag is invalid.
+Status.Indexing={0:#,0} indexing ...
+Status.Items={0:#,0} items
+Status.Items:1={0} item
+Status.OptionError=Option is invalid.
+Status.RegexError=Regexp error.
+Status.Searching=Search ...

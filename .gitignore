@@ -208,3 +208,4 @@ MakePackage/*.wixpdb
 MakePackage/_*
 /RealtimeSearch.png
 /_*
+/RealtimeSearch/Languages/Language.json
