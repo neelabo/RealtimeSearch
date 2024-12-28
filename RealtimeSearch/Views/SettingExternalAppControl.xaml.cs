@@ -62,5 +62,24 @@ namespace NeeLaboratory.RealtimeSearch.Views
                 _vm.DeleteExternalProgram(selectedItem);
             }
         }
+
+        private void ButtonDown_Click(object sender, RoutedEventArgs e)
+        {
+            if (_vm is null) return;
+
+            var item = this.ExternalProgramListBox.SelectedItem as ExternalProgram;
+            if (item is null) return;
+            _vm.MoveToDown(item);
+        }
+
+        private void ButtonUp_Click(object sender, RoutedEventArgs e)
+        {
+            if (_vm is null) return;
+
+            var item = this.ExternalProgramListBox.SelectedItem as ExternalProgram;
+            if (item is null) return;
+            _vm.MoveToUp(item);
+        }
     }
+
 }

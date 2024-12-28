@@ -25,16 +25,9 @@
 
     </UserControl.Resources>
 
-    <StackPanel x:Name="Root" Margin="0">
+    <StackPanel x:Name="Root">
 
-        <StackPanel Orientation="Horizontal">
-            <!--
-            <CheckBox Checked="{Binding Program.IsEnabled}" VerticalAlignment="Center"/>
-            -->
-            <TextBlock Text="{Binding Program.Id, StringFormat=Program {0}}" FontWeight="Bold" Margin="5"/>
-        </StackPanel>
-
-        <StackPanel Margin="16,0,0,0">
+        <StackPanel>
 
             <DockPanel Style="{StaticResource RecordStyle}" LastChildFill="True">
                 <TextBlock Style="{StaticResource ItemHeader}" Text="{tres:TextBinding App.Name}"/>

@@ -1,22 +1,10 @@
 ﻿using NeeLaboratory.ComponentModel;
 using NeeLaboratory.IO.Search.Files;
 using NeeLaboratory.RealtimeSearch.Windows;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Xml;
+
 
 namespace NeeLaboratory.RealtimeSearch.Models
 {
@@ -30,27 +18,19 @@ namespace NeeLaboratory.RealtimeSearch.Models
     public class AppSettings : BindableBase, ISearchContext
     {
         private string _language = CultureInfo.CurrentCulture.Name;
-        private bool _isMonitorClipboard;
+        private bool _isMonitorClipboard = true;
         private bool _isTopmost;
         private bool _isDetailVisible;
         private bool _allowFolder;
-
+        private string _webSearchFormat = "https://www.google.com/search?q=$(query)";
+        private bool _useCache = true;
+        private ObservableCollection<ExternalProgram> _externalPrograms;
 
         public AppSettings()
         {
-            SearchAreas = new ObservableCollection<FileArea>();
-            IsMonitorClipboard = true;
-            ExternalPrograms = new ObservableCollection<ExternalProgram>
-            {
-                new ExternalProgram(),
-            };
-            WebSearchFormat = "https://www.google.com/search?q=$(query)";
-
-            Validate();
+            _externalPrograms = [new ExternalProgram()];
+            AttachExternalPrograms();
         }
-
-
-        public ObservableCollection<FileArea> SearchAreas { get; set; }
 
 
         public string Language
@@ -83,38 +63,53 @@ namespace NeeLaboratory.RealtimeSearch.Models
             set { SetProperty(ref _isDetailVisible, value); }
         }
 
-        public string WebSearchFormat { set; get; }
+        public string WebSearchFormat
+        {
+            get { return _webSearchFormat; }
+            set { SetProperty(ref _webSearchFormat, value); }
+        }
 
-        public ObservableCollection<ExternalProgram> ExternalPrograms { set; get; }
+        public bool UseCache
+        {
+            get { return _useCache; }
+            set { SetProperty(ref _useCache, value); }
+        }
 
-        public List<ListViewColumnMemento> ListViewColumnMemento { get; set; } = new List<ListViewColumnMemento>();
 
         public WindowPlacement WindowPlacement { get; set; } = new WindowPlacement();
 
-        public bool UseCache { get; set; } = true;
+        public ObservableCollection<FileArea> SearchAreas { get; set; } = [];
 
-
-        [Obsolete("typo")] // ver.4
-        [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingDefault)] 
-        public bool IsDetailVisibled
+        public ObservableCollection<ExternalProgram> ExternalPrograms
         {
-            get { return default; }
-            set { _isDetailVisible = value; }
+            get { return _externalPrograms; }
+            set
+            {
+                if (SetProperty(ref _externalPrograms, value))
+                {
+                    AttachExternalPrograms();
+                }
+            }
         }
 
+        public List<ListViewColumnMemento> ListViewColumnMemento { get; set; } = [];
 
-        public void ToggleAllowFolder()
-        {
-            AllowFolder = !AllowFolder;
-        }
 
         public AppSettings Validate()
         {
-            ValidateExternalProgramsIndex();
+            // TODO: 互換性処理
             return this;
         }
 
-        public void ValidateExternalProgramsIndex()
+        private void AttachExternalPrograms()
+        {
+            if (_externalPrograms is null) return;
+
+            _externalPrograms.CollectionChanged += (s, e) => ValidateExternalProgramId();
+            ValidateExternalProgramId();
+        }
+
+        private void ValidateExternalProgramId()
         {
             for (int i = 0; i < ExternalPrograms.Count; i++)
             {

@@ -63,13 +63,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         public int Id
         {
             get { return _id; }
-            set
-            {
-                if (SetProperty(ref _id, value))
-                {
-                    RaisePropertyChanged(nameof(Name));
-                }
-            }
+            set { SetProperty(ref _id, value); }
         }
 
         [JsonIgnore]
@@ -172,7 +166,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         private string GetDefaultName()
         {
             return string.IsNullOrEmpty(_program)
-                ? $"Program {_id}"
+                ? "none"
                 : Path.GetFileNameWithoutExtension(_program);
         }
 

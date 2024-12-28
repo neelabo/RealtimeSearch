@@ -53,14 +53,28 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
         {
             var item = new ExternalProgram();
             Setting.ExternalPrograms.Add(item);
-            Setting.ValidateExternalProgramsIndex();
             return item;
         }
 
         public void DeleteExternalProgram(ExternalProgram item)
         {
             Setting.ExternalPrograms.Remove(item);
-            Setting.ValidateExternalProgramsIndex();
+        }
+
+        public void MoveToUp(ExternalProgram item)
+        {
+            var index = Setting.ExternalPrograms.IndexOf(item);
+            if (index <= 0) return;
+
+            Setting.ExternalPrograms.Move(index, index - 1);
+        }
+
+        public void MoveToDown(ExternalProgram item)
+        {
+            var index = Setting.ExternalPrograms.IndexOf(item);
+            if (index < 0 || index >= Setting.ExternalPrograms.Count - 1) return;
+
+            Setting.ExternalPrograms.Move(index, index + 1);
         }
     }
 }

@@ -31,18 +31,6 @@ namespace NeeLaboratory.RealtimeSearch.Views
         public static readonly DependencyProperty ProgramProperty =
             DependencyProperty.Register("Program", typeof(ExternalProgram), typeof(ExternalProgramSettingControl), new PropertyMetadata(null));
 
-
-        public string Header
-        {
-            get { return (string)GetValue(HeaderProperty); }
-            set { SetValue(HeaderProperty, value); }
-        }
-
-        public static readonly DependencyProperty HeaderProperty =
-            DependencyProperty.Register("Header", typeof(string), typeof(ExternalProgramSettingControl), new PropertyMetadata("外部アプリ設定"));
-
-
-
         public ExternalProgramSettingControl()
         {
             InitializeComponent();

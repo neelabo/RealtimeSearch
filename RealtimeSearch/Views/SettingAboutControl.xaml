@@ -17,7 +17,7 @@
                 <Image Source="/Resources/App.ico" Width="32" Height="32" Margin="16,8" VerticalAlignment="Center"/>
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="RealtimeSearch" FontSize="16" />
-                    <TextBlock Text="version 4.0 (64bit)" />
+                    <TextBlock x:Name="VersionTextBlock" Text="4.0 (64bit)" />
                 </StackPanel>
             </StackPanel>
 

@@ -56,6 +56,11 @@ namespace NeeLaboratory.RealtimeSearch.Services
         public string ProductVersion { get; private set; } = "";
 
         /// <summary>
+        /// プロダクトフルバージョン
+        /// </summary>
+        public string ProductFullVersion { get; private set; } = "";
+
+        /// <summary>
         /// プロダクトバージョン(int)
         /// </summary>
         public int ProductVersionNumber { get; private set; }
@@ -143,16 +148,9 @@ namespace NeeLaboratory.RealtimeSearch.Services
 
             // バージョンの取得
             var version = asm.GetName().Version ?? new Version();
-            if (version.Build == 0)
-            {
-                ProductVersion = $"{version.Major}.{version.Minor}";
-                ProductVersionNumber = GenerateProductVersionNumber(version.Major, version.Minor, 0);
-            }
-            else
-            {
-                ProductVersion = $"{version.Major}.{version.Minor}.{version.Build}";
-                ProductVersionNumber = GenerateProductVersionNumber(version.Major, version.Minor, version.Build);
-            }
+            ProductVersion = $"{version.Major}.{version.Minor}";
+            ProductFullVersion = $"{version.Major}.{version.Minor}.{version.Build}";
+            ProductVersionNumber = GenerateProductVersionNumber(version.Major, version.Minor, version.Build);
         }
 
         /// <summary>

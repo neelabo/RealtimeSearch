@@ -11,6 +11,7 @@
     <UserControl.Resources>
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" Null="Hidden"/>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" False="Hidden"/>
+        <converters:IncrementConverter x:Key="IncrementConverter" />
     </UserControl.Resources>
 
     <Grid Margin="8">
@@ -46,15 +47,10 @@
                                                  Visibility="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <TextBlock Style="{StaticResource IconFont}" Text="&#xECC9;" />
                             </Button>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="{Binding Name, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
+                            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                <TextBlock Text="{Binding Id}" />
+                                <TextBlock Margin="4,0" Text="{Binding Name, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
-                            <!--
-                            <StackPanel>
-                                <TextBlock Text="{Binding Name, Mode=OneWay}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
-                                <TextBlock Text="{Binding Program, Mode=OneWay}" Foreground="Gray" TextTrimming="CharacterEllipsis"  />
-                            </StackPanel>
-                            -->
                         </DockPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
@@ -62,10 +58,25 @@
 
         </DockPanel>
 
-        <local:ExternalProgramSettingControl Grid.Row="1" Margin="0"
-                                                         DataContext="{Binding ElementName=ExternalProgramListBox, Path=SelectedItem}"
-                                                         Visibility="{Binding ElementName=ExternalProgramListBox, Path=SelectedItem, Converter={StaticResource NullToVisibilityConverter}}"
-                                                         Header="{Binding Name}" Program="{Binding}" />
+        <StackPanel Grid.Row="1" DataContext="{Binding ElementName=ExternalProgramListBox, Path=SelectedItem}" Visibility="{Binding Converter={StaticResource NullToVisibilityConverter}}">
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{Binding Program.Id, StringFormat=Program {0}}" FontWeight="Bold" Margin="5"/>
+                <RepeatButton x:Name="ButtonDown" Grid.Column="1" DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="32" Height="24" Click="ButtonDown_Click">
+                    <TextBlock Style="{StaticResource IconFont}" Text="&#xE70D;"/>
+                </RepeatButton>
+                <RepeatButton x:Name="ButtonUp" Grid.Column="2" DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="32" Height="24" Click="ButtonUp_Click">
+                    <TextBlock Style="{StaticResource IconFont}" Text="&#xE70E;"/>
+                </RepeatButton>
+            </Grid>
+
+            <local:ExternalProgramSettingControl Program="{Binding}" />
+        </StackPanel>
 
     </Grid>
 </UserControl>
