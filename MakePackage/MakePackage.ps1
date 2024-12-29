@@ -293,10 +293,11 @@ function New-Readme($packageDir, $culture, $target)
 	Copy-Item "$readmeSource\Canary.md" $readmeDir
 	Copy-Item "$readmeSource\Environment.md" $readmeDir
 	Copy-Item "$readmeSource\Contact.md" $readmeDir
+	Copy-Item "$readmeSource\LicenseHeader.md" $readmeDir
+	Copy-Item "$readmeSource\LicenseAppendix.md" $readmeDir
 	Copy-Item "$readmeSource\SearchOptions.md" $readmeDir
 
 	Copy-Item "$solutionDir\LICENSE.md" $readmeDir
-	Copy-Item "$solutionDir\LICENSE.ja-jp.md" $readmeDir
 	Copy-Item "$solutionDir\THIRDPARTY_LICENSES.md" $readmeDir
 	Copy-Item "$solutionDir\NeeLaboratory.IO.Search\THIRDPARTY_LICENSES.md" "$readmeDir\NeeLaboratory.IO.Search_THIRDPARTY_LICENSES.md"
 
@@ -340,11 +341,13 @@ function New-Readme($packageDir, $culture, $target)
 	}
 
 	$inputs += "$readmeDir\Contact.md"
+
+	$inputs += "$readmeDir\LicenseHeader.md"
 	$inputs += "$readmeDir\LICENSE.md"
 
 	if ($culture -eq "ja-jp")
 	{
-		$inputs += "$readmeDir\LICENSE.ja-jp.md"
+		$inputs += "$readmeDir\LicenseAppendix.md"
 	}
 
 	$inputs += "$readmeDir\THIRDPARTY_LICENSES.md"

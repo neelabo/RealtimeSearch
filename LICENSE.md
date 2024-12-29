@@ -1,8 +1,4 @@
-## License
-
-RealtimeSearch is released under the MIT License.
-
-------------------------------------------------------------------------------------------------
+MIT License
 
 Copyright (c) 2016-2024 Ito Mitsuhiro (nee)
 

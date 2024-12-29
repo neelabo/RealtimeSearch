@@ -22,7 +22,7 @@
             </StackPanel>
 
             <TextBlock Margin="0,8">
-                <Hyperlink NavigateUri="https://bitbucket.org/neelabo/realtimesearch" RequestNavigate="Hyperlink_RequestWeb">
+                <Hyperlink NavigateUri="https://github.com/neelabo/RealtimeSearch" RequestNavigate="Hyperlink_RequestWeb">
                     <TextBlock Text="{tres:TextBinding Setting.ProjectPage}"/>
                 </Hyperlink>
             </TextBlock>

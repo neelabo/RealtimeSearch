@@ -1,8 +1,8 @@
 ## 連絡先
 
- 不具合を見つけたらプロジェクト ページに課題として投稿してください。 (ログインが必要です)
-
-  * [RealtimeSearch (Bitbucket)](https://bitbucket.org/neelabo/realtimesearch)
+ 不具合を見つけたらプロジェクト ページに課題として投稿してください。
+ 
+  * [RealtimeSearch (GitHub)](https://github.com/neelabo/RealtimeSearch)
  
  こちらのブログのコメントでもご報告いただけます。
 

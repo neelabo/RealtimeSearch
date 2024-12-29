@@ -1,8 +1,8 @@
 ## Contact
 
- If you find a bug, please post it as an issue on the project page. (Login required)
-
-  * [RealtimeSearch (Bitbucket)](https://bitbucket.org/neelabo/realtimesearch)
+ If you find a bug, please post it as an issue on the project page. 
+ 
+  * [RealtimeSearch (GitHub)](https://github.com/neelabo/RealtimeSearch)
  
  You can also report back to us in the comments of this blog.
 
