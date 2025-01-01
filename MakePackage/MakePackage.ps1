@@ -335,7 +335,7 @@ function New-Readme($packageDir, $culture, $target)
 	$inputs = @()
 	$inputs += "$readmeDir\Overview.md"
 
-	if ($target -ne ".appx")
+	if ($target -ne ".msix")
 	{
 		$inputs += "$readmeDir\Environment.md"
 	}
@@ -459,7 +459,7 @@ function New-ConfigForAppx($inputDir, $config, $outputDir)
 {
 	$jsonObject = (Get-Content "$inputDir\$config" | ConvertFrom-Json)
 
-	$jsonObject.PackageType = ".appx"
+	$jsonObject.PackageType = ".msix"
 	$jsonObject.SelfContained = $true
 	$jsonObject.Watermark = $false
 	$jsonObject.UseLocalApplicationData = $true
@@ -679,8 +679,8 @@ function New-Appx($arch, $packageDir, $packageAppendDir, $appx)
 	New-ConfigForAppx $packageDir "${product}.config.json" $contentDir
 
 	# generate README.html
-	New-Readme $contentDir "en-us" ".appx"
-	New-Readme $contentDir "ja-jp" ".appx"
+	New-Readme $contentDir "en-us" ".msix"
+	New-Readme $contentDir "ja-jp" ".msix"
 
 	. $env:CersPath/_$product.Parameter.ps1
 	$param = Get-AppxParameter
@@ -703,7 +703,7 @@ function New-Appx($arch, $packageDir, $packageAppendDir, $appx)
 	}
 
 	# signing
-	& "$Win10SDK\signtool.exe" sign -f "$env:CersPath/_$product.pfx" -fd SHA256 -v "$appx"
+	& "$Win10SDK\signtool.exe" sign -f "$env:CersPath/_NeeLaboratory.pfx" -fd SHA256 -v "$appx"
 	if ($? -ne $true)
 	{
 		throw "signtool.exe error"
@@ -1029,8 +1029,8 @@ $packageMsi_x64 = "$packageName_x64.msi"
 $packageMsi_x86 = "$packageName_x86.msi"
 $packageAppxDir_x64 = "${product}${appVersion}-appx-x64"
 $packageAppxDir_x86 = "${product}${appVersion}-appx-x84"
-$packageX86Appx = "${product}${appVersion}-x86.appx"
-$packageX64Appx = "${product}${appVersion}.appx"
+$packageX86Appx = "${product}${appVersion}-x86.msix"
+$packageX64Appx = "${product}${appVersion}.msix"
 $packageCanaryDir = "${product}Canary"
 $packageCanaryDir_AnyCPU = "${product}Canary-AnyCPU"
 $packageCanary = "${product}Canary${dateVersion}.zip"
@@ -1083,13 +1083,13 @@ if (($Target -eq "All") -or ($Target -eq "Appx"))
 {
 	if ($x86)
 	{
-		#Build-PackageSorce-x86
-		#Build-Appx-x86
+		Build-PackageSorce-x86
+		Build-Appx-x86
 	}
 	else
 	{
-		#Build-PackageSorce-x64
-		#Build-Appx-x64
+		Build-PackageSorce-x64
+		Build-Appx-x64
 	}
 }
 
@@ -1115,7 +1115,7 @@ if (-not $x86)
 }
 
 #--------------------------
-# saev buid version
+# save build version
 if ($updateBuildVersion)
 {
 	$nextVersion = Add-Version $version

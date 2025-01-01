@@ -155,6 +155,7 @@ _pkginfo.txt
 *.appx
 *.appxbundle
 *.appxupload
+*.msix
 
 # Others
 sql/
@@ -206,6 +207,9 @@ MakePackage/*.xml
 MakePackage/*.msi
 MakePackage/*.wixpdb
 MakePackage/_*
+MakePackage/Appx/_*
+MakePackage/Appx/Icons/_*
+MakePackage/Appx/resources.pri.xml
 /RealtimeSearch.png
 /_*
 /RealtimeSearch/Languages/Language.json
