@@ -452,18 +452,22 @@ namespace NeeLaboratory.RealtimeSearch.Views
             contextMenu.Items.Clear();
             contextMenu.Items.Add(CreateMenuItem(ResourceService.GetString("@Menu.Open"), _vm.OpenExternalProgramCommand, selectedItems, new KeyGesture(Key.Enter)));
             contextMenu.Items.Add(CreateMenuItem(ResourceService.GetString("@Menu.OpenDefault"), _vm.OpenDefaultCommand, selectedItems, new KeyGesture(Key.Enter, ModifierKeys.Control)));
-            contextMenu.Items.Add(new Separator());
-            for (int i = 0; i < _vm.Programs.Count; i++)
+
+            if (_vm.Programs.Count > 0)
             {
-                var program = _vm.Programs[i];
-                var header = MenuItemTools.IntegerToAccessKey(i + 1) + " " + MenuItemTools.EscapeMenuItemString(program.Name);
-                if (i < 9)
+                contextMenu.Items.Add(new Separator());
+                for (int i = 0; i < _vm.Programs.Count; i++)
                 {
-                    contextMenu.Items.Add(CreateMenuItem(header, _vm.OpenSelectedExternalProgramCommand, new OpenSelectedExternalProgramArgs(selectedItems, i + 1), new KeyGesture(Key.D1 + i, ModifierKeys.Control)));
-                }
-                else
-                {
-                    contextMenu.Items.Add(CreateMenuItem(header, _vm.OpenSelectedExternalProgramCommand, new OpenSelectedExternalProgramArgs(selectedItems, i + 1)));
+                    var program = _vm.Programs[i];
+                    var header = MenuItemTools.IntegerToAccessKey(i + 1) + " " + MenuItemTools.EscapeMenuItemString(program.Name);
+                    if (i < 9)
+                    {
+                        contextMenu.Items.Add(CreateMenuItem(header, _vm.OpenSelectedExternalProgramCommand, new OpenSelectedExternalProgramArgs(selectedItems, i + 1), new KeyGesture(Key.D1 + i, ModifierKeys.Control)));
+                    }
+                    else
+                    {
+                        contextMenu.Items.Add(CreateMenuItem(header, _vm.OpenSelectedExternalProgramCommand, new OpenSelectedExternalProgramArgs(selectedItems, i + 1)));
+                    }
                 }
             }
 

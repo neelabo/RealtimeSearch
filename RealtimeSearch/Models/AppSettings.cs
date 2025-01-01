@@ -28,7 +28,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
         public AppSettings()
         {
-            _externalPrograms = [new ExternalProgram()];
+            _externalPrograms = new();
             AttachExternalPrograms();
         }
 

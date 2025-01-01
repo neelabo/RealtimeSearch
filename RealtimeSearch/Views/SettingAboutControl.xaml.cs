@@ -28,7 +28,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
         {
             InitializeComponent();
 
-            this.VersionTextBlock.Text = "version " + ApplicationInfo.Current.ProductVersion;
+            this.VersionTextBlock.Text = "version " + ApplicationInfo.Current.ProductVersion + " (64bit)";
         }
 
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)

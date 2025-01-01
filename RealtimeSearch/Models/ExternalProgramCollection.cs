@@ -129,11 +129,16 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
             else if (program.ProgramType == ExternalProgramType.Uri)
             {
-                if (string.IsNullOrWhiteSpace(program.Protocol)) throw new InvalidOperationException("プロトコルが指定されていません。設定を見直してください。");
-
-                var protocol = ReplaceKeyword(program.Protocol, files);
-                var startInfo = new System.Diagnostics.ProcessStartInfo(protocol) { UseShellExecute = true };
-                System.Diagnostics.Process.Start(startInfo);
+                if (string.IsNullOrWhiteSpace(program.Protocol))
+                {
+                    ExecuteDefault(files);
+                }
+                else
+                {
+                    var protocol = ReplaceKeyword(program.Protocol, files);
+                    var startInfo = new System.Diagnostics.ProcessStartInfo(protocol) { UseShellExecute = true };
+                    System.Diagnostics.Process.Start(startInfo);
+                }
             }
         }
 

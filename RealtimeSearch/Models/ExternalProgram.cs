@@ -19,16 +19,6 @@ namespace NeeLaboratory.RealtimeSearch.Models
         Uri,
     }
 
-#if false
-    public static class ExternalProgramTypeExtensions
-    {
-        public static readonly Dictionary<ExternalProgramType, string> ExternalProgramTypeNames = new()
-        {
-            [ExternalProgramType.Normal] = ResourceService.GetString(@"ExternalProgramType.Normal") "外部プログラム",
-            [ExternalProgramType.Uri] = "プロトコル起動",
-        };
-    }
-#endif
 
     [NotifyPropertyChanged]
     public partial class ExternalProgram : INotifyPropertyChanged
@@ -166,7 +156,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         private string GetDefaultName()
         {
             return string.IsNullOrEmpty(_program)
-                ? "none"
+                ? ResourceService.GetString("@App.DefaultApp")
                 : Path.GetFileNameWithoutExtension(_program);
         }
 

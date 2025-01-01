@@ -22,6 +22,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
             // キーワード整形。空白を"+"にする
             string query = keyword.Trim();
             if (string.IsNullOrEmpty(query)) return;
+            query = query.Replace("%", "%25");
             query = query.Replace("+", "%2B");
             query = Regex.Replace(query, @"\s+", "+");
 

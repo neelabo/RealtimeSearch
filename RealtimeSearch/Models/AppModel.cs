@@ -37,8 +37,16 @@ namespace NeeLaboratory.RealtimeSearch.Models
             //System.Environment.CurrentDirectory = Config.LocalApplicationDataPath;
 
             // 設定ファイル読み込み
-            var settings = _persistAndRestoreService.Load();
-            _settings = settings?.Validate() ?? new AppSettings();
+            try
+            {
+                var settings = _persistAndRestoreService.Load();
+                _settings = settings?.Validate() ?? new AppSettings();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(CreateExceptionMessage(ex), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _settings = new AppSettings();
+            }
         }
 
 
@@ -46,6 +54,18 @@ namespace NeeLaboratory.RealtimeSearch.Models
         {
             // 設定ファイル保存
             _persistAndRestoreService.Save(_settings);
+        }
+
+        private static string CreateExceptionMessage(Exception ex)
+        {
+            if (ex.InnerException is not null)
+            {
+                return ex.Message + "\n" + CreateExceptionMessage(ex.InnerException);
+            }
+            else
+            {
+                return ex.Message;
+            }
         }
     }
 }

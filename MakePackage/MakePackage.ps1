@@ -335,7 +335,7 @@ function New-Readme($packageDir, $culture, $target)
 	$inputs = @()
 	$inputs += "$readmeDir\Overview.md"
 
-	if ($target -ne ".msix")
+	if ($target -ne ".appx")
 	{
 		$inputs += "$readmeDir\Environment.md"
 	}
@@ -459,7 +459,7 @@ function New-ConfigForAppx($inputDir, $config, $outputDir)
 {
 	$jsonObject = (Get-Content "$inputDir\$config" | ConvertFrom-Json)
 
-	$jsonObject.PackageType = ".msix"
+	$jsonObject.PackageType = ".appx"
 	$jsonObject.SelfContained = $true
 	$jsonObject.Watermark = $false
 	$jsonObject.UseLocalApplicationData = $true
@@ -679,8 +679,8 @@ function New-Appx($arch, $packageDir, $packageAppendDir, $appx)
 	New-ConfigForAppx $packageDir "${product}.config.json" $contentDir
 
 	# generate README.html
-	New-Readme $contentDir "en-us" ".msix"
-	New-Readme $contentDir "ja-jp" ".msix"
+	New-Readme $contentDir "en-us" ".appx"
+	New-Readme $contentDir "ja-jp" ".appx"
 
 	. $env:CersPath/_$product.Parameter.ps1
 	$param = Get-AppxParameter

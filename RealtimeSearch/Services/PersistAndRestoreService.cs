@@ -24,7 +24,7 @@ namespace NeeLaboratory.RealtimeSearch.Services
 
         private string FolderPath => _appInfo.LocalApplicationDataPath;
 
-        private string AppConfigFileName => "Setting.json";
+        private string AppConfigFileName => "Settings.json";
 
 
         // TODO ASync
@@ -37,7 +37,7 @@ namespace NeeLaboratory.RealtimeSearch.Services
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-                throw new ApplicationException("設定の読み込みに失敗しました。", ex);
+                throw new ApplicationException("Failed to load settings.", ex);
             }
         }
 
@@ -51,7 +51,7 @@ namespace NeeLaboratory.RealtimeSearch.Services
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-                throw new ApplicationException("設定の保存に失敗しました。", ex);
+                throw new ApplicationException("Failed to load settings.", ex);
             }
         }
     }

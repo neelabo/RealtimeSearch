@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-//using System.Windows;
 
 namespace NeeLaboratory.RealtimeSearch.Windows
 {
@@ -55,7 +54,7 @@ namespace NeeLaboratory.RealtimeSearch.Windows
             return Width > 0 || Height > 0;
         }
 
-        public WindowPlacement WithIsFullScreeen(bool isFullScreen)
+        public WindowPlacement WithIsFullScreen(bool isFullScreen)
         {
             return new WindowPlacement(WindowState, Left, Top, Width, Height, isFullScreen);
         }
