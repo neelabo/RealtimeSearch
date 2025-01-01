@@ -1,3 +1,4 @@
+App.DefaultApp=Default App
 App.Extensions=Extensions
 App.Extensions.Tips=If there is more than one, separate them with a space.
 App.IsMultiArgumentEnabled=Expand to multiple file names

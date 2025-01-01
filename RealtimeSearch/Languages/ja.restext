@@ -1,3 +1,4 @@
+App.DefaultApp=既定のアプリ
 App.Extensions=拡張子
 App.Extensions.Tips=空白区切りで複数拡張子を定義します。
 App.IsMultiArgumentEnabled=パラメーターの複数ファイル展開

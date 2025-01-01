@@ -274,9 +274,16 @@ function New-Package($platform, $productName, $productDir, $packageDir)
 	# custom config
 	New-ConfigForZip $productDir "$productName.config.json" $packageDir
 
+	if ($platform.Contains("-fd")) {
+		$target = ".zip-fd"
+	}
+	else {
+		$target = ".zip"
+	}
+
 	# generate README.html
-	New-Readme $packageDir "en-us" ".zip"
-	New-Readme $packageDir "ja-jp" ".zip"
+	New-Readme $packageDir "en-us" $target
+	New-Readme $packageDir "ja-jp" $target
 }
 
 #----------------------
@@ -292,6 +299,9 @@ function New-Readme($packageDir, $culture, $target)
 	Copy-Item "$readmeSource\Overview.md" $readmeDir
 	Copy-Item "$readmeSource\Canary.md" $readmeDir
 	Copy-Item "$readmeSource\Environment.md" $readmeDir
+	Copy-Item "$readmeSource\Package-zip.md" $readmeDir
+	Copy-Item "$readmeSource\Package-zip-fd.md" $readmeDir
+	Copy-Item "$readmeSource\Package-msi.md" $readmeDir
 	Copy-Item "$readmeSource\Contact.md" $readmeDir
 	Copy-Item "$readmeSource\LicenseHeader.md" $readmeDir
 	Copy-Item "$readmeSource\LicenseAppendix.md" $readmeDir
@@ -338,6 +348,15 @@ function New-Readme($packageDir, $culture, $target)
 	if ($target -ne ".appx")
 	{
 		$inputs += "$readmeDir\Environment.md"
+	}
+	
+	if (($target -eq ".zip") -or ($target -eq ".beta"))
+	{
+		$inputs += "$readmeDir\Package-zip.md"
+	}
+	elseif (($target -eq ".zip-fd") -or ($target -eq ".canary"))
+	{
+		$inputs += "$readmeDir\Package-zip-fd.md"
 	}
 
 	$inputs += "$readmeDir\Contact.md"
@@ -515,6 +534,10 @@ function New-PackageAppend($packageDir, $packageAppendDir)
 	# configure customize
 	New-ConfigForMsi $packageDir "${product}.config.json" $packageAppendDir
 
+	# generate README.html
+	New-Readme $packageAppendDir "en-us" ".msi"
+	New-Readme $packageAppendDir "ja-jp" ".msi"
+
 	# icons
 	Copy-Item "$projectDir\Resources\App.ico" $packageAppendDir
 }
@@ -567,29 +590,25 @@ function New-Msi($arch, $packageDir, $packageAppendDir, $packageMsi)
 
 		[xml]$xml = Get-Content $wxs
 
-		# remove $product.exe
-		$node = $xml.Wix.Fragment[0].DirectoryRef.Component | Where-Object{$_.File.Source -match "$product\.exe"}
-		if ($null -ne $node)
-		{
-			$componentId = $node.Id
-			$xml.Wix.Fragment[0].DirectoryRef.RemoveChild($node)
-
-			$node = $xml.Wix.Fragment[1].ComponentGroup.ComponentRef | Where-Object{$_.Id -eq $componentId}
-			$xml.Wix.Fragment[1].ComponentGroup.RemoveChild($node)
-		}
-
-		# remove $product.config.json
-		$node = $xml.Wix.Fragment[0].DirectoryRef.Component | Where-Object{$_.File.Source -match "$product\.settings\.json"}
-		if ($null -ne $node)
-		{
-			$componentId = $node.Id
-			$xml.Wix.Fragment[0].DirectoryRef.RemoveChild($node)
-
-			$node = $xml.Wix.Fragment[1].ComponentGroup.ComponentRef | Where-Object{$_.Id -eq $componentId}
-			$xml.Wix.Fragment[1].ComponentGroup.RemoveChild($node)
-		}
+		Remove-WixComponentNode $xml "$product.exe"
+		Remove-WixComponentNode $xml "$product.config.json"
+		Remove-WixComponentNode $xml "README.html"
+		Remove-WixComponentNode $xml "README.ja-jp.html"
 
 		$xml.Save($wxs)
+	}
+
+	function Remove-WixComponentNode($xml, $name)
+	{
+		$node = $xml.Wix.Fragment[0].DirectoryRef.Component | Where-Object{(Split-Path $_.File.Source -Leaf) -eq $name}
+		if ($null -ne $node)
+		{
+			$componentId = $node.Id
+			$xml.Wix.Fragment[0].DirectoryRef.RemoveChild($node)
+
+			$node = $xml.Wix.Fragment[1].ComponentGroup.ComponentRef | Where-Object{$_.Id -eq $componentId}
+			$xml.Wix.Fragment[1].ComponentGroup.RemoveChild($node)
+		}
 	}
 
 	function New-MsiSub($packageMsi, $culture)
@@ -838,7 +857,7 @@ function Build-UpdateState
 	$global:build_x64_fd = Test-Path $publishDir_x64_fd
 }
 
-function Build-PackageSorce-x64
+function Build-PackageSource-x64
 {
 	if ($global:build_x64 -eq $true) { return }
 
@@ -853,7 +872,7 @@ function Build-PackageSorce-x64
 	$global:build_x64 = $true
 }
 
-function Build-PackageSorce-x86
+function Build-PackageSource-x86
 {
 	if ($global:build_x86 -eq $true) { return }
 
@@ -868,7 +887,7 @@ function Build-PackageSorce-x86
 	$global:build_x86 = $true
 }
 
-function Build-PackageSorce-x64-fd
+function Build-PackageSource-x64-fd
 {
 	if ($global:build_x64_fd -eq $true) { return }
 
@@ -1052,15 +1071,15 @@ if (($Target -eq "All") -or ($Target -eq "Zip"))
 {
 	if ($x86)
 	{
-		Build-PackageSorce-x86
+		Build-PackageSource-x86
 		Build-Zip-x86
 	}
 	else
 	{
-		Build-PackageSorce-x64
+		Build-PackageSource-x64
 		Build-Zip-x64
 
-		Build-PackageSorce-x64-fd
+		Build-PackageSource-x64-fd
 		Build-Zip-x64-fd
 	}
 }
@@ -1069,12 +1088,12 @@ if (($Target -eq "All") -or ($Target -eq "Installer"))
 {
 	if ($x86)
 	{
-		Build-PackageSorce-x86
+		Build-PackageSource-x86
 		Build-Installer-x86
 	}
 	else
 	{
-		Build-PackageSorce-x64
+		Build-PackageSource-x64
 		Build-Installer-x64
 	}
 }
@@ -1083,33 +1102,33 @@ if (($Target -eq "All") -or ($Target -eq "Appx"))
 {
 	if ($x86)
 	{
-		Build-PackageSorce-x86
+		Build-PackageSource-x86
 		Build-Appx-x86
 	}
 	else
 	{
-		Build-PackageSorce-x64
+		Build-PackageSource-x64
 		Build-Appx-x64
 	}
 }
 
 if (-not $x86)
 {
-	if (($Target -eq "All") -or ($Target -eq "Canary"))
+	if ($Target -eq "Canary")
 	{
-		Build-PackageSorce-x64-fd
+		Build-PackageSource-x64-fd
 		Build-Canary
 	}
 
-	if (($Target -eq "All") -or ($Target -eq "Beta"))
+	if ($Target -eq "Beta")
 	{
-		Build-PackageSorce-x64
+		Build-PackageSource-x64
 		Build-Beta
 	}
 
 	if (-not $continue)
 	{
-		Build-PackageSorce-x64-fd
+		Build-PackageSource-x64-fd
 		Export-Current
 	}
 }

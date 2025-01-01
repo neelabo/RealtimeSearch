@@ -96,7 +96,13 @@
         </File>
       </Component>
       <Component>
-        <File Source="$(var.AppendDir)RealtimeSearch.settings.json" KeyPath="yes" />
+        <File Source="$(var.AppendDir)RealtimeSearch.config.json" KeyPath="yes" />
+      </Component>
+      <Component>
+        <File Source="$(var.AppendDir)README.html" KeyPath="yes" />
+      </Component>
+      <Component>
+        <File Source="$(var.AppendDir)README.ja-jp.html" KeyPath="yes" />
       </Component>
       <Component>
         <RegistryValue Root="HKLM" Key="SOFTWARE\NeeLaboratory\RealtimeSearch" Name="InstallDir" Type="string" Value="[INSTALLFOLDER]" KeyPath="yes"/>

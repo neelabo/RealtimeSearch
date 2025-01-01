@@ -40,7 +40,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         private bool _isMultiArgumentEnabled;
         private List<string> _extensionsList = new();
 
-        [JsonInclude, JsonPropertyName("Name"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        [JsonInclude, JsonPropertyName("Name")]
         public string? _name;
 
 

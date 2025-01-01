@@ -11,6 +11,7 @@
 [Dd]ebugPublic/
 [Rr]elease/
 x64/
+x86/
 build/
 bld/
 [Bb]in/
@@ -210,6 +211,8 @@ MakePackage/_*
 MakePackage/Appx/_*
 MakePackage/Appx/Icons/_*
 MakePackage/Appx/resources.pri.xml
+!/MakePackage/WixSource/x64
+!/MakePackage/WixSource/x86
 /RealtimeSearch.png
 /_*
 /RealtimeSearch/Languages/Language.json
