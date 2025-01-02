@@ -1,12 +1,10 @@
 
 Param(
-    [parameter(mandatory)][string]$inputDir,
-    [parameter(mandatory)][string]$outputDir
+    [string]$inputDir = "Svgs",
+    [string]$outputDir = "Pngs"
 )
 
 $inkscape = 'E:\Bin\inkscape-1.2.2\bin\inkscape.exe'
-#$inputDir = "Svgs"
-#$outputDir = "Pngs"
 
 # error to break
 trap { break }

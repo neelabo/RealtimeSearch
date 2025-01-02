@@ -1,8 +1,6 @@
 Param(
-    [parameter(mandatory)][string]$workDir
+    [string]$workDir = "Pngs"
 )
-
-#$workDir = "Pngs"
 
 # error to break
 trap { break }

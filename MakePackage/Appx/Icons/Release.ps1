@@ -1,7 +1,5 @@
 $outputDir = "..\Resources\Assets"
-#$outputDir = "Test"
 $postfix = ""
-#$postfix = "-Blue"
 
 # error to break
 trap { break }
