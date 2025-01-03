@@ -1,5 +1,5 @@
-﻿using NeeLaboratory.RealtimeSearch.Services;
-using NeeLaboratory.Text.Json;
+﻿using NeeLaboratory.RealtimeSearch.Models;
+using NeeLaboratory.RealtimeSearch.Services;
 using System;
 using System.IO;
 using System.Text.Json;

@@ -7,12 +7,6 @@
              mc:Ignorable="d" 
              d:DesignHeight="40" d:DesignWidth="300">
 
-    <!--
-    <UserControl.Resources>
-        <local:NotBoolToVisibilityConverter x:Key="NotBoolToVisibilityConverter"/>
-    </UserControl.Resources>
-    -->
-
     <Grid>
         <TextBox x:Name="PathTextBox" Padding="0,0,22,0" Text="{Binding Text, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:DirectoryNameBox}}}" Height="20" VerticalAlignment="Center" PreviewDragOver="PathTextBox_PreviewDragOver" Drop="PathTextBox_Drop">
             <!--

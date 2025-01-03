@@ -1067,6 +1067,9 @@ if (-not $continue)
 
 Build-UpdateState
 
+Write-Host "`[Update NeeLaboratory Libraries Version] ...`n" -fore Cyan
+..\NeeLaboratory\CreateVersionProps.ps1
+
 if (($Target -eq "All") -or ($Target -eq "Zip"))
 {
 	if ($x86)

@@ -4,14 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:NeeLaboratory.RealtimeSearch.Views"
-             xmlns:converters="clr-namespace:NeeLaboratory.RealtimeSearch.Converters"
+             xmlns:conv="clr-namespace:NeeLaboratory.Windows.Data.Converters;assembly=NeeLaboratory.Windows"
              xmlns:models="clr-namespace:NeeLaboratory.RealtimeSearch.Models"
              xmlns:tres="clr-namespace:NeeLaboratory.RealtimeSearch.TextResource"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
 
     <UserControl.Resources>
-        <converters:StringNotNullOrWhiteSpaceToBoolean x:Key="StringNotNullOrWhiteSpaceToBoolean"/>
+        <conv:StringNotNullOrWhiteSpaceToBoolean x:Key="StringNotNullOrWhiteSpaceToBoolean"/>
 
         <Style x:Key="RecordStyle" TargetType="DockPanel">
             <Setter Property="Margin" Value="2,4"/>

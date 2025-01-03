@@ -22,6 +22,8 @@ using CommunityToolkit.Mvvm.Input;
 using NeeLaboratory.IO;
 using NeeLaboratory.RealtimeSearch.Services;
 using NeeLaboratory.RealtimeSearch.TextResource;
+using NeeLaboratory.Windows.IO;
+using NeeLaboratory.Messaging;
 
 namespace NeeLaboratory.RealtimeSearch.ViewModels
 {

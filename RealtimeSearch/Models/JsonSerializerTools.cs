@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace NeeLaboratory.Text.Json
+namespace NeeLaboratory.RealtimeSearch.Models
 {
     public static class JsonSerializerTools
     {

@@ -1,5 +1,5 @@
-﻿using NeeLaboratory.Input;
-using NeeLaboratory.Resources;
+﻿using NeeLaboratory.Resources;
+using NeeLaboratory.Windows.Input;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

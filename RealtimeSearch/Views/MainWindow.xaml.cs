@@ -1,5 +1,6 @@
 ﻿using NeeLaboratory.IO.Search;
 using NeeLaboratory.IO.Search.Files;
+using NeeLaboratory.Messaging;
 using NeeLaboratory.RealtimeSearch.Models;
 using NeeLaboratory.RealtimeSearch.TextResource;
 using NeeLaboratory.RealtimeSearch.ViewModels;
