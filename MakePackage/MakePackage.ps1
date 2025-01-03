@@ -20,34 +20,14 @@ Param(
 	[switch]$updateComponent,
 
 	# Postfix. Canary や Beta での番号重複回避用
-	[string]$versionPostfix = "",
-
-	# ビルドバージョンは更新しない
-	[switch]$noVersionUp
+	[string]$versionPostfix = ""
 )
 
 # error to break
 trap { break }
 
 $ErrorActionPreference = "stop"
-
-$updateBuildVersion = $false
-if ((-not $noVersionUp) -and ($Target -ne "Dev"))
-{
-	$tChoiceDescription = "System.Management.Automation.Host.ChoiceDescription"
-	$options = @(
-		New-Object $tChoiceDescription ("&Yes", "Update version")
-		New-Object $tChoiceDescription ("&No", "Keep version")
-	)
-
-	$result = $host.ui.PromptForChoice("Update version", "Increment build version after build?", $options, 0)
-	switch ($result)
-	{
-		0 { $updateBuildVersion = $true; break; }
-		1 { $updateBuildVersion = $false; break; }
-	}
-}
-
+	
 Write-Host "[Properties] ..." -fore Cyan
 Write-Host "Target: $Target"
 Write-Host "Continue: $continue"
@@ -55,7 +35,6 @@ Write-Host "Trace: $trace"
 Write-Host "X86: $x86"
 Write-Host "UpdateComponent: $updateComponent" 
 Write-Host "VersionPostfix: $versionPostfix" 
-Write-Host "UpdateBuildVersion: $updateBuildVersion" 
 Write-Host
 Read-Host "Press Enter to continue"
 
@@ -80,27 +59,13 @@ function Get-FileVersion($fileName)
 
 
 #---------------------
-# get base vsersion
+# get version from _Version.props
 function Get-Version($projectFile)
 {
 	$xml = [xml](Get-Content $projectFile)
-	$version = [String]$xml.Project.PropertyGroup.Version;
-	if ($version -match '(\d+\.\d+)\.\d+')
-	{
-		return $Matches[1]
-	}
 	
-    throw "Cannot get Version."
-}
-
-#---------------------
-# load version
-function Get-Version($projectFile)
-{
-	$xml = [xml](Get-Content $projectFile)
-
 	$version = [String]$xml.Project.PropertyGroup.VersionPrefix
-
+	
 	if ($version -match '\d+\.\d+\.\d+')
 	{
 		return $version
@@ -109,6 +74,8 @@ function Get-Version($projectFile)
     throw "Cannot get version."
 }
 
+#---------------------
+# create display version (MajorVersion.MinorVersion) from raw version
 function Get-AppVersion($version)
 {
 	$tokens = $version.Split(".")
@@ -120,33 +87,6 @@ function Get-AppVersion($version)
 	$majorVersion = [int]$tokens[0]
 	$minorVersion = [int]$tokens[1]
 	return "$majorVersion.$minorVersion"
-}
-
-#---------------------
-# save version
-function Set-Version($projectFile, $version)
-{
-	$xml = [xml](Get-Content $projectFile)
-
-	$xml.Project.PropertyGroup.VersionPrefix = $version
-
-	$xml.Save( $projectFile )
-}
-
-#---------------------
-# increment version
-function Add-Version($version)
-{
-	$tokens = $version.Split(".")
-	if ($tokens.Length -ne 3)
-	{
-		throw "Wrong version format."
-	}
-	$tokens = $version.Split(".")
-	$majorVersion = [int]$tokens[0]
-	$minorVersion = [int]$tokens[1]
-	$buildVersion = [int]$tokens[2] + 1
-	return "$majorVersion.$minorVersion.$buildVersion"
 }
 
 #---------------------
@@ -204,11 +144,7 @@ $solutionDir = Convert-Path "$scriptPath\.."
 $solution = "$solutionDir\$product.sln"
 $projectDir = "$solutionDir\$product"
 $project = "$projectDir\$product.csproj"
-#$projectSusieDir = "$solutionDir\$product.Susie.Server"
-#$projectSusie = "$projectSusieDir\$product.Susie.Server.csproj"
-#$projectTerminateDir = "$solutionDir\$product.Terminator"
-#$ptojectTerminate = "$projectTerminateDir\$product.Terminator.csproj"
-$projectProps = "$solutionDir\$product.props"
+$versionProps = "$solutionDir\_Version.props"
 
 #----------------------
 # build
@@ -224,14 +160,6 @@ function Build-Project($platform, $outputDir, $options)
 	{
 		throw "build error"
 	}
-
-	#& dotnet publish $projectSusie $defaultOptions $options -o Publish\$outputDir\Libraries
-	#if ($? -ne $true)
-	#{
-	#	throw "build error"
-	#}
-	
-	#& dotnet publish $ptojectTerminate -p:PublishProfile=FolderProfile-$platform.pubxml -c Release
 }
 
 function Build-ProjectSelfContained($platform)
@@ -710,7 +638,7 @@ function New-Appx($arch, $packageDir, $packageAppendDir, $appx)
 	$content = Get-Content "Appx\AppxManifest.xml"
 	$content = $content -replace "%NAME%","$appxName"
 	$content = $content -replace "%PUBLISHER%","$appxPublisher"
-	$content = $content -replace "%VERSION%","$assemblyVersion"
+	$content = $content -replace "%VERSION%","$version"
 	$content = $content -replace "%ARCH%", "$arch"
 	$content | Out-File -Encoding UTF8 "$packgaeFilesDir\AppxManifest.xml"
 
@@ -1017,14 +945,35 @@ function Export-Current
 	}
 }
 
+function Update-Version
+{
+	Write-Host "`n`[Update NeeLaboratory Libraries Version] ...`n" -fore Cyan
+	..\NeeLaboratory\CreateVersionProps.ps1
+	
+	Write-Host "`n`[Update NeeLaboratory.IO.Search Version] ...`n" -fore Cyan
+	..\NeeLaboratory.IO.Search\CreateVersionProps.ps1
+	
+	Write-Host "`n`[Update RealtimeSearch Version] ...`n" -fore Cyan
+	$versionSuffix = switch ( $Target )
+	{
+		"Dev" { 'dev' }
+		"Canary" { 'canary' }
+		"Beta" { 'beta' }
+		default { ''  }
+	}
+	..\CreateVersionProps.ps1 -suffix $versionSuffix
+}
+
+
 #======================
 # main
 #======================
 
+Update-Version
+
 # versions
-$version = Get-Version $projectProps
+$version = Get-Version $versionProps
 $appVersion = Get-AppVersion $version
-$assemblyVersion = "$version.0"
 $revision = (& git rev-parse --short HEAD).ToString()
 $dateVersion = (Get-Date).ToString("MMdd") + $versionPostfix
 
@@ -1067,8 +1016,6 @@ if (-not $continue)
 
 Build-UpdateState
 
-Write-Host "`[Update NeeLaboratory Libraries Version] ...`n" -fore Cyan
-..\NeeLaboratory\CreateVersionProps.ps1
 
 if (($Target -eq "All") -or ($Target -eq "Zip"))
 {
@@ -1134,19 +1081,6 @@ if (-not $x86)
 		Build-PackageSource-x64-fd
 		Export-Current
 	}
-}
-
-#--------------------------
-# save build version
-if ($updateBuildVersion)
-{
-	$nextVersion = Add-Version $version
-	Write-Host "Update build version: $nextVersion"
-	Set-Version $projectProps $nextVersion
-}
-else
-{
-	Write-Host "Keep build version."
 }
 
 #-------------------------
