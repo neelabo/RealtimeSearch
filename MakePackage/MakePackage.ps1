@@ -215,6 +215,61 @@ function New-Package($platform, $productName, $productDir, $packageDir)
 }
 
 #----------------------
+# generate ChangeLog
+
+function Get-ChangeLog
+{
+    param (
+        [string]$Path = "Readme\ja-jp\ChangeLog.md",
+        [int]$Version = 0
+    )
+
+    function Get-IndentLine($line)
+    {
+        # increment section depth
+        if ($line.StartsWith("#"))
+        {
+            $line = "#" + $line
+        }
+        
+        return $line
+    }
+
+    $versions = @{ header = @() }
+    $current = "header"
+    $latestVersion = 1
+    
+    $lines = Get-Content $Path
+    foreach ($line in $lines) {
+        if ($line.StartsWith("#")) {
+            if ($line -match "^## (\d+)\.(\d+)") {
+                $current = $Matches[1] + '.' + $Matches[2]
+                $versions.add($current, @())
+                $number = [int]$Matches[1]
+                if ($number -gt $latestVersion) {
+                    $latestVersion = $number
+                }
+            }
+        }
+        $fixLine = Get-IndentLine $line
+        $versions[$current] += $fixLine
+    }
+
+    if ($Version -eq 0) {
+        $Version = $latestVersion
+    }
+
+    Write-Output $versions.header
+
+    foreach ($item in $versions.GetEnumerator())
+    {
+        if ($item.key -match "^$Version\.") {
+            Write-Output $item.value
+        }
+    }
+}
+
+#----------------------
 # generate README.html
 function New-Readme($packageDir, $culture, $target)
 {
@@ -245,7 +300,7 @@ function New-Readme($packageDir, $culture, $target)
 	}
 	else
 	{
-		Copy-Item "$readmeSource\ChangeLog.md" $readmeDir
+		Get-ChangeLog -Path "$readmeSource\ChangeLog.md" | Set-Content -Path "$readmeDir\ChangeLog.md"
 	}
 
 	$postfix = $appVersion
