@@ -693,7 +693,7 @@ function New-Appx($arch, $packageDir, $packageAppendDir, $appx)
 	$content = Get-Content "Appx\AppxManifest.xml"
 	$content = $content -replace "%NAME%","$appxName"
 	$content = $content -replace "%PUBLISHER%","$appxPublisher"
-	$content = $content -replace "%VERSION%","$version"
+	$content = $content -replace "%VERSION%","$assemblyVersion"
 	$content = $content -replace "%ARCH%", "$arch"
 	$content | Out-File -Encoding UTF8 "$packgaeFilesDir\AppxManifest.xml"
 
@@ -1029,6 +1029,7 @@ Update-Version
 # versions
 $version = Get-Version $versionProps
 $appVersion = Get-AppVersion $version
+$assemblyVersion = "$version.0"
 $revision = (& git rev-parse --short HEAD).ToString()
 $dateVersion = (Get-Date).ToString("MMdd") + $versionPostfix
 
