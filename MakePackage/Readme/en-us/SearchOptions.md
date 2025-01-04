@@ -67,11 +67,11 @@ It also supports k, K, g, G, m, and M unit notations. Lowercase letters are mult
 
 The previous options are aliased and simplified. Detailed definitions are given here.
 
-### Search unit
+### Search Unit
 
 The basic unit of search is the following set
 
-    Conjunction option(/c.) | Property option(/p.) | Match option(/m.) | Keyword
+    Conjunction Option (/c.) | Property Option (/p.) | Match Option (/m.) | Keyword
 
 A string that does not begin with a "/" is a keyword, and this set is determined when it appears. Options not previously specified will use default values, and duplicate category options will be overwritten.
 
@@ -79,7 +79,7 @@ A string that does not begin with a "/" is a keyword, and this set is determined
 
 Options are categorized by prefix character.
 
-#### Conjunction options (/c.)
+#### Conjunction Options (/c.)
 
 Name|Description
 -|-
@@ -95,7 +95,7 @@ Name|Description|Type
 /p.date|Date and Time|DateTime
 /p.size|Size|Integer
 
-#### Match options (/m.)
+#### Match Options (/m.)
 
 Name|Description|Type
 -|-|-
