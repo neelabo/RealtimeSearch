@@ -1,4 +1,5 @@
-﻿using NeeLaboratory.Generators;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using NeeLaboratory.Generators;
 using NeeLaboratory.RealtimeSearch.Models;
 using NeeLaboratory.RealtimeSearch.TextResource;
 using System.Collections.Generic;
@@ -7,15 +8,12 @@ using System.Linq;
 
 namespace NeeLaboratory.RealtimeSearch.ViewModels
 {
-    [NotifyPropertyChanged]
-    public partial class SettingGeneralViewModel : INotifyPropertyChanged
+    public partial class SettingGeneralViewModel : ObservableObject
     {
         public SettingGeneralViewModel(AppSettings setting)
         {
             Setting = setting;
         }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
 
         public AppSettings Setting { get; }
         

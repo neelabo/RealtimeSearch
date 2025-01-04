@@ -11,23 +11,21 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Collections.ObjectModel;
 using System.Linq;
+using CommunityToolkit.Mvvm.Input;
 using NeeLaboratory.IO.Search.Files;
-using NeeLaboratory.ComponentModel;
 using NeeLaboratory.Windows.Input;
 using NeeLaboratory.RealtimeSearch.Models;
-using NeeLaboratory.RealtimeSearch.Clipboards;
 using NeeLaboratory.RealtimeSearch.Windows;
-using NeeLaboratory.Threading;
-using CommunityToolkit.Mvvm.Input;
-using NeeLaboratory.IO;
 using NeeLaboratory.RealtimeSearch.Services;
 using NeeLaboratory.RealtimeSearch.TextResource;
 using NeeLaboratory.Windows.IO;
 using NeeLaboratory.Messaging;
+using NeeLaboratory.RealtimeSearch.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace NeeLaboratory.RealtimeSearch.ViewModels
 {
-    public partial class MainWindowViewModel : BindableBase
+    public partial class MainWindowViewModel : ObservableObject
     {
         private readonly MainModel _model;
         private readonly AppSettings _settings;
@@ -45,13 +43,12 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
             _settings.PropertyChanged += Setting_PropertyChanged;
 
             _messenger = messenger;
-            
+
             _model = new MainModel(_settings);
             _model.PropertyChanged += Model_PropertyChanged;
 
-
             _programs = new ExternalProgramCollection(_settings);
-            _programs.AddPropertyChanged(nameof(_programs.Error), Programs_ErrorChanged);
+            _programs.SubscribePropertyChanged(nameof(_programs.Error), Programs_ErrorChanged);
 
             _defaultWindowTitle = ApplicationInfo.Current.ProductName;
         }
@@ -89,7 +86,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
             get => _model.ResultMessage;
             set => _model.ResultMessage = value;
         }
-        
+
         public string CountMessage
         {
             get => _model.CountMessage;
@@ -103,7 +100,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
             {
                 if (SetProperty(ref _isRenaming, value))
                 {
-                    RaisePropertyChanged(nameof(IsTipsVisible));
+                    OnPropertyChanged(nameof(IsTipsVisible));
                 }
             }
         }
@@ -127,7 +124,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
                 if (_settings.IsTopmost != value)
                 {
                     _settings.IsTopmost = value;
-                    RaisePropertyChanged(nameof(IsTopmost));
+                    OnPropertyChanged(nameof(IsTopmost));
                 }
             }
         }
@@ -153,15 +150,15 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
             switch (e.PropertyName)
             {
                 case nameof(_model.InputKeyword):
-                    RaisePropertyChanged(nameof(InputKeyword));
+                    OnPropertyChanged(nameof(InputKeyword));
                     break;
 
                 case nameof(_model.ResultMessage):
-                    RaisePropertyChanged(nameof(ResultMessage));
+                    OnPropertyChanged(nameof(ResultMessage));
                     break;
 
                 case nameof(_model.CountMessage):
-                    RaisePropertyChanged(nameof(CountMessage));
+                    OnPropertyChanged(nameof(CountMessage));
                     break;
             }
         }
@@ -218,16 +215,16 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
             switch (e.PropertyName)
             {
                 case nameof(_settings.IsDetailVisible):
-                    RaisePropertyChanged(nameof(IsDetailVisible));
-                    RaisePropertyChanged(nameof(IsTipsVisible));
+                    OnPropertyChanged(nameof(IsDetailVisible));
+                    OnPropertyChanged(nameof(IsTipsVisible));
                     break;
 
                 case nameof(_settings.IsTopmost):
-                    RaisePropertyChanged(nameof(IsTopmost));
+                    OnPropertyChanged(nameof(IsTopmost));
                     break;
 
                 case nameof(_settings.AllowFolder):
-                    RaisePropertyChanged(nameof(AllowFolder));
+                    OnPropertyChanged(nameof(AllowFolder));
                     _ = SearchAsync(true);
                     break;
             }
@@ -312,7 +309,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
 
             try
             {
-                FileSystem.SendToRecycleBin( items.Select(e => e.Path).ToList());
+                FileSystem.SendToRecycleBin(items.Select(e => e.Path).ToList());
             }
             catch (Exception ex)
             {

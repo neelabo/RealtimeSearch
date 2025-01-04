@@ -12,9 +12,9 @@ using System.IO;
 using System.Collections.Specialized;
 using NeeLaboratory.IO.Search;
 using NeeLaboratory.IO.Search.Files;
-using NeeLaboratory.ComponentModel;
 using NeeLaboratory.RealtimeSearch.Services;
 using NeeLaboratory.RealtimeSearch.TextResource;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace NeeLaboratory.RealtimeSearch.Models
 {
@@ -24,13 +24,12 @@ namespace NeeLaboratory.RealtimeSearch.Models
         void Decorate(SearchResult<T> searchResult);
     }
 
-    public class Search : BindableBase, IDisposable
+    public class Search : ObservableObject, IDisposable
     {
         private int _busyCount;
         private bool _isBusy;
         private string _information = "";
         private readonly AppSettings _settings;
-        //private readonly DispatcherTimer _timer;
         private readonly FileSearchEngine _searchEngine;
         private CancellationTokenSource _searchCancellationTokenSource = new();
         private FileSearchResultWatcher? _searchResult;
@@ -85,7 +84,8 @@ namespace NeeLaboratory.RealtimeSearch.Models
                 if (_searchResult != value)
                 {
                     _searchResult?.Dispose();
-                    _searchResult = value; RaisePropertyChanged();
+                    _searchResult = value;
+                    OnPropertyChanged();
                 }
             }
         }
@@ -119,14 +119,14 @@ namespace NeeLaboratory.RealtimeSearch.Models
         {
             Debug.WriteLine($"State: IsCollectBusy={_searchEngine.IsCollectBusy}");
             UpdateInformation();
-            RaisePropertyChanged(nameof(IsCollectBusy));
+            OnPropertyChanged(nameof(IsCollectBusy));
         }
 
         private void SearchEngine_IsSearchBusyPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             Debug.WriteLine($"State: IsSearchBusy={_searchEngine.IsSearchBusy}");
             UpdateInformation();
-            RaisePropertyChanged(nameof(IsSearchBusy));
+            OnPropertyChanged(nameof(IsSearchBusy));
         }
 
         private void SearchAreas_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

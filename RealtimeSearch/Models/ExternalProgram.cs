@@ -1,4 +1,5 @@
-﻿using NeeLaboratory.Generators;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using NeeLaboratory.Generators;
 using NeeLaboratory.RealtimeSearch.TextResource;
 using System;
 using System.Collections.Generic;
@@ -20,12 +21,8 @@ namespace NeeLaboratory.RealtimeSearch.Models
     }
 
 
-    [NotifyPropertyChanged]
-    public partial class ExternalProgram : INotifyPropertyChanged
+    public partial class ExternalProgram : ObservableObject
     {
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-
         public const string KeyFile = "$(file)";
         public const string KeyUri = "$(uri)";
         public const string KeyFileQuote = "\"$(file)\"";
@@ -76,7 +73,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
             {
                 if (SetProperty(ref _program, value.Trim()))
                 {
-                    RaisePropertyChanged(nameof(Name));
+                    OnPropertyChanged(nameof(Name));
                 }
             }
         }
@@ -93,7 +90,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
                     s = (s + " " + KeyFileQuote).Trim();
                 }
                 _parameter = s;
-                RaisePropertyChanged();
+                OnPropertyChanged();
             }
         }
 
@@ -118,7 +115,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         public bool IsMultiArgumentEnabled
         {
             get { return _isMultiArgumentEnabled; }
-            set { if (_isMultiArgumentEnabled != value) { _isMultiArgumentEnabled = value; RaisePropertyChanged(); } }
+            set { SetProperty(ref _isMultiArgumentEnabled, value); }
         }
 
 
@@ -139,7 +136,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
             _extensionsList = list;
 
             _extensions = string.Join(' ', _extensionsList);
-            RaisePropertyChanged(nameof(Extensions));
+            OnPropertyChanged(nameof(Extensions));
         }
 
 

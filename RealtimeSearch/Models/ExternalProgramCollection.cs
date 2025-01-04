@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
-using NeeLaboratory.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using NeeLaboratory.IO.Search.Files;
 
 namespace NeeLaboratory.RealtimeSearch.Models
 {
-    public class ExternalProgramCollection : BindableBase, IEnumerable<ExternalProgram>
+    public class ExternalProgramCollection : ObservableObject, IEnumerable<ExternalProgram>
     {
         private readonly AppSettings _setting;
         private string _error = "";

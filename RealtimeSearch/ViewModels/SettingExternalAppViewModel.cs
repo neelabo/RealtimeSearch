@@ -1,12 +1,12 @@
-﻿using NeeLaboratory.Generators;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using NeeLaboratory.Generators;
 using NeeLaboratory.RealtimeSearch.Models;
 using System.ComponentModel;
 using System.Windows.Data;
 
 namespace NeeLaboratory.RealtimeSearch.ViewModels
 {
-    [NotifyPropertyChanged]
-    public partial class SettingExternalAppViewModel : INotifyPropertyChanged
+    public partial class SettingExternalAppViewModel : ObservableObject
     {
         private CollectionViewSource? _collectionViewSource;
         private ExternalProgram? _selectedItem;
@@ -18,9 +18,6 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
 
             UpdateCollectionViewSource();
         }
-
-
-        public event PropertyChangedEventHandler? PropertyChanged;
 
 
         public AppSettings Setting { get; }

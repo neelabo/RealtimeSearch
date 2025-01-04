@@ -1,4 +1,4 @@
-﻿using NeeLaboratory.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using NeeLaboratory.IO.Search.Files;
 using NeeLaboratory.RealtimeSearch.Windows;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
     }
 
 
-    public class AppSettings : BindableBase, ISearchContext
+    public class AppSettings : ObservableObject, ISearchContext
     {
         private string _language = CultureInfo.CurrentCulture.Name;
         private bool _isMonitorClipboard = true;

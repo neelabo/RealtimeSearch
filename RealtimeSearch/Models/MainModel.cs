@@ -1,6 +1,8 @@
-﻿using NeeLaboratory.Generators;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using NeeLaboratory.Generators;
 using NeeLaboratory.IO.Search.Files;
 using NeeLaboratory.RealtimeSearch.Clipboards;
+using NeeLaboratory.RealtimeSearch.ComponentModel;
 using NeeLaboratory.RealtimeSearch.TextResource;
 using NeeLaboratory.Resources;
 using NeeLaboratory.Threading;
@@ -17,8 +19,7 @@ using System.Windows.Threading;
 
 namespace NeeLaboratory.RealtimeSearch.Models
 {
-    [NotifyPropertyChanged]
-    public partial class MainModel : INotifyPropertyChanged
+    public partial class MainModel : ObservableObject
     {
         private readonly AppSettings _settings;
         private string _inputKeyword = "";
@@ -59,7 +60,6 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
 
 
-        public event PropertyChangedEventHandler? PropertyChanged;
 
         public event EventHandler? SearchResultChanged;
 

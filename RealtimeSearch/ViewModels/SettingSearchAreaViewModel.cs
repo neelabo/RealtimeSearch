@@ -1,4 +1,5 @@
-﻿using NeeLaboratory.Generators;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using NeeLaboratory.Generators;
 using NeeLaboratory.IO.Search.Files;
 using NeeLaboratory.RealtimeSearch.Models;
 using System.ComponentModel;
@@ -7,8 +8,7 @@ using System.Windows.Data;
 
 namespace NeeLaboratory.RealtimeSearch.ViewModels
 {
-    [NotifyPropertyChanged]
-    public partial class SettingSearchAreaViewModel : INotifyPropertyChanged
+    public partial class SettingSearchAreaViewModel : ObservableObject
     {
 
         private CollectionViewSource? _collectionViewSource;
@@ -20,9 +20,6 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
             Setting = setting;
             UpdateCollectionViewSource();
         }
-
-
-        public event PropertyChangedEventHandler? PropertyChanged;
 
 
         public AppSettings Setting { get; }

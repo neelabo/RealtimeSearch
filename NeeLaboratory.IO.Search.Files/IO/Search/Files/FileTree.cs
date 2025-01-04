@@ -288,11 +288,13 @@ namespace NeeLaboratory.IO.Search.Files
                 try
                 {
 #if DEBUG
+                    // デバッグ用の遅延。キャッシュの更新が即時終了してしまうため。
                     await Task.Delay(3000);
 #endif
                     var sw = Stopwatch.StartNew();
                     UpdateNode(Trunk, token);
                     Debug.WriteLine($"Initialize {_path}: Update done. {sw.ElapsedMilliseconds}ms");
+                    await Task.CompletedTask;
                 }
                 catch (OperationCanceledException)
                 {
