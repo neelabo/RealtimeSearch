@@ -33,7 +33,7 @@
         <TextBlock Text="{tres:TextBinding Setting.WebSearchFormat}"/>
         <StackPanel Style="{StaticResource Phrase}">
             <DockPanel Margin="2" LastChildFill="True">
-                <TextBox Text="{Binding Setting.WebSearchFormat}" ToolTip="{Binding Setting.WebSearchFormat.Tips}"/>
+                <TextBox Text="{Binding Setting.WebSearchFormat}" ToolTip="{tres:TextBinding Setting.WebSearchFormat.Tips}"/>
             </DockPanel>
         </StackPanel>
 
