@@ -213,7 +213,7 @@
                         </DataTemplate>
 
                         <DataTemplate x:Key="ItemFileNameTemplate">
-                            <DockPanel ToolTip="{Binding Detail}" ToolTipService.InitialShowDelay="1000"
+                            <DockPanel ToolTip="{Binding Converter={StaticResource FileContentToDetailConverter}}" ToolTipService.InitialShowDelay="1000"
                                        ToolTipService.IsEnabled="{Binding ElementName=ResultListView, Path=DataContext.IsTipsVisible}">
                                 <CheckBox DockPanel.Dock="Right" Template="{StaticResource PushpinCheckBoxTemplate}" Width="32" Height="16" IsChecked="{Binding IsPushPin}" >
                                     <CheckBox.Style>
