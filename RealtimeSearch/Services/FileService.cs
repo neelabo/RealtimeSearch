@@ -3,12 +3,13 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json;
+using System.Threading;
 
 namespace NeeLaboratory.RealtimeSearch.Services
 {
     public class FileService : IFileService
     {
-        private readonly object _lock = new();
+        private readonly Lock _lock = new();
 
         public void Delete(string folderPath, string fileName)
         {
