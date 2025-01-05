@@ -3,6 +3,7 @@ using NeeLaboratory.Generators;
 using NeeLaboratory.IO.Search;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -70,18 +71,6 @@ namespace NeeLaboratory.IO.Search.Files
             }
         }
 
-#if false
-        public string Detail
-        {
-            get
-            {
-                string sizeText = Size >= 0 ? $"Size: {(Size + 1024 - 1) / 1024:#,0} KB\n" : "Size: --\n";
-                var dateText = LastWriteTime.ToString(SearchDateTimeTools.DateTimeFormat);
-                return $"{Name}\n{sizeText}Date: {dateText}\nFolder: {DirectoryName}";
-            }
-        }
-#endif
-
         /// <summary>
         /// PushPinフラグ
         /// </summary>
@@ -101,23 +90,33 @@ namespace NeeLaboratory.IO.Search.Files
         /// Update FileInfo
         /// </summary>
         /// <param name="fileSystemInfo"></param>
-        [MemberNotNull(nameof(IsDirectory), nameof(Path), nameof(Name), nameof(Size), nameof(LastWriteTime))]
+        [MemberNotNull(nameof(Path), nameof(Name))]
         public void SetFileInfo(FileSystemInfo fileSystemInfo)
         {
-            IsDirectory = fileSystemInfo.Attributes.HasFlag(FileAttributes.Directory);
             Path = fileSystemInfo.FullName;
             Name = fileSystemInfo.Name;
-            LastWriteTime = fileSystemInfo.LastWriteTime;
-            try
+
+            if (fileSystemInfo.Exists)
             {
-                Size = fileSystemInfo is FileInfo fileInfo ? fileInfo.Length : -1;
+                try
+                {
+                    IsDirectory = fileSystemInfo.Attributes.HasFlag(FileAttributes.Directory);
+                    LastWriteTime = fileSystemInfo.LastWriteTime;
+                    Size = fileSystemInfo is FileInfo fileInfo ? fileInfo.Length : -1;
+
+                    // ディレクトリで不明の場合は、子の情報が不明な状態にする
+                    State = (IsDirectory && State.IsUnknown()) ? FileContentState.UnknownChildren : FileContentState.Stable;
+                }
+                catch (FileNotFoundException)
+                {
+                    Debug.WriteLine($"SetFileInfo: File not found: {Path}");
+                }
             }
-            catch (FileNotFoundException)
+            else
             {
-                Size = 0;
+                Debug.WriteLine($"SetFileInfo: File not found: {Path}");
             }
 
-            State = FileContentState.Stable;
             RaisePropertyChanged(null);
         }
 
@@ -161,11 +160,4 @@ namespace NeeLaboratory.IO.Search.Files
         }
     }
 
-
-    public enum FileContentState
-{
-    Stable = 0,
-    Known,
-    Unknown,
-}
 }

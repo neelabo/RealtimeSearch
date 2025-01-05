@@ -61,6 +61,9 @@ namespace NeeLaboratory.IO.Search.Files
                 RemoveTree(tree);
             }
 
+            // 木構造が変化したため、ビジーフラグを再取得
+            UpdateCollectBusy();
+
             // [DEV]
             Debug.WriteLine($"UpdateTrees:");
             foreach (var tree in trees)
@@ -96,7 +99,12 @@ namespace NeeLaboratory.IO.Search.Files
             tree.Dispose();
         }
 
-        private void Tree_CollectBusyChanged(object? sender, bool e)
+        private void Tree_CollectBusyChanged(object? sender, FileTreeCollectBusyChangedEventArgs e)
+        {
+            UpdateCollectBusy();
+        }
+
+        private void UpdateCollectBusy()
         {
             IsCollectBusy = _trees.Any(e => e.IsCollectBusy);
         }

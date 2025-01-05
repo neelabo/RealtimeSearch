@@ -8,7 +8,7 @@ namespace NeeLaboratory.Collections
 {
     public class Node<T>
     {
-        private Lock _childLock = new();
+        private readonly Lock _lock = new();
 
         public Node(string name)
         {
@@ -17,8 +17,6 @@ namespace NeeLaboratory.Collections
             // NOTE: ネットワークパス用に先頭の区切り文字を許容する
             if (Name.TrimStart('\\').Contains("\\")) throw new ArgumentException("It contains a delimiter: '\\'");
         }
-
-        public Lock ChildLock => _childLock;
 
         public string Name { get; set; }
 
@@ -41,7 +39,7 @@ namespace NeeLaboratory.Collections
         /// </summary>
         public void ClearChildren()
         {
-            lock (_childLock)
+            lock (_lock)
             {
                 if (Children is null) return;
                 foreach (var child in Children)
@@ -73,7 +71,7 @@ namespace NeeLaboratory.Collections
         /// <returns></returns>
         public Node<T> AddChild(Node<T> node)
         {
-            lock (_childLock)
+            lock (_lock)
             {
                 if (node.Parent is not null)
                 {
@@ -116,7 +114,7 @@ namespace NeeLaboratory.Collections
         {
             if (node.Parent != this) return null;
 
-            lock (_childLock)
+            lock (_lock)
             {
                 node.Parent = null;
                 Children?.Remove(node);
@@ -160,24 +158,25 @@ namespace NeeLaboratory.Collections
         }
 
         /// <summary>
-        /// 子ノードのコレクション。
-        /// Children が null の場合は空コレクションを返す
+        /// 子ノードのクローンを作成
         /// </summary>
-        /// <remarks>
-        /// スレッドアンセーフなので使用側で ChildLock すること
-        /// </remarks>
         /// <returns></returns>
-        public IEnumerable<Node<T>> ChildCollection()
+        public List<Node<T>> CloneChildren()
         {
-            if (Children is not null)
+            if (Children is null) return [];
+
+            lock (_lock)
             {
-                foreach (var child in Children)
-                {
-                    yield return child;
-                }
+                var clone = new List<Node<T>>(Children);
+                Debug.Assert(clone != Children);
+                return clone;
             }
         }
 
+        /// <summary>
+        /// ノードを再帰的に走査する。自分は含まない。
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<Node<T>> WalkChildren()
         {
             if (Children is not null)
@@ -192,6 +191,10 @@ namespace NeeLaboratory.Collections
             }
         }
 
+        /// <summary>
+        /// ノードを再帰的に走査する。自分を含む。
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<Node<T>> Walk()
         {
             yield return this;

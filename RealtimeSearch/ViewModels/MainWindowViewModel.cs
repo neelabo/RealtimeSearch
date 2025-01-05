@@ -186,7 +186,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
 
 #if DEBUG
             // [DEV] 検索実行
-            InputKeyword = "test";
+            InputKeyword = "BABA";
 #endif
         }
 

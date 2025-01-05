@@ -44,7 +44,6 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
             {
                 Source = Setting.SearchAreas
             };
-            collectionViewSource.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(FileArea.Path), System.ComponentModel.ListSortDirection.Ascending));
 
             CollectionViewSource = collectionViewSource;
             SelectedArea = null;
@@ -63,7 +62,17 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
                 return;
             }
 
-            Setting.SearchAreas.Add(area);
+            // insert in order by path
+            int index;
+            for (index = 0; index < Setting.SearchAreas.Count; index++)
+            {
+                if (Setting.SearchAreas[index].Path.CompareTo(area.Path) > 0)
+                {
+                    break;
+                }
+            }
+            Setting.SearchAreas.Insert(index, area);
+
             SelectedArea = area;
         }
 

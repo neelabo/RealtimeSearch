@@ -1,5 +1,4 @@
 ﻿//#define LOCAL_DEBUG
-
 using NeeLaboratory.Threading;
 using NeeLaboratory.Threading.Jobs;
 using System.Diagnostics;
@@ -28,12 +27,13 @@ namespace NeeLaboratory.IO.Search.Files
         private readonly bool _recurseSubdirectories;
         private readonly string _searchPattern;
         private bool _initialized;
+        private bool _activated;
         private bool _disposedValue;
         private int _count;
         private readonly SemaphoreSlim _semaphore = new(1, 1);
         private FileTreeMemento? _memento;
-        private bool _isCollectBusy;
         private readonly FileArea _area;
+        public int _collectBusyCount;
 
 
         public FileTree(FileArea area, FileTreeMemento? memento) : base(area.Path)
@@ -61,7 +61,7 @@ namespace NeeLaboratory.IO.Search.Files
         public event EventHandler<FileTreeContentChangedEventArgs>? AddContentChanged;
         public event EventHandler<FileTreeContentChangedEventArgs>? RemoveContentChanged;
         public event EventHandler<FileTreeContentChangedEventArgs>? ContentChanged;
-        public event EventHandler<bool>? CollectBusyChanged;
+        public event EventHandler<FileTreeCollectBusyChangedEventArgs>? CollectBusyChanged;
 
 
         /// <summary>
@@ -75,20 +75,9 @@ namespace NeeLaboratory.IO.Search.Files
         public int Count => _count;
 
         /// <summary>
-        /// インデックス作成中フラグ
+        /// インデックス作成中か
         /// </summary>
-        public bool IsCollectBusy
-        {
-            get { return _isCollectBusy; }
-            set
-            {
-                if (_isCollectBusy != value)
-                {
-                    _isCollectBusy = value;
-                    CollectBusyChanged?.Invoke(this, _isCollectBusy);
-                }
-            }
-        }
+        public bool IsCollectBusy => _collectBusyCount > 0;
 
 
         #region IDisposable
@@ -129,8 +118,20 @@ namespace NeeLaboratory.IO.Search.Files
         /// <returns></returns>
         private IDisposable IsCollectBusy_EnterScope()
         {
-            IsCollectBusy = true;
-            return new AnonymousDisposable(() => IsCollectBusy = false);
+            IncrementCollectBusyCount();
+            return new AnonymousDisposable(() => DecrementCollectBusyCount());
+        }
+
+        private void IncrementCollectBusyCount()
+        {
+            var count = Interlocked.Increment(ref _collectBusyCount);
+            CollectBusyChanged?.Invoke(this, new FileTreeCollectBusyChangedEventArgs(count > 0));
+        }
+
+        private void DecrementCollectBusyCount()
+        {
+            var count = Interlocked.Decrement(ref _collectBusyCount);
+            CollectBusyChanged?.Invoke(this, new FileTreeCollectBusyChangedEventArgs(count > 0));
         }
 
         /// <summary>
@@ -205,10 +206,11 @@ namespace NeeLaboratory.IO.Search.Files
 
             InitializeWatcher(_recurseSubdirectories);
 
-            Trace($"Initialize {_path}: ...");
 
             try
             {
+                _count = 0;
+
                 if (_memento is null)
                 {
                     InitializeFromFileSystem(token);
@@ -216,13 +218,11 @@ namespace NeeLaboratory.IO.Search.Files
                 else
                 {
                     InitializeFromCache(_memento, token);
-                    _memento = null;
                 }
 
                 Debug.Assert(Trunk.Content is not null);
+                Debug.Assert(_activated);
                 //Validate();
-
-                _initialized = true;
             }
             catch (OperationCanceledException)
             {
@@ -245,6 +245,7 @@ namespace NeeLaboratory.IO.Search.Files
         /// <exception cref="AggregateException"></exception>
         private void InitializeFromFileSystem(CancellationToken token)
         {
+            Debug.WriteLine($"InitializeFromFileSystem {_path}: ...");
             var sw = Stopwatch.StartNew();
 
             using var section = IsCollectBusy_EnterScope();
@@ -259,7 +260,9 @@ namespace NeeLaboratory.IO.Search.Files
                 CreateChildrenTop(Trunk, new DirectoryInfo(LoosePath.TrimDirectoryEnd(Trunk.FullName)), token);
             }
 
-            Debug.WriteLine($"Initialize {_path}: {sw.ElapsedMilliseconds} ms, Count={Trunk.WalkChildren().Count()}");
+            _activated = true;
+            _initialized = true;
+            Debug.WriteLine($"InitializeFromFileSystem {_path}: {sw.ElapsedMilliseconds} ms, Count={Trunk.WalkChildren().Count()}");
             //Trunk.Dump();
         }
 
@@ -270,34 +273,39 @@ namespace NeeLaboratory.IO.Search.Files
         /// <param name="token"></param>
         private void InitializeFromCache(FileTreeMemento memento, CancellationToken token)
         {
-            var sw = Stopwatch.StartNew();
-
             var section = IsCollectBusy_EnterScope();
 
-            var trunk = FileTree.RestoreTree(memento);
-            if (trunk is null) throw new InvalidOperationException();
+            if (!_activated)
+            {
+                Debug.WriteLine($"InitializeFromCache {_path}: ...");
+                var sw = Stopwatch.StartNew();
 
-            Debug.Assert(trunk.Content?.Path == Trunk.FullName);
-            SetTrunk(trunk);
+                var trunk = FileTree.RestoreTree(memento);
+                if (trunk is null) throw new InvalidOperationException();
 
-            Debug.WriteLine($"Initialize {_path}: FromCache: {sw.ElapsedMilliseconds} ms, Count={Trunk.WalkChildren().Count()}");
+                Debug.Assert(trunk.Content?.Path == Trunk.FullName);
+                SetTrunk(trunk);
+                _activated = true;
+
+                Debug.WriteLine($"InitializeFromCache {_path}: {sw.ElapsedMilliseconds} ms, Count={Trunk.WalkChildren().Count()}");
+            }
 
             // TODO: 非同期実行
-            Task.Run(async () =>
+            Task.Run(() =>
             {
                 try
                 {
-#if DEBUG
-                    // デバッグ用の遅延。キャッシュの更新が即時終了してしまうため。
-                    await Task.Delay(3000);
-#endif
                     var sw = Stopwatch.StartNew();
-                    UpdateNode(Trunk, token);
-                    Debug.WriteLine($"Initialize {_path}: Update done. {sw.ElapsedMilliseconds}ms");
-                    await Task.CompletedTask;
+                    Debug.WriteLine($"InitializeFromCache {_path}: Update ...");
+                    using var cts = CancellationTokenSource.CreateLinkedTokenSource(token, token);
+                    UpdateNode(Trunk, cts.Token);
+                    _memento = null;
+                    _initialized = true;
+                    Debug.WriteLine($"InitializeFromCache {_path}: Update done. {sw.ElapsedMilliseconds}ms");
                 }
                 catch (OperationCanceledException)
                 {
+                    Debug.WriteLine($"InitializeFromCache {_path}: Update canceled.");
                 }
                 finally
                 {
@@ -308,83 +316,88 @@ namespace NeeLaboratory.IO.Search.Files
 
         private void UpdateNode(Node<FileContent> node, CancellationToken token)
         {
-            Debug.Assert(node.Content is not null);
+#if DEBUG
+            // デバッグ用の遅延。キャッシュの更新が即時終了してしまうため。
+            Thread.Sleep(10);
+#endif
 
+            Debug.Assert(node.Content is not null);
             var content = node.Content;
             if (content is null) return;
 
-            if (content.State == FileContentState.Stable) return;
+            // 処理子ノード数をカウント
+            _count++;
+
+            if (content.State == FileContentState.Stable && !content.IsDirectory) return;
             token.ThrowIfCancellationRequested();
 
             var info = CreateFileInfo(node);
-            var isUpdate = false;
+            var unknownChildren = false;
             if (info.Exists)
             {
                 var removes = new List<Node<FileContent>>();
 
-                if (info.LastWriteTime == content.LastWriteTime) // 最終更新日だけチェック
+                // ノードのコンテンツを更新
+                // 最終更新日が同じであれば情報に変更なしとする
+                if (info.LastWriteTime == content.LastWriteTime)
                 {
+                    unknownChildren = content.State == FileContentState.UnknownChildren;
                     content.State = FileContentState.Stable;
                 }
                 else
                 {
                     Debug.WriteLine($"Node: Update: {node.FullName}");
-                    content.State = FileContentState.Known;
+                    unknownChildren = true;
+                    content.State = FileContentState.StableReady;
                     _jobEngine.InvokeAsync(() => UpdateFile(node.FullName, info, token));
-                    isUpdate = true;
                 }
 
+                // ノードがディレクトリであるならば子ノードを更新
                 if (content.IsDirectory)
                 {
-                    lock (node.ChildLock)
-                    {
-                        var directory = (DirectoryInfo)info;
-                        if (isUpdate)
-                        {
-                            // 構成に変更があるときはエントリを再取得する
-                            var map = node.ChildCollection().ToDictionary(e => e.Name, e => e);
-                            foreach (var entry in Directory.GetFileSystemEntries(content.Path).Select(e => System.IO.Path.GetFileName(e)))
-                            {
-                                if (map.TryGetValue(entry, out var childNode))
-                                {
-                                    // 存在するものは通常の更新
-                                    UpdateNode(childNode, token);
-                                }
-                                else
-                                {
-                                    // 存在しないものは新しく追加
-                                    var path = System.IO.Path.Combine(node.FullName, entry);
-                                    Debug.WriteLine($"Node: Add: {path}");
-                                    _jobEngine.InvokeAsync(() => AddFile(path, token));
-                                }
-                            }
+                    var children = node.CloneChildren();
 
-                            // 掃除
-                            removes.AddRange(node.ChildCollection().Where(e => e.Content?.State == FileContentState.Unknown));
-                        }
-                        else
+                    var directory = (DirectoryInfo)info;
+
+                    if (unknownChildren)
+                    {
+                        // 構成に変更があるときはエントリを再取得する
+                        var map = children.ToDictionary(e => e.Name, e => e);
+                        foreach (var entry in Directory.GetFileSystemEntries(content.Path).Select(e => System.IO.Path.GetFileName(e)))
                         {
-                            // 構成に変更がない場合は個別の子ノードの更新
-                            foreach (var childNode in node.ChildCollection())
+                            if (map.TryGetValue(entry, out var childNode))
                             {
+                                // 存在するものは通常の更新
                                 UpdateNode(childNode, token);
-                                if (childNode.Content?.State == FileContentState.Unknown)
-                                {
-                                    removes.Add(childNode);
-                                }
+                            }
+                            else
+                            {
+                                // 存在しないものは新しく追加
+                                var path = System.IO.Path.Combine(node.FullName, entry);
+                                Debug.WriteLine($"Node: Add: {path}");
+                                _jobEngine.InvokeAsync(() => AddFile(path, token));
                             }
                         }
                     }
+                    else
+                    {
+                        // 構成に変更がない場合は個別の子ノードの更新
+                        foreach (var childNode in children)
+                        {
+                            UpdateNode(childNode, token);
+                        }
+                    }
+
+                    // 掃除。Unknown な子ノードを削除
+                    removes.AddRange(children.Where(e => e.Content?.State == FileContentState.Unknown));
                 }
+                // ノードがファイルであるならば整合性のみチェック
                 else
                 {
                     // ファイルなのに子ノードがある場合は全部削除
                     if (node.Children is not null && node.Children.Count != 0)
                     {
-                        lock (node.ChildLock) // いらないはずだが一応
-                        {
-                            removes.AddRange(node.Children);
-                        }
+                        removes.AddRange(node.CloneChildren());
                     }
                 }
 
@@ -394,12 +407,11 @@ namespace NeeLaboratory.IO.Search.Files
                     Debug.WriteLine($"Node: Remove: {entry.FullName}");
                     _jobEngine.InvokeAsync(() => RemoveFile(entry.FullName, token));
                 }
-
-                Interlocked.Add(ref _count, node.Children?.Count ?? 0);
             }
             else
             {
                 Debug.WriteLine($"Node: {node} not found.");
+                _jobEngine.InvokeAsync(() => RemoveFile(node.FullName, token));
             }
         }
 
@@ -507,7 +519,7 @@ namespace NeeLaboratory.IO.Search.Files
         private void AddFile(string path, CancellationToken token)
         {
             if (_disposedValue) return;
-            if (!_initialized) return;
+            if (!_activated) return;
 
             using var lockToken = _semaphore.Lock(token);
             AddFileCore(path, token);
@@ -544,7 +556,7 @@ namespace NeeLaboratory.IO.Search.Files
         private void RenameFile(string path, string oldPath, CancellationToken token)
         {
             if (_disposedValue) return;
-            if (!_initialized) return;
+            if (!_activated) return;
 
             using var lockToken = _semaphore.Lock(token);
             RenameFileCore(path, oldPath, token);
@@ -580,7 +592,7 @@ namespace NeeLaboratory.IO.Search.Files
         private void RemoveFile(string path, CancellationToken token)
         {
             if (_disposedValue) return;
-            if (!_initialized) return;
+            if (!_activated) return;
 
             using var lockToken = _semaphore.Lock(token);
             RemoveFileCore(path, token);
@@ -611,7 +623,7 @@ namespace NeeLaboratory.IO.Search.Files
             Debug.Assert(info is null || info.FullName.TrimEnd('\\') == path);
 
             if (_disposedValue) return;
-            if (!_initialized) return;
+            if (!_activated) return;
 
             using var lockToken = _semaphore.Lock(token);
             UpdateFileCore(path, info, token);
