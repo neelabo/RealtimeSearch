@@ -156,7 +156,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         public bool CheckExtensions(string input)
         {
             if (input == null) return false;
-            if (_extensionsList == null || _extensionsList.Count == 0) return true;
+            if (_extensionsList == null || _extensionsList.Count == 0) return false;
 
             var ext = System.IO.Path.GetExtension(input).ToLower();
             return _extensionsList.Contains(ext);
