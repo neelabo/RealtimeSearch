@@ -1,7 +1,6 @@
-**RealtimeSearch Canary は開発中のスナップショットで、正式版で提供される機能を先行体験するためのものです。通常の使用にはナンバリングされた正式版をご使用ください。**
+**RealtimeSearch Canary is a snapshot of the development process and is intended to give you a preview of the features that will be available in the official version. For normal use, please use the numbered official version.**
 
-  * ZIP版のみの提供となります。
-  * 別途 .NET8 Desktop Runtime のインストールが必要です。
-  * 正式版よりも不安定です。
-  * 保存データに互換性がない可能性があります。正式版とは別けての運用をお勧めします。
-  
+  * Only the ZIP-fd version is available.
+  * .NET Desktop Runtime must be installed separately.
+  * It is more unstable than the official version.
+  * Saved data may not be compatible. It is recommended to operate separately from the official version.
