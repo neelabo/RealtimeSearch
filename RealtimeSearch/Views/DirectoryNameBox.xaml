@@ -34,7 +34,9 @@
                 </Style>
             </TextBlock.Style>
         </TextBlock>
-        <Button x:Name="ButtonOpenDialog" Content="..." Width="20" Height="{Binding ElementName=PathTextBox, Path=Height}" Click="ButtonOpenDialog_Click" HorizontalAlignment="Right"/>
+        <Button x:Name="ButtonOpenDialog" Style="{StaticResource IconButton}" Width="32" VerticalAlignment="Stretch" Click="ButtonOpenDialog_Click" HorizontalAlignment="Right">
+            <TextBlock Style="{StaticResource IconFont}" Text="&#xED25;" />
+        </Button>
     </Grid>
 
 
