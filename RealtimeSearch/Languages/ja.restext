@@ -1,6 +1,6 @@
 App.DefaultApp=既定のアプリ
 App.Extensions=拡張子
-App.Extensions.Tips=空白区切りで複数拡張子を定義します。
+App.Extensions.Tips=関連する拡張子。空白区切りで複数拡張子を定義します。
 App.IsMultiArgumentEnabled=パラメーターの複数ファイル展開
 App.Name=名前
 App.Parameter=パラメーター
@@ -51,6 +51,7 @@ Setting.IsTopmost=常に手前に表示
 Setting.Language=言語
 Setting.Language.Remarks=※次の起動から適用されます。
 Setting.LicenseInfo=ライセンス情報
+Setting.Number=No.
 Setting.ProjectPage=プロジェクト ページ
 Setting.SearchArea=検索フォルダー
 Setting.SearchArea.Empty=検索するフォルダを登録してください。

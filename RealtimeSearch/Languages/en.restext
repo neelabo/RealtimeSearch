@@ -1,6 +1,6 @@
 App.DefaultApp=Default App
 App.Extensions=Extensions
-App.Extensions.Tips=If there is more than one, separate them with a space.
+App.Extensions.Tips=Associated extensions. If there is more than one, separate them with a space.
 App.IsMultiArgumentEnabled=Expand to multiple file names
 App.Name=Name
 App.Parameter=Parameter
@@ -51,6 +51,7 @@ Setting.IsTopmost=Always in front
 Setting.Language=Language
 Setting.Language.Remarks=* This will be applied from the next startup.
 Setting.LicenseInfo=License 
+Setting.Number=No.
 Setting.ProjectPage=Project page
 Setting.SearchArea=Search folders
 Setting.SearchArea.Empty=Register folders to be searched.
