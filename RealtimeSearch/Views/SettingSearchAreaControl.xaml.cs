@@ -49,7 +49,6 @@ namespace NeeLaboratory.RealtimeSearch.Views
             var dialog = new OpenFolderDialog()
             {
                 Title = ResourceService.GetString("@Setting.AddSearchFolder"),
-                InitialDirectory = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal)
             };
 
 
