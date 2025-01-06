@@ -43,7 +43,7 @@ namespace RealtimeSearchUnitTest
             public event PropertyChangedEventHandler? PropertyChanged;
 #pragma warning restore CS0067
 
-            public bool AllowFolder { get; set; } = true;
+            public bool IncludeFolders { get; set; } = true;
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace RealtimeSearchUnitTest
             DumpTree(engine);
             Assert.Equal(9, engine.Tree.CollectFileContents().Count());
 
-            context.AllowFolder = true;
+            context.IncludeFolders = true;
             var result = await engine.SearchAsync("SubFolder1", CancellationToken.None);
             Assert.Single(result.Items);
         }

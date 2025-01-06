@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using NeeLaboratory.IO.Search.Files;
+using NeeLaboratory.RealtimeSearch.Services;
 using NeeLaboratory.RealtimeSearch.Windows;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -18,20 +19,23 @@ namespace NeeLaboratory.RealtimeSearch.Models
     public class AppSettings : ObservableObject, ISearchContext
     {
         private string _language = CultureInfo.CurrentCulture.Name;
-        private bool _isMonitorClipboard = true;
-        private bool _isTopmost;
-        private bool _isDetailVisible;
-        private bool _allowFolder;
+        private bool _monitorClipboard = true;
+        private bool _topmost;
+        private bool _includeFolders = true;
         private string _webSearchFormat = "https://www.google.com/search?q=$(query)";
+        private bool _showDetail;
         private bool _useCache = true;
         private ObservableCollection<ExternalProgram> _externalPrograms;
 
+
         public AppSettings()
         {
+            Format = new FormatVersion(ApplicationInfo.Current.CreateFormatName("Settings"), 4, 0, 0);
             _externalPrograms = new();
             AttachExternalPrograms();
         }
 
+        public FormatVersion Format { get; set; }
 
         public string Language
         {
@@ -39,34 +43,22 @@ namespace NeeLaboratory.RealtimeSearch.Models
             set { SetProperty(ref _language, value); }
         }
 
-        public bool IsMonitorClipboard
+        public bool IncludeFolders
         {
-            get { return _isMonitorClipboard; }
-            set { SetProperty(ref _isMonitorClipboard, value); }
+            get { return _includeFolders; }
+            set { SetProperty(ref _includeFolders, value); }
         }
 
-        public bool IsTopmost
+        public bool MonitorClipboard
         {
-            get { return _isTopmost; }
-            set { SetProperty(ref _isTopmost, value); }
+            get { return _monitorClipboard; }
+            set { SetProperty(ref _monitorClipboard, value); }
         }
 
-        public bool AllowFolder
+        public bool Topmost
         {
-            get { return _allowFolder; }
-            set { SetProperty(ref _allowFolder, value); }
-        }
-
-        public bool IsDetailVisible
-        {
-            get { return _isDetailVisible; }
-            set { SetProperty(ref _isDetailVisible, value); }
-        }
-
-        public string WebSearchFormat
-        {
-            get { return _webSearchFormat; }
-            set { SetProperty(ref _webSearchFormat, value); }
+            get { return _topmost; }
+            set { SetProperty(ref _topmost, value); }
         }
 
         public bool UseCache
@@ -75,6 +67,17 @@ namespace NeeLaboratory.RealtimeSearch.Models
             set { SetProperty(ref _useCache, value); }
         }
 
+        public string WebSearchFormat
+        {
+            get { return _webSearchFormat; }
+            set { SetProperty(ref _webSearchFormat, value); }
+        }
+
+        public bool ShowDetail
+        {
+            get { return _showDetail; }
+            set { SetProperty(ref _showDetail, value); }
+        }
 
         public WindowPlacement WindowPlacement { get; set; } = new WindowPlacement();
 
@@ -92,7 +95,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
             }
         }
 
-        public List<ListViewColumnMemento> ListViewColumnMemento { get; set; } = [];
+        public List<ListViewColumnMemento> ListLayout { get; set; } = [];
 
 
         public AppSettings Validate()

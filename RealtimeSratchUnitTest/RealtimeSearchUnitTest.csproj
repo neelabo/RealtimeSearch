@@ -24,9 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="TestData\UserSetting.v3.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="TestFolders\File1.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

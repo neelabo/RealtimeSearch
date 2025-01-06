@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NeeLaboratory.RealtimeSearch.Models;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -187,6 +188,11 @@ namespace NeeLaboratory.RealtimeSearch.Services
                 Directory.CreateDirectory(path);
             }
             return path;
+        }
+
+        public string CreateFormatName(params string[] names)
+        {
+            return FormatVersion.CreateFormatName(ProductName, names);
         }
 
         // 全ユーザデータ削除

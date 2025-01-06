@@ -107,32 +107,32 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
 
         public bool IsTipsVisible
         {
-            get { return !_settings.IsDetailVisible && !IsRenaming; }
+            get { return !_settings.ShowDetail && !IsRenaming; }
         }
 
-        public bool IsDetailVisible
+        public bool ShowDetail
         {
-            get { return _settings.IsDetailVisible; }
-            set { _settings.IsDetailVisible = value; }
+            get { return _settings.ShowDetail; }
+            set { _settings.ShowDetail = value; }
         }
 
-        public bool IsTopmost
+        public bool Topmost
         {
-            get { return _settings.IsTopmost; }
+            get { return _settings.Topmost; }
             set
             {
-                if (_settings.IsTopmost != value)
+                if (_settings.Topmost != value)
                 {
-                    _settings.IsTopmost = value;
-                    OnPropertyChanged(nameof(IsTopmost));
+                    _settings.Topmost = value;
+                    OnPropertyChanged(nameof(Topmost));
                 }
             }
         }
 
-        public bool AllowFolder
+        public bool IncludeFolders
         {
-            get { return _settings.AllowFolder; }
-            set { _settings.AllowFolder = value; }
+            get { return _settings.IncludeFolders; }
+            set { _settings.IncludeFolders = value; }
         }
 
         public ExternalProgramCollection Programs => _programs;
@@ -214,17 +214,17 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
         {
             switch (e.PropertyName)
             {
-                case nameof(_settings.IsDetailVisible):
-                    OnPropertyChanged(nameof(IsDetailVisible));
+                case nameof(_settings.ShowDetail):
+                    OnPropertyChanged(nameof(ShowDetail));
                     OnPropertyChanged(nameof(IsTipsVisible));
                     break;
 
-                case nameof(_settings.IsTopmost):
-                    OnPropertyChanged(nameof(IsTopmost));
+                case nameof(_settings.Topmost):
+                    OnPropertyChanged(nameof(Topmost));
                     break;
 
-                case nameof(_settings.AllowFolder):
-                    OnPropertyChanged(nameof(AllowFolder));
+                case nameof(_settings.IncludeFolders):
+                    OnPropertyChanged(nameof(IncludeFolders));
                     _ = SearchAsync(true);
                     break;
             }
@@ -243,7 +243,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
 
         public void StoreListViewCondition(List<ListViewColumnMemento> listViewColumnMementos)
         {
-            _settings.ListViewColumnMemento = listViewColumnMementos;
+            _settings.ListLayout = listViewColumnMementos;
         }
 
         // キーワード即時設定
@@ -385,7 +385,7 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
         [RelayCommand]
         private void ToggleDetailVisible()
         {
-            _settings.IsDetailVisible = !_settings.IsDetailVisible;
+            _settings.ShowDetail = !_settings.ShowDetail;
         }
 
         [RelayCommand]

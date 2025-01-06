@@ -58,7 +58,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
             this.MouseRightButtonDown += (s, e) => this.RenameManager.Stop();
             this.Deactivated += (s, e) => this.RenameManager.Stop();
 
-            RestoreListViewMemento(AppModel.Settings.ListViewColumnMemento);
+            RestoreListViewMemento(AppModel.Settings.ListLayout);
 
             this.WebSearchButton.ToolTip = ResourceService.GetString("@Button.WebSearch") + " (" + new KeyGesture(Key.F, ModifierKeys.Control).GetDisplayStringForCulture(CultureInfo.CurrentCulture) + ")";
             this.RefreshButton.ToolTip = ResourceService.GetString("@Button.Refresh") + " (" + new KeyGesture(Key.F5).GetDisplayStringForCulture(CultureInfo.CurrentCulture) + ")";

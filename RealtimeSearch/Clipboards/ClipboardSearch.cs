@@ -64,7 +64,7 @@ namespace NeeLaboratory.RealtimeSearch.Clipboards
             //var obj = Clipboard.GetDataObject();
             //Debug.WriteLine($"Capture: {string.Join(',', obj.GetFormats())}");
 
-            if (!_setting.IsMonitorClipboard) return;
+            if (!_setting.MonitorClipboard) return;
 
             // 自分のアプリからコピーした場合の変更は除外する
             nint activeWindow = NativeMethods.GetForegroundWindow();

@@ -37,7 +37,8 @@ namespace NeeLaboratory.RealtimeSearch.Models
         private bool _isMultiArgumentEnabled;
         private List<string> _extensionsList = new();
 
-        [JsonInclude, JsonPropertyName("Name")]
+        [JsonInclude, JsonPropertyName(nameof(Name))]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? _name;
 
 
@@ -63,7 +64,13 @@ namespace NeeLaboratory.RealtimeSearch.Models
         public ExternalProgramType ProgramType
         {
             get { return _programType; }
-            set { SetProperty(ref _programType, value); }
+            set
+            {
+                if (SetProperty(ref _programType, value))
+                {
+                    OnPropertyChanged(nameof(Name));
+                }
+            }
         }
 
         public string Program
@@ -97,7 +104,13 @@ namespace NeeLaboratory.RealtimeSearch.Models
         public string Protocol
         {
             get { return _protocol; }
-            set { SetProperty(ref _protocol, value.Trim()); }
+            set
+            {
+                if (SetProperty(ref _protocol, value.Trim()))
+                {
+                    OnPropertyChanged(nameof(Name));
+                }
+            }
         }
 
         public string Extensions
@@ -149,12 +162,24 @@ namespace NeeLaboratory.RealtimeSearch.Models
             return _extensionsList.Contains(ext);
         }
 
-
         private string GetDefaultName()
         {
-            return string.IsNullOrEmpty(_program)
-                ? ResourceService.GetString("@App.DefaultApp")
-                : Path.GetFileNameWithoutExtension(_program);
+            if (ProgramType == ExternalProgramType.Uri)
+            {
+                if (string.IsNullOrWhiteSpace(_protocol))
+                {
+                    return ResourceService.GetString("@App.DefaultApp");
+                }
+                return _protocol.Split(':').FirstOrDefault() ?? $"Protocol {_id}"; 
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(_program))
+                {
+                    return ResourceService.GetString("@App.DefaultApp");
+                }
+                return Path.GetFileNameWithoutExtension(_program);
+            }
         }
 
         private string? ValidateName(string value)

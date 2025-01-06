@@ -49,7 +49,7 @@ namespace RealtimeSearchUnitTest
             public event PropertyChangedEventHandler? PropertyChanged;
 #pragma warning restore CS0067
 
-            public bool AllowFolder { get; set; } = true;
+            public bool IncludeFolders { get; set; } = true;
         }
 
 

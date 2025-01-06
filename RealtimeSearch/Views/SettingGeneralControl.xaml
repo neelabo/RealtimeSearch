@@ -24,9 +24,9 @@
 
         <TextBlock Text="{tres:TextBinding Setting.Settings}"/>
         <StackPanel Style="{StaticResource Phrase}">
-            <CheckBox Margin="2" IsChecked="{Binding Setting.AllowFolder}" VerticalAlignment="Center" Content="{tres:TextBinding Setting.AllowFolder}"/>
-            <CheckBox Margin="2" IsChecked="{Binding Setting.IsMonitorClipboard}" VerticalAlignment="Center" Content="{tres:TextBinding Setting.IsMonitorClipboard}"/>
-            <CheckBox Margin="2" IsChecked="{Binding Setting.IsTopmost}" VerticalAlignment="Center" Content="{tres:TextBinding Setting.IsTopmost}"/>
+            <CheckBox Margin="2" IsChecked="{Binding Setting.IncludeFolders}" VerticalAlignment="Center" Content="{tres:TextBinding Setting.IncludeFolders}"/>
+            <CheckBox Margin="2" IsChecked="{Binding Setting.MonitorClipboard}" VerticalAlignment="Center" Content="{tres:TextBinding Setting.MonitorClipboard}"/>
+            <CheckBox Margin="2" IsChecked="{Binding Setting.Topmost}" VerticalAlignment="Center" Content="{tres:TextBinding Setting.Topmost}"/>
             <CheckBox Margin="2" IsChecked="{Binding Setting.UseCache}" VerticalAlignment="Center" Content="{tres:TextBinding Setting.UseCache}" />
         </StackPanel>
 

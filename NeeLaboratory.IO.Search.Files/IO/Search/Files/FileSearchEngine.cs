@@ -120,7 +120,7 @@ namespace NeeLaboratory.IO.Search.Files
         {
             switch (e.PropertyName)
             {
-                case nameof(ISearchContext.AllowFolder):
+                case nameof(ISearchContext.IncludeFolders):
                     UpdateSearchProperties();
                     break;
             }
@@ -142,7 +142,7 @@ namespace NeeLaboratory.IO.Search.Files
         private void UpdateSearchProperties()
         {
             // allow folder
-            _searcher.PreKeys = _context.AllowFolder ? new() : new() { new SearchKey(SearchConjunction.And, ExtraSearchPropertyProfiles.IsDirectory, null, SearchFilterProfiles.Equal, "false") };
+            _searcher.PreKeys = _context.IncludeFolders ? new() : new() { new SearchKey(SearchConjunction.And, ExtraSearchPropertyProfiles.IsDirectory, null, SearchFilterProfiles.Equal, "false") };
 
             // pushpin
             _searcher.PostKeys = new() { new SearchKey(SearchConjunction.PreOr, ExtraSearchPropertyProfiles.IsPinned, null, SearchFilterProfiles.Equal, "true") };
