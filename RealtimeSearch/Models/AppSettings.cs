@@ -18,11 +18,13 @@ namespace NeeLaboratory.RealtimeSearch.Models
 
     public class AppSettings : ObservableObject, ISearchContext
     {
+        private readonly static string _defaultWebSearchFormat = "https://www.google.com/search?q=$(query)";
+
         private string _language = CultureInfo.CurrentCulture.Name;
         private bool _monitorClipboard = true;
         private bool _topmost;
         private bool _includeFolders = true;
-        private string _webSearchFormat = "https://www.google.com/search?q=$(query)";
+        private string _webSearchFormat = _defaultWebSearchFormat;
         private bool _showDetail;
         private bool _useCache = true;
         private ObservableCollection<ExternalProgram> _externalPrograms;
@@ -70,7 +72,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         public string WebSearchFormat
         {
             get { return _webSearchFormat; }
-            set { SetProperty(ref _webSearchFormat, value); }
+            set { SetProperty(ref _webSearchFormat, ValidateWebSearchFormat(value)); }
         }
 
         public bool ShowDetail
@@ -118,6 +120,16 @@ namespace NeeLaboratory.RealtimeSearch.Models
             {
                 ExternalPrograms[i].Id = i + 1;
             }
+        }
+
+        private static string ValidateWebSearchFormat(string? value)
+        {
+            value = value?.Trim();
+            if (string.IsNullOrEmpty(value))
+            {
+                return _defaultWebSearchFormat;
+            }
+            return value;
         }
     }
 }
