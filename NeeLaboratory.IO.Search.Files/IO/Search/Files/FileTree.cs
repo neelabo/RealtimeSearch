@@ -771,8 +771,7 @@ namespace NeeLaboratory.IO.Search.Files
         private void Watcher_Deleted(object sender, FileSystemEventArgs e)
         {
             Trace($"Watcher deleted: {e.FullPath}");
-            // 大文字・小文字のみの Rename では先に Deleted が発生するため処理を遅延させる
-            _jobEngine.InvokeDelayAsync(() => RemoveFile(e.FullPath, CancellationToken.None), 100);
+            _jobEngine.InvokeAsync(() => RemoveFile(e.FullPath, CancellationToken.None));
         }
 
         private void Watcher_Renamed(object? sender, RenamedEventArgs e)
