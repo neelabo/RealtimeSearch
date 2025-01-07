@@ -40,7 +40,6 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
         public MainWindowViewModel(AppSettings settings, Messenger messenger)
         {
             _settings = settings;
-            _settings.PropertyChanged += Setting_PropertyChanged;
 
             _messenger = messenger;
 
@@ -51,6 +50,8 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
             _programs.SubscribePropertyChanged(nameof(_programs.Error), Programs_ErrorChanged);
 
             _defaultWindowTitle = ApplicationInfo.Current.ProductName;
+
+            _settings.PropertyChanged += Setting_PropertyChanged;
         }
 
 
