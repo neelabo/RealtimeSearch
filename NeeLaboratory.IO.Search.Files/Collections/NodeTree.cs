@@ -95,7 +95,7 @@ namespace NeeLaboratory.Collections
                 {
                     if (node == _trunk || node.HasParent(_trunk))
                     {
-                        next = node.AddChild(name);
+                        next = AddNode(node, name);
                         isNew = true;
                     }
                     else
@@ -108,6 +108,11 @@ namespace NeeLaboratory.Collections
 
             Debug.Assert(!isNew || node.FullName == path);
             return isNew ? node : null;
+        }
+
+        protected virtual Node<T> AddNode(Node<T> node, string name)
+        {
+            return node.AddChild(name);
         }
 
         public Node<T>? Remove(string path)
@@ -125,8 +130,13 @@ namespace NeeLaboratory.Collections
             var node = Find(path);
             if (node is null) return null;
 
-            node.Name = name;
+            RenameNode(node, name);
             return node;
+        }
+
+        protected virtual void RenameNode(Node<T> node, string name)
+        {
+            node.Name = name;
         }
 
         public IEnumerable<Node<T>> WalkAll()

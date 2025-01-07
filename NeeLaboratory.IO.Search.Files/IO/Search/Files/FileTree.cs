@@ -12,6 +12,7 @@ using System.Linq;
 using NeeLaboratory.Collections;
 using NeeLaboratory.ComponentModel;
 using NeeLaboratory.Linq;
+using NeeLaboratory.Native;
 
 namespace NeeLaboratory.IO.Search.Files
 {
@@ -20,6 +21,19 @@ namespace NeeLaboratory.IO.Search.Files
     /// </summary>
     public class FileTree : NodeTree<FileContent>, IDisposable
     {
+        public class NodeFilenameComparer : IComparer<Node<FileContent>>
+        {
+            public int Compare(Node<FileContent>? x, Node<FileContent>? y)
+            {
+                if (x is null) return y is null ? 0 : -1;
+                if (y is null) return 1;
+                return NativeMethods.StrCmpLogicalW(x.Name, y.Name);
+            }
+        }
+
+        private static readonly NodeFilenameComparer _nodeComparer = new();
+
+
         private readonly string _path;
         private FileSystemWatcher? _fileSystemWatcher;
         private readonly DelaySlimJobEngine _jobEngine;
@@ -318,7 +332,7 @@ namespace NeeLaboratory.IO.Search.Files
         {
 #if DEBUG
             // デバッグ用の遅延。キャッシュの更新が即時終了してしまうため。
-            Thread.Sleep(10);
+            Thread.Sleep(1);
 #endif
 
             Debug.Assert(node.Content is not null);
@@ -553,6 +567,20 @@ namespace NeeLaboratory.IO.Search.Files
             //Validate();
         }
 
+        /// <summary>
+        /// 子ノード追加処理
+        /// </summary>
+        /// 子ノードはソート済みであることを前提に挿入追加を行う
+        /// <remarks>
+        /// </remarks>
+        /// <param name="node">親ノード</param>
+        /// <param name="name">新しく作る子ノードの名前</param>
+        /// <returns>新しく作られた子ノード</returns>
+        protected override Node<FileContent> AddNode(Node<FileContent> node, string name)
+        {
+            return node.InsertChild(name, _nodeComparer);
+        }
+
         private void RenameFile(string path, string oldPath, CancellationToken token)
         {
             if (_disposedValue) return;
@@ -587,6 +615,26 @@ namespace NeeLaboratory.IO.Search.Files
             UpdateContent(node, null, true);
 
             //Validate();
+        }
+
+        /// <summary>
+        /// ノード名変更処理
+        /// </summary>
+        /// <remarks>
+        /// 子ノードはソート済みであることを前提に並び替えを行う
+        /// </remarks>
+        /// <param name="node">名前を変更するノード</param>
+        /// <param name="name">新しい名前</param>
+        protected override void RenameNode(Node<FileContent> node, string name)
+        {
+            node.Name = name;
+
+            var parent = node.Parent;
+            if (parent is not null)
+            {
+                parent.RemoveChild(node);
+                parent.InsertChild(node, _nodeComparer);
+            }
         }
 
         private void RemoveFile(string path, CancellationToken token)

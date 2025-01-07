@@ -106,6 +106,64 @@ namespace NeeLaboratory.Collections
         }
 
         /// <summary>
+        /// ノード挿入
+        /// </summary>
+        /// <remarks>
+        /// リストがソートされていることを前提としている。
+        /// </remarks>
+        /// <param name="node"></param>
+        /// <param name="comparer"
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public Node<T> InsertChild(Node<T> node, IComparer<Node<T>> comparer)
+        {
+            lock (_lock)
+            {
+                if (node.Parent is not null)
+                {
+                    node.Parent.RemoveChild(node);
+                    Debug.Assert(node.Parent is null);
+                }
+
+                if (Children is null)
+                {
+                    return AddChild(node);
+                }
+
+                int index = Children.BinarySearch(node, comparer);
+                if (index >= 0)
+                {
+                    Debug.WriteLine($"Already exists: {node.Name}");
+                    return AddChild(node);
+                }
+                
+                Debug.WriteLine($"Children.Insert: [{~index}] = {node.Name}"); // ##
+                
+                Children.Insert(~index, node);
+                node.Parent = this;
+                return node;
+            }
+        }
+
+        /// <summary>
+        /// ノード挿入
+        /// </summary>
+        /// <remarks>
+        /// リストがソートされていることを前提としている。
+        /// </remarks>
+        /// <param name="name"></param>
+        /// <param name="comparer"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public Node<T> InsertChild(string name, IComparer<Node<T>> comparer)
+        {
+            if (string.IsNullOrEmpty(name)) throw new ArgumentException($"Argument is empty: {nameof(name)}");
+            if (FindChild(name) != null) throw new ArgumentException($"Already exists: {nameof(name)}");
+
+            return InsertChild(new Node<T>(name), comparer);
+        }
+
+        /// <summary>
         /// ノード削除
         /// </summary>
         /// <param name="node"></param>

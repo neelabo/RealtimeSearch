@@ -1,27 +1,18 @@
 ﻿//#define LOCAL_DEBUG
 using NeeLaboratory.Generators;
-using NeeLaboratory.IO.Search;
+using NeeLaboratory.Native;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace NeeLaboratory.IO.Search.Files
 {
     [NotifyPropertyChanged]
-    public partial class FileContent : ISearchItem, IComparable, INotifyPropertyChanged
+    public partial class FileContent : ISearchItem, IComparable, IComparable<FileContent>, INotifyPropertyChanged
     {
-        internal static partial class NativeMethods
-        {
-            // 参考：自然順ソート
-            [LibraryImport("shlwapi.dll", EntryPoint = "StrCmpLogicalW", StringMarshalling = StringMarshalling.Utf16)]
-            public static partial int StrCmpLogicalW(string psz1, string psz2);
-        }
-
-
         private FileContentState _state;
 
 
@@ -129,9 +120,12 @@ namespace NeeLaboratory.IO.Search.Files
 
         public int CompareTo(object? obj)
         {
-            if (obj == null) return 1;
+            return CompareTo(obj as FileContent);
+        }
 
-            FileContent other = (FileContent)obj;
+        public int CompareTo(FileContent? other)
+        {
+            if (other == null) return 1;
             return NativeMethods.StrCmpLogicalW(Name, other.Name);
         }
 
