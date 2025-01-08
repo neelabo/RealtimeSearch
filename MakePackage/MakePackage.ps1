@@ -47,8 +47,7 @@ $Win10SDK = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64"
 
 #---------------------
 # get fileversion
-function Get-FileVersion($fileName)
-{
+function Get-FileVersion($fileName) {
 	throw "not supported."
 
 	$major = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($fileName).FileMajorPart
@@ -60,27 +59,23 @@ function Get-FileVersion($fileName)
 
 #---------------------
 # get version from _Version.props
-function Get-Version($projectFile)
-{
+function Get-Version($projectFile) {
 	$xml = [xml](Get-Content $projectFile)
 	
 	$version = [String]$xml.Project.PropertyGroup.VersionPrefix
 	
-	if ($version -match '\d+\.\d+\.\d+')
-	{
+	if ($version -match '\d+\.\d+\.\d+') {
 		return $version
 	}
 	
-    throw "Cannot get version."
+	throw "Cannot get version."
 }
 
 #---------------------
 # create display version (MajorVersion.MinorVersion) from raw version
-function Get-AppVersion($version)
-{
+function Get-AppVersion($version) {
 	$tokens = $version.Split(".")
-	if ($tokens.Length -ne 3)
-	{
+	if ($tokens.Length -ne 3) {
 		throw "Wrong version format."
 	}
 	$tokens = $version.Split(".")
@@ -91,26 +86,24 @@ function Get-AppVersion($version)
 
 #---------------------
 # get git log
-function Get-GitLog()
-{
-    $branch = Invoke-Expression "git rev-parse --abbrev-ref HEAD"
-    $descrive = Invoke-Expression "git describe --abbrev=0 --tags"
+function Get-GitLog() {
+	$branch = Invoke-Expression "git rev-parse --abbrev-ref HEAD"
+	$descrive = Invoke-Expression "git describe --abbrev=0 --tags"
 	$date = Invoke-Expression 'git log -1 --pretty=format:"%ad" --date=iso'
 	$result = Invoke-Expression "git log $descrive..head --encoding=Shift_JIS --pretty=format:`"%ae %s`""
-	$result = $result | Where-Object {$_ -match "^nee.laboratory"} | ForEach-Object {$_ -replace "^[\w\.@]+ ",""}
+	$result = $result | Where-Object { $_ -match "^nee.laboratory" } | ForEach-Object { $_ -replace "^[\w\.@]+ ", "" }
 	$result = $result | Where-Object { -not ($_ -match '^m.rge|^開発用|^作業中|\(dev\)|^-|^\.\.') } 
 
-    return "[${branch}] $descrive to head", $date, $result
+	return "[${branch}] $descrive to head", $date, $result
 }
 
 #---------------------
 # get git log (markdown)
-function Get-GitLogMarkdown($title)
-{
-    $result = Get-GitLog
+function Get-GitLogMarkdown($title) {
+	$result = Get-GitLog
 	$header = $result[0]
 	$date = $result[1]
-    $logs = $result[2]
+	$logs = $result[2]
 
 	"## $title"
 	"### $header"
@@ -123,16 +116,19 @@ function Get-GitLogMarkdown($title)
 
 #--------------------
 # replace keyword
-function Replace-Content
-{
+function Replace-Content {
 	Param([string]$filepath, [string]$rep1, [string]$rep2)
-	if ( $(Test-Path $filepath) -ne $True )
-	{
+	if ($(Test-Path $filepath) -ne $True) {
 		Write-Error "file not found"
 		return
 	}
-	# input UTF8, output UTF8
-	$file_contents = $(Get-Content -Encoding UTF8 $filepath) -replace $rep1, $rep2
+	if ($rep1 -eq "@HEAD") {
+		$file_contents = $(Get-Content -Encoding UTF8 $filepath)
+		$file_contents = @($rep2) + $file_contents
+	}
+	else {
+		$file_contents = $(Get-Content -Encoding UTF8 $filepath) -replace $rep1, $rep2
+	}
 	$file_contents | Out-File -Encoding UTF8 $filepath
 }
 
@@ -148,22 +144,19 @@ $versionProps = "$solutionDir\_Version.props"
 
 #----------------------
 # build
-function Build-Project($platform, $outputDir, $options)
-{
+function Build-Project($platform, $outputDir, $options) {
 	$defaultOptions = @(
 		"-p:PublishProfile=FolderProfile-$platform.pubxml"
 		"-c", "Release"
 	)
 
 	& dotnet publish $project $defaultOptions $options -o Publish\$outputDir
-	if ($? -ne $true)
-	{
+	if ($? -ne $true) {
 		throw "build error"
 	}
 }
 
-function Build-ProjectSelfContained($platform)
-{
+function Build-ProjectSelfContained($platform) {
 	$options = @(
 		"--self-contained", "true"
 	)
@@ -171,8 +164,7 @@ function Build-ProjectSelfContained($platform)
 	Build-Project $platform "$product-$platform" $options
 }
 
-function Build-ProjectFrameworkDependent($platform)
-{
+function Build-ProjectFrameworkDependent($platform) {
 	$options = @(
 		"-p:PublishTrimmed=false"
 		"--self-contained", "false"
@@ -183,8 +175,7 @@ function Build-ProjectFrameworkDependent($platform)
 
 #----------------------
 # package section
-function New-Package($platform, $productName, $productDir, $packageDir)
-{
+function New-Package($platform, $productName, $productDir, $packageDir) {
 	$temp = New-Item $packageDir -ItemType Directory
 
 	Copy-Item $productDir\* $packageDir -Recurse -Exclude ("*.pdb", "$product.config.json")
@@ -217,63 +208,58 @@ function New-Package($platform, $productName, $productDir, $packageDir)
 #----------------------
 # generate ChangeLog
 
-function Get-ChangeLog
-{
-    param (
-        [string]$Path = "Readme\ja-jp\ChangeLog.md",
-        [int]$Version = 0
-    )
+function Get-ChangeLog {
+	param (
+		[string]$Path = "Readme\ja-jp\ChangeLog.md",
+		[int]$Version = 0
+	)
 
-    function Get-IndentLine($line)
-    {
-        # increment section depth
-        if ($line.StartsWith("#"))
-        {
-            $line = "#" + $line
-        }
+	function Get-IndentLine($line) {
+		# increment section depth
+		if ($line.StartsWith("#")) {
+			$line = "#" + $line
+		}
         
-        return $line
-    }
+		return $line
+	}
 
-    $versions = @{ header = @() }
-    $current = "header"
-    $latestVersion = 1
+	$versions = @{ header = @() }
+	$current = "header"
+	$latestVersion = 1
     
-    $lines = Get-Content $Path
-    foreach ($line in $lines) {
-        if ($line.StartsWith("#")) {
-            if ($line -match "^## (\d+)\.(\d+)") {
-                $current = $Matches[1] + '.' + $Matches[2]
-                $versions.add($current, @())
-                $number = [int]$Matches[1]
-                if ($number -gt $latestVersion) {
-                    $latestVersion = $number
-                }
-            }
-        }
-        $fixLine = Get-IndentLine $line
-        $versions[$current] += $fixLine
-    }
+	$lines = Get-Content $Path
+	foreach ($line in $lines) {
+		if ($line.StartsWith("#")) {
+			if ($line -match "^## (\d+)\.(\d+)") {
+				$current = $Matches[1] + '.' + $Matches[2]
+				$versions.add($current, @())
+				$number = [int]$Matches[1]
+				if ($number -gt $latestVersion) {
+					$latestVersion = $number
+				}
+			}
+		}
+		$fixLine = Get-IndentLine $line
+		$versions[$current] += $fixLine
+	}
 
-    if ($Version -eq 0) {
-        $Version = $latestVersion
-    }
+	if ($Version -eq 0) {
+		$Version = $latestVersion
+	}
 
-    Write-Output $versions.header
+	Write-Output $versions.header
 
-    foreach ($item in $versions.GetEnumerator())
-    {
-        if ($item.key -match "^$Version\.") {
-            Write-Output $item.value
-        }
-    }
+	foreach ($item in $versions.GetEnumerator()) {
+		if ($item.key -match "^$Version\.") {
+			Write-Output $item.value
+		}
+	}
 }
 
 #----------------------
 # generate README.html
-function New-Readme($packageDir, $culture, $target)
-{
-	$readmeSource = "Readme\$culture"
+function New-Readme($packageDir, $culture, $target) {
+	$readmeSource = "$solutionDir\docs\$culture"
 
 	$readmeDir = $packageDir + "\readme.$culture"
 
@@ -286,27 +272,26 @@ function New-Readme($packageDir, $culture, $target)
 	Copy-Item "$readmeSource\Package-zip-fd.md" $readmeDir
 	Copy-Item "$readmeSource\Package-msi.md" $readmeDir
 	Copy-Item "$readmeSource\Contact.md" $readmeDir
-	Copy-Item "$readmeSource\LicenseHeader.md" $readmeDir
-	Copy-Item "$readmeSource\LicenseAppendix.md" $readmeDir
 	Copy-Item "$readmeSource\SearchOptions.md" $readmeDir
+
+	if (Test-Path "$readmeSource\LicenseAppendix.md") {
+		Copy-Item "$readmeSource\LicenseAppendix.md" $readmeDir
+	}
 
 	Copy-Item "$solutionDir\LICENSE.md" $readmeDir
 	Copy-Item "$solutionDir\THIRDPARTY_LICENSES.md" $readmeDir
 	Copy-Item "$solutionDir\NeeLaboratory.IO.Search\THIRDPARTY_LICENSES.md" "$readmeDir\NeeLaboratory.IO.Search_THIRDPARTY_LICENSES.md"
 
-	if ($target -eq ".canary")
-	{
+	if ($target -eq ".canary") {
 		Get-GitLogMarkdown "$product <VERSION/> - ChangeLog" | Set-Content -Encoding UTF8 "$readmeDir\ChangeLog.md"
 	}
-	else
-	{
+	else {
 		Get-ChangeLog -Path "$readmeSource\ChangeLog.md" | Set-Content -Path "$readmeDir\ChangeLog.md"
 	}
 
 	$postfix = $appVersion
 	$announce = ""
-	if ($target -eq ".canary")
-	{
+	if ($target -eq ".canary") {
 		$postfix = "Canary ${dateVersion}"
 		$announce = "Rev. ${revision}`r`n`r`n" + (Get-Content -Path "$readmeDir/Canary.md" -Raw -Encoding UTF8)
 	}
@@ -317,38 +302,33 @@ function New-Readme($packageDir, $culture, $target)
 	Replace-Content "$readmeDir\Environment.md" "<VERSION/>" "$postfix"
 	Replace-Content "$readmeDir\Contact.md" "<VERSION/>" "$postfix"
 	Replace-Content "$readmeDir\ChangeLog.md" "<VERSION/>" "$postfix"
+	Replace-Content "$readmeDir\LICENSE.md" "@HEAD" "## License"
 
 	$readmeHtml = "README.html"
 
-	if (-not ($culture -eq "en-us"))
-	{
+	if (-not ($culture -eq "en-us")) {
 		$readmeHtml = "README.$culture.html"
 	}
 
 	$inputs = @()
 	$inputs += "$readmeDir\Overview.md"
 
-	if ($target -ne ".appx")
-	{
+	if ($target -ne ".appx") {
 		$inputs += "$readmeDir\Environment.md"
 	}
 	
-	if (($target -eq ".zip") -or ($target -eq ".beta"))
-	{
+	if (($target -eq ".zip") -or ($target -eq ".beta")) {
 		$inputs += "$readmeDir\Package-zip.md"
 	}
-	elseif (($target -eq ".zip-fd") -or ($target -eq ".canary"))
-	{
+	elseif (($target -eq ".zip-fd") -or ($target -eq ".canary")) {
 		$inputs += "$readmeDir\Package-zip-fd.md"
 	}
 
 	$inputs += "$readmeDir\Contact.md"
 
-	$inputs += "$readmeDir\LicenseHeader.md"
 	$inputs += "$readmeDir\LICENSE.md"
 
-	if ($culture -eq "ja-jp")
-	{
+	if (Test-Path "$readmeDir\LicenseAppendix.md") {
 		$inputs += "$readmeDir\LicenseAppendix.md"
 	}
 
@@ -357,20 +337,18 @@ function New-Readme($packageDir, $culture, $target)
 	$inputs += "$readmeDir\ChangeLog.md"
 
 	$output = "$packageDir\$readmeHtml"
-	$css = "Readme\Style.html"
+	$css = "Style.html"
 	
 	# markdown to html by pandoc
 	pandoc -s -t html5 -o $output --metadata title="$product $postfix" -H $css $inputs
-	if ($? -ne $true)
-	{
+	if ($? -ne $true) {
 		throw "pandoc error"
 	}
 
 
 	$searchOptionHtml = "SearchOptions.html"
 	$searchOptionTitle = "$product Search Options"
-	if (-not ($culture -eq "en-us"))
-	{
+	if (-not ($culture -eq "en-us")) {
 		$searchOptionHtml = "SearchOptions.$culture.html"
 		$searchOptionTitle = "$product 検索オプション"
 	}
@@ -380,8 +358,7 @@ function New-Readme($packageDir, $culture, $target)
 	$searchOptionOutput = "$packageDir\$searchOptionHtml"
 
 	pandoc -s -t html5 -o $searchOptionOutput --metadata title="$searchOptionTitle" -H $css $searchOptionInputs
-	if ($? -ne $true)
-	{
+	if ($? -ne $true) {
 		throw "pandoc error"
 	}
 
@@ -390,18 +367,15 @@ function New-Readme($packageDir, $culture, $target)
 
 #--------------------------
 # remove ZIP
-function Remove-Zip($packageZip)
-{
-	if (Test-Path $packageZip)
-	{
+function Remove-Zip($packageZip) {
+	if (Test-Path $packageZip) {
 		Remove-Item $packageZip
 	}
 }
 
 #--------------------------
 # archive to ZIP
-function New-Zip($referenceDir, $packageDir, $packageZip)
-{
+function New-Zip($referenceDir, $packageDir, $packageZip) {
 	Copy-Item $referenceDir $packageDir -Recurse
 	Optimize-Package $packageDir
 	Compress-Archive $packageDir -DestinationPath $packageZip
@@ -409,8 +383,7 @@ function New-Zip($referenceDir, $packageDir, $packageZip)
 
 
 #--------------------------
-function Get-CulturesFromConfig($inputDir, $config)
-{
+function Get-CulturesFromConfig($inputDir, $config) {
 	[xml]$xml = Get-Content "$inputDir\$config"
 
 	$add = $xml.configuration.appSettings.add | Where { $_.key -eq 'Cultures' } | Select -First 1
@@ -419,8 +392,7 @@ function Get-CulturesFromConfig($inputDir, $config)
 
 #--------------------------
 #
-function New-ConfigForZip($inputDir, $config, $outputDir)
-{
+function New-ConfigForZip($inputDir, $config, $outputDir) {
 	$jsonObject = (Get-Content "$inputDir\$config" | ConvertFrom-Json)
 
 	$jsonObject.PackageType = ".zip"
@@ -438,8 +410,7 @@ function New-ConfigForZip($inputDir, $config, $outputDir)
 
 #--------------------------
 #
-function New-ConfigForMsi($inputDir, $config, $outputDir)
-{
+function New-ConfigForMsi($inputDir, $config, $outputDir) {
 	$jsonObject = (Get-Content "$inputDir\$config" | ConvertFrom-Json)
 
 	$jsonObject.PackageType = ".msi"
@@ -457,8 +428,7 @@ function New-ConfigForMsi($inputDir, $config, $outputDir)
 
 #--------------------------
 #
-function New-ConfigForAppx($inputDir, $config, $outputDir)
-{
+function New-ConfigForAppx($inputDir, $config, $outputDir) {
 	$jsonObject = (Get-Content "$inputDir\$config" | ConvertFrom-Json)
 
 	$jsonObject.PackageType = ".appx"
@@ -476,8 +446,7 @@ function New-ConfigForAppx($inputDir, $config, $outputDir)
 
 #--------------------------
 #
-function New-ConfigForDevPackage($inputDir, $config, $target, $outputDir)
-{
+function New-ConfigForDevPackage($inputDir, $config, $target, $outputDir) {
 	$jsonObject = (Get-Content "$inputDir\$config" | ConvertFrom-Json)
 
 	$jsonObject.PackageType = $target
@@ -495,11 +464,9 @@ function New-ConfigForDevPackage($inputDir, $config, $target, $outputDir)
 
 #---------------------------
 #
-function New-EmptyFolder($dir)
-{
+function New-EmptyFolder($dir) {
 	# remove folder
-	if (Test-Path $dir)
-	{
+	if (Test-Path $dir) {
 		Remove-Item $dir -Recurse
 		Start-Sleep -m 100
 	}
@@ -510,8 +477,7 @@ function New-EmptyFolder($dir)
 
 #---------------------------
 #
-function New-PackageAppend($packageDir, $packageAppendDir)
-{
+function New-PackageAppend($packageDir, $packageAppendDir) {
 	New-EmptyFolder $packageAppendDir
 
 	# configure customize
@@ -529,23 +495,19 @@ function New-PackageAppend($packageDir, $packageAppendDir)
 
 #--------------------------
 # remove Msi
-function Remove-Msi($packageAppendDir, $packageMsi)
-{
-	if (Test-Path $packageMsi)
-	{
+function Remove-Msi($packageAppendDir, $packageMsi) {
+	if (Test-Path $packageMsi) {
 		Remove-Item $packageMsi
 	}
 
-	if (Test-Path $packageAppxDir_x64)
-	{
+	if (Test-Path $packageAppxDir_x64) {
 		Remove-Item $packageAppxDir_x64 -Recurse
 	}
 }
 
 #--------------------------
 # Msi
-function New-Msi($arch, $packageDir, $packageAppendDir, $packageMsi)
-{
+function New-Msi($arch, $packageDir, $packageAppendDir, $packageMsi) {
 	$candle = $env:WIX + 'bin\candle.exe'
 	$light = $env:WIX + 'bin\light.exe'
 	$heat = $env:WIX + 'bin\heat.exe'
@@ -562,12 +524,10 @@ function New-Msi($arch, $packageDir, $packageAppendDir, $packageMsi)
 
 	$ErrorActionPreference = "stop"
 
-	function New-MainComponents
-	{
+	function New-MainComponents {
 		$wxs = Convert-Path "WixSource\$arch\MainComponents.wxs"
 		& $heat dir "$packageDir" -cg MainComponents -ag -pog:Binaries -sfrag -srd -sreg -var var.ContentDir -dr INSTALLFOLDER -out $wxs
-		if ($? -ne $true)
-		{
+		if ($? -ne $true) {
 			throw "heat error"
 		}
 
@@ -581,42 +541,36 @@ function New-Msi($arch, $packageDir, $packageAppendDir, $packageMsi)
 		$xml.Save($wxs)
 	}
 
-	function Remove-WixComponentNode($xml, $name)
-	{
-		$node = $xml.Wix.Fragment[0].DirectoryRef.Component | Where-Object{(Split-Path $_.File.Source -Leaf) -eq $name}
-		if ($null -ne $node)
-		{
+	function Remove-WixComponentNode($xml, $name) {
+		$node = $xml.Wix.Fragment[0].DirectoryRef.Component | Where-Object { (Split-Path $_.File.Source -Leaf) -eq $name }
+		if ($null -ne $node) {
 			$componentId = $node.Id
 			$xml.Wix.Fragment[0].DirectoryRef.RemoveChild($node)
 
-			$node = $xml.Wix.Fragment[1].ComponentGroup.ComponentRef | Where-Object{$_.Id -eq $componentId}
+			$node = $xml.Wix.Fragment[1].ComponentGroup.ComponentRef | Where-Object { $_.Id -eq $componentId }
 			$xml.Wix.Fragment[1].ComponentGroup.RemoveChild($node)
 		}
 	}
 
-	function New-MsiSub($packageMsi, $culture)
-	{
+	function New-MsiSub($packageMsi, $culture) {
 		Write-Host "$packageMsi : $culture" -fore Cyan
 		
 		$wixObjDir = "$packageAppendDir\obj.$culture"
 		New-EmptyFolder $wixObjDir
 
 		& $candle -arch $arch -d"Platform=$arch" -d"AppVersion=$appVersion" -d"ProductVersion=$version" -d"ContentDir=$packageDir\\" -d"AppendDir=$packageDir.append\\" -d"LibrariesDir=$packageDir\\Libraries" -d"culture=$culture" -ext WixNetFxExtension -out "$wixObjDir\\"  WixSource\*.wxs .\WixSource\$arch\*.wxs
-		if ($? -ne $true)
-		{
+		if ($? -ne $true) {
 			throw "candle error"
 		}
 
 		& $light -out "$packageMsi" -ext WixUIExtension -ext WixNetFxExtension -cultures:$culture -loc WixSource\Language-$culture.wxl  "$wixObjDir\*.wixobj"
-		if ($? -ne $true)
-		{
+		if ($? -ne $true) {
 			throw "light error" 
 		}
 	}
 
 	## Create MainComponents.wxs
-	if ($updateComponent)
-	{
+	if ($updateComponent) {
 		Write-Host "Create MainComponents.wsx`n" -fore Cyan
 		New-MainComponents
 	}
@@ -625,8 +579,7 @@ function New-Msi($arch, $packageDir, $packageAppendDir, $packageMsi)
 	New-MsiSub $1041Msi "ja-jp"
 
 	& $torch -p -t language $packageMsi $1041Msi -out $1041Mst
-	if ($? -ne $true)
-	{
+	if ($? -ne $true) {
 		throw "torch error"
 	}
 
@@ -635,14 +588,12 @@ function New-Msi($arch, $packageDir, $packageAppendDir, $packageMsi)
 	#-------------------------
 
 	& cscript "$wisubstg" "$packageMsi" $1041Mst 1041
-	if ($? -ne $true)
-	{
+	if ($? -ne $true) {
 		throw "wisubstg.vbs error"
 	}
 
-	& cscript "$wilangid" "$packageMsi" Package 1033,1041
-	if ($? -ne $true)
-	{
+	& cscript "$wilangid" "$packageMsi" Package 1033, 1041
+	if ($? -ne $true) {
 		throw "wilangid.vbs error"
 	}
 }
@@ -650,23 +601,19 @@ function New-Msi($arch, $packageDir, $packageAppendDir, $packageMsi)
 
 #--------------------------
 # Appx remove
-function Remove-Appx($packageAppendDir, $appx)
-{
-	if (Test-Path $appx)
-	{
+function Remove-Appx($packageAppendDir, $appx) {
+	if (Test-Path $appx) {
 		Remove-Item $appx
 	}
 
-	if (Test-Path $packageAppxDir_x64)
-	{
+	if (Test-Path $packageAppxDir_x64) {
 		Remove-Item $packageAppxDir_x64 -Recurse
 	}
 }
 
 #--------------------------
 # Appx 
-function New-Appx($arch, $packageDir, $packageAppendDir, $appx)
-{
+function New-Appx($arch, $packageDir, $packageAppendDir, $appx) {
 	$packgaeFilesDir = "$packageAppendDir/PackageFiles"
 	$contentDir = "$packgaeFilesDir/$product"
 
@@ -691,23 +638,21 @@ function New-Appx($arch, $packageDir, $packageAppendDir, $appx)
 
 	# generate AppManifest
 	$content = Get-Content "Appx\AppxManifest.xml"
-	$content = $content -replace "%NAME%","$appxName"
-	$content = $content -replace "%PUBLISHER%","$appxPublisher"
-	$content = $content -replace "%VERSION%","$assemblyVersion"
+	$content = $content -replace "%NAME%", "$appxName"
+	$content = $content -replace "%PUBLISHER%", "$appxPublisher"
+	$content = $content -replace "%VERSION%", "$assemblyVersion"
 	$content = $content -replace "%ARCH%", "$arch"
 	$content | Out-File -Encoding UTF8 "$packgaeFilesDir\AppxManifest.xml"
 
 	# re-package
 	& "$Win10SDK\makeappx.exe" pack /l /d "$packgaeFilesDir" /p "$appx"
-	if ($? -ne $true)
-	{
+	if ($? -ne $true) {
 		throw "makeappx.exe error"
 	}
 
 	# signing
 	& "$Win10SDK\signtool.exe" sign -f "$env:CersPath/_NeeLaboratory.pfx" -fd SHA256 -v "$appx"
-	if ($? -ne $true)
-	{
+	if ($? -ne $true) {
 		throw "signtool.exe error"
 	}
 }
@@ -715,53 +660,43 @@ function New-Appx($arch, $packageDir, $packageAppendDir, $appx)
 
 #--------------------------
 # archive to Canary.ZIP
-function Remove-Canary()
-{
-	if (Test-Path $packageCanary)
-	{
+function Remove-Canary() {
+	if (Test-Path $packageCanary) {
 		Remove-Item $packageCanary
 	}
 
-	if (Test-Path $packageCanaryDir)
-	{
+	if (Test-Path $packageCanaryDir) {
 		Remove-Item $packageCanaryDir -Recurse
 	}
 }
 
-function New-Canary($packageDir)
-{
+function New-Canary($packageDir) {
 	New-DevPackage $packageDir $packageCanaryDir $packageCanary ".canary"
 }
 
-function New-CanaryAnyCPU($packageDir)
-{
+function New-CanaryAnyCPU($packageDir) {
 	New-DevPackage $packageDir $packageCanaryDir_AnyCPU $packageCanary_AnyCPU ".canary"
 }
 
 #--------------------------
 # archive to Beta.ZIP
-function Remove-Beta()
-{
-	if (Test-Path $packageBeta)
-	{
+function Remove-Beta() {
+	if (Test-Path $packageBeta) {
 		Remove-Item $packageBeta
 	}
 
-	if (Test-Path $packageBetaDir)
-	{
+	if (Test-Path $packageBetaDir) {
 		Remove-Item $packageBetaDir -Recurse
 	}
 }
 
-function New-Beta($packageDir)
-{
+function New-Beta($packageDir) {
 	New-DevPackage $packageDir $packageBetaDir $packageBeta ".beta"
 }
 
 #--------------------------
 # archive to Canary/Beta.ZIP
-function New-DevPackage($packageDir, $devPackageDir, $devPackage, $target)
-{
+function New-DevPackage($packageDir, $devPackageDir, $devPackage, $target) {
 	# update assembly
 	Copy-Item $packageDir $devPackageDir -Recurse
 	New-ConfigForDevPackage $packageDir "${product}.config.json" $target $devPackageDir
@@ -777,14 +712,12 @@ function New-DevPackage($packageDir, $devPackageDir, $devPackage, $target)
 #--------------------------
 # Optimizing file placement with NetBeauty
 # https://github.com/nulastudio/NetBeauty2
-function Optimize-Package($packageDir)
-{
+function Optimize-Package($packageDir) {
 	Write-Host "NetBeauty2" -fore Cyan
 	nbeauty2 --usepatch --loglevel Detail $packageDir Libraries
 
 	$unusedFile = "$packageDir\hostfxr.dll.bak"
-	if (Test-Path $unusedFile)
-	{
+	if (Test-Path $unusedFile) {
 		Remove-Item $unusedFile
 	}
 }
@@ -796,52 +729,43 @@ $build_x64_fd = $false
 
 #--------------------------
 # remove build objects
-function Remove-BuildObjects
-{
+function Remove-BuildObjects {
 	Get-ChildItem -Directory "$packagePrefix*" | Remove-Item -Recurse
 
 	Get-ChildItem -File "$packagePrefix*.*" | Remove-Item
 
-	if (Test-Path $publishDir)
-	{
+	if (Test-Path $publishDir) {
 		Remove-Item $publishDir -Recurse
 	}
-	if (Test-Path $packageCanaryDir)
-	{
+	if (Test-Path $packageCanaryDir) {
 		Remove-Item $packageCanaryDir -Recurse -Force
 	}
-	if (Test-Path $packageBetaDir)
-	{
+	if (Test-Path $packageBetaDir) {
 		Remove-Item $packageBetaDir -Recurse -Force
 	}
-	if (Test-Path $packageCanaryWild)
-	{
+	if (Test-Path $packageCanaryWild) {
 		Remove-Item $packageCanaryWild
 	}
-	if (Test-Path $packageBetaWild)
-	{
+	if (Test-Path $packageBetaWild) {
 		Remove-Item $packageBetaWild
 	}
 
 	Start-Sleep -m 100
 }
 
-function Build-Clear
-{
+function Build-Clear {
 	# clear
 	Write-Host "`n[Clear] ...`n" -fore Cyan
 	Remove-BuildObjects
 }
 
-function Build-UpdateState
-{
+function Build-UpdateState {
 	$global:build_x64 = Test-Path $publishDir_x64
 	$global:build_x86 = Test-Path $publishDir_x86
 	$global:build_x64_fd = Test-Path $publishDir_x64_fd
 }
 
-function Build-PackageSource-x64
-{
+function Build-PackageSource-x64 {
 	if ($global:build_x64 -eq $true) { return }
 
 	# build
@@ -855,8 +779,7 @@ function Build-PackageSource-x64
 	$global:build_x64 = $true
 }
 
-function Build-PackageSource-x86
-{
+function Build-PackageSource-x86 {
 	if ($global:build_x86 -eq $true) { return }
 
 	# build
@@ -870,8 +793,7 @@ function Build-PackageSource-x86
 	$global:build_x86 = $true
 }
 
-function Build-PackageSource-x64-fd
-{
+function Build-PackageSource-x64-fd {
 	if ($global:build_x64_fd -eq $true) { return }
 
 	# build
@@ -886,8 +808,7 @@ function Build-PackageSource-x64-fd
 }
 
 
-function Build-Zip-x64
-{
+function Build-Zip-x64 {
 	Write-Host "`[Zip] ...`n" -fore Cyan
 
 	Remove-Zip $packageZip_x64
@@ -895,8 +816,7 @@ function Build-Zip-x64
 	Write-Host "`nExport $packageZip_x64 successed.`n" -fore Green
 }
 
-function Build-Zip-x86
-{
+function Build-Zip-x86 {
 	Write-Host "`[Zip x86] ...`n" -fore Cyan
 
 	Remove-Zip $packageZip_x86
@@ -904,8 +824,7 @@ function Build-Zip-x86
 	Write-Host "`nExport $packageZip_x86 successed.`n" -fore Green
 }
 
-function Build-Zip-x64-fd
-{
+function Build-Zip-x64-fd {
 	Write-Host "`[Zip fd] ...`n" -fore Cyan
 
 	Remove-Zip $packageZip_x64_fd
@@ -914,8 +833,7 @@ function Build-Zip-x64-fd
 }
 
 
-function Build-Installer-x64
-{
+function Build-Installer-x64 {
 	Write-Host "`n[Installer] ...`n" -fore Cyan
 	
 	Remove-Msi $packageAppendDir_x64 $packageMsi_x64
@@ -924,8 +842,7 @@ function Build-Installer-x64
 	Write-Host "`nExport $packageMsi_x64 successed.`n" -fore Green
 }
 
-function Build-Installer-x86
-{
+function Build-Installer-x86 {
 	Write-Host "`n[Installer x86] ...`n" -fore Cyan
 
 	Remove-Msi $packageAppendDir_x86 $packageMsi_x86
@@ -934,48 +851,40 @@ function Build-Installer-x86
 	Write-Host "`nExport $packageMsi_x86 successed.`n" -fore Green
 }
 
-function Build-Appx-x64
-{
+function Build-Appx-x64 {
 	Write-Host "`n[Appx] ...`n" -fore Cyan
 
-	if (Test-Path "$env:CersPath\_Parameter.ps1")
-	{
+	if (Test-Path "$env:CersPath\_Parameter.ps1") {
 		Remove-Appx $packageAppxDir_x64 $packageX64Appx
 		New-Appx "x64" $packageDir_x64 $packageAppxDir_x64 $packageX64Appx
 		Write-Host "`nExport $packageX64Appx successed.`n" -fore Green
 	}
-	else
-	{
+	else {
 		Write-Host "`nWarning: not exist make appx envionment. skip!`n" -fore Yellow
 	}
 }
 
-function Build-Appx-x86
-{
+function Build-Appx-x86 {
 	Write-Host "`n[Appx x86] ...`n" -fore Cyan
 
-	if (Test-Path "$env:CersPath\_Parameter.ps1")
-	{
+	if (Test-Path "$env:CersPath\_Parameter.ps1") {
 		Remove-Appx $packageAppxDir_x86 $packageX86Appx
 		New-Appx "x86" $packageDir_x86 $packageAppxDir_x86 $packageX86Appx
 		Write-Host "`nExport $packageX86Appx successed.`n" -fore Green
 	}
-	else
-	{
+	else {
 		Write-Host "`nWarning: not exist make appx envionment. skip!`n" -fore Yellow
 	}
 }
 
-function Build-Canary
-{
+function Build-Canary {
 	Write-Host "`n[Canary] ...`n" -fore Cyan
 	Remove-Canary
 	New-Canary $packageDir_x64_fd
 	Write-Host "`nExport $packageCanary successed.`n" -fore Green
 }
 
-function Build-Beta
-{
+function Build-Beta {
 	Write-Host "`n[Beta] ...`n" -fore Cyan
 	Remove-Beta
 	New-Beta $packageDir_x64
@@ -983,25 +892,20 @@ function Build-Beta
 }
 
 
-function Export-Current
-{
+function Export-Current {
 	Write-Host "`n[Current] ...`n" -fore Cyan
-	if (Test-Path $packageDir_x64_fd)
-	{
-		if (-not (Test-Path $product))
-		{
+	if (Test-Path $packageDir_x64_fd) {
+		if (-not (Test-Path $product)) {
 			New-Item $product -ItemType Directory
 		}
 		Copy-Item "$packageDir_x64_fd\*" "$product\" -Recurse -Force
 	}
-	else
-	{
+	else {
 		Write-Host "`nWarning: not exist $packageDir_x64_fd. skip!`n" -fore Yellow
 	}
 }
 
-function Update-Version
-{
+function Update-Version {
 	Write-Host "`n`[Update NeeLaboratory Libraries Version] ...`n" -fore Cyan
 	..\NeeLaboratory\CreateVersionProps.ps1
 	
@@ -1009,12 +913,11 @@ function Update-Version
 	..\NeeLaboratory.IO.Search\CreateVersionProps.ps1
 	
 	Write-Host "`n`[Update RealtimeSearch Version] ...`n" -fore Cyan
-	$versionSuffix = switch ( $Target )
-	{
+	$versionSuffix = switch ( $Target ) {
 		"Dev" { 'dev' }
 		"Canary" { 'canary' }
 		"Beta" { 'beta' }
-		default { ''  }
+		default { '' }
 	}
 	..\CreateVersionProps.ps1 -suffix $versionSuffix
 }
@@ -1065,23 +968,19 @@ $packageBeta = "${product}Beta${dateVersion}.zip"
 $packageBetaWild = "${product}Beta*.zip"
 
 
-if (-not $continue)
-{
+if (-not $continue) {
 	Build-Clear
 }
 
 Build-UpdateState
 
 
-if (($Target -eq "All") -or ($Target -eq "Zip"))
-{
-	if ($x86)
-	{
+if (($Target -eq "All") -or ($Target -eq "Zip")) {
+	if ($x86) {
 		Build-PackageSource-x86
 		Build-Zip-x86
 	}
-	else
-	{
+	else {
 		Build-PackageSource-x64
 		Build-Zip-x64
 
@@ -1090,50 +989,40 @@ if (($Target -eq "All") -or ($Target -eq "Zip"))
 	}
 }
 
-if (($Target -eq "All") -or ($Target -eq "Installer"))
-{
-	if ($x86)
-	{
+if (($Target -eq "All") -or ($Target -eq "Installer")) {
+	if ($x86) {
 		Build-PackageSource-x86
 		Build-Installer-x86
 	}
-	else
-	{
+	else {
 		Build-PackageSource-x64
 		Build-Installer-x64
 	}
 }
 
-if (($Target -eq "All") -or ($Target -eq "Appx"))
-{
-	if ($x86)
-	{
+if (($Target -eq "All") -or ($Target -eq "Appx")) {
+	if ($x86) {
 		Build-PackageSource-x86
 		Build-Appx-x86
 	}
-	else
-	{
+	else {
 		Build-PackageSource-x64
 		Build-Appx-x64
 	}
 }
 
-if (-not $x86)
-{
-	if ($Target -eq "Canary")
-	{
+if (-not $x86) {
+	if ($Target -eq "Canary") {
 		Build-PackageSource-x64-fd
 		Build-Canary
 	}
 
-	if ($Target -eq "Beta")
-	{
+	if ($Target -eq "Beta") {
 		Build-PackageSource-x64
 		Build-Beta
 	}
 
-	if (-not $continue)
-	{
+	if (-not $continue) {
 		Build-PackageSource-x64-fd
 		Export-Current
 	}

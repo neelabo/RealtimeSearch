@@ -9,7 +9,7 @@
 ### Added
 
 - Store app now available (As soon as ready).
-- Multilingual support (English and Japanese).
+- Language support (English and Japanese).
 - Indexes are cached so that searches can be performed immediately after the next startup.
 
 ### Changed

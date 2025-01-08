@@ -36,4 +36,4 @@
 
 ## 詳細
 
-- [更新履歴](MakePackage/Readme/ja-jp/ChangeLog.md)
+- [更新履歴](docs/ja-jp/ChangeLog.md)
