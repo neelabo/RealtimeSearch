@@ -37,7 +37,8 @@ Export-Png $inputDir\AppList.targetsize-24.svg $outputDir\AppList.targetsize-24.
 Export-Png $inputDir\AppList.targetsize-32.svg $outputDir\AppList.targetsize-32.png 32
 Export-Png $inputDir\AppList.targetsize-48.svg $outputDir\AppList.targetsize-48.png 48
 Export-Png $inputDir\AppList.targetsize-256.svg $outputDir\AppList.targetsize-256.png 256
-Export-Png $inputDir\AppList.targetsize-400.svg $outputDir\AppList.targetsize-400.png 400
+
+Export-Png $inputDir\AppList.targetsize-400.svg $outputDir\IconSource.png 400
 
 Export-Png $inputDir\AppList.targetsize-44.svg $outputDir\AppList.scale-100.png 44
 Export-Png $inputDir\AppList.targetsize-55.svg $outputDir\AppList.scale-125.png 55

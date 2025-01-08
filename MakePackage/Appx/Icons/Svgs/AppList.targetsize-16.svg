@@ -81,7 +81,7 @@
          offset="0"
          id="stop2" />
       <stop
-         style="stop-color:#ff6347;stop-opacity:1;"
+         style="stop-color:#cc2000;stop-opacity:1;"
          offset="1"
          id="stop3" />
     </linearGradient>

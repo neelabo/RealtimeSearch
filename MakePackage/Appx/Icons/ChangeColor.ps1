@@ -1,14 +1,12 @@
 # SVGの色変更
 
-$inputDir = "Svgs"
-#$outputDir = "Svgs-Blue"
-$fromColor = "Red"
-$toColor = "Blue"
-#$toColor = "Green"
+$srcColor = "Src"
+$dstColor = "Dst"
 
-$outputDir = "$inputDir-$toColor"
-if (!(Test-Path $outputDir))
-{
+$inputDir = "Svgs"
+$outputDir = "$inputDir-$dstColor"
+
+if (!(Test-Path $outputDir)) {
     New-Item -Path . -Name $outputDir -ItemType Directory
 }
 
@@ -19,7 +17,8 @@ trap { break }
 $ErrorActionPreference = "stop"
 
 $colorTable = @(
-    [PSCustomObject]@{ Red = "#ffa500"; Blue = "#ff6347" }
+    #[PSCustomObject]@{ Red = "#ffa500"; Blue = "#ff6347" }
+    [PSCustomObject]@{ Src = "#ff6347"; Dst = "#cc2000" }
 )
 
 #foreach($item in $colorTable)
@@ -29,29 +28,38 @@ $colorTable = @(
 #}
 
 
-function Convert-ColorCode($s)
-{
-    foreach($item in $colorTable)
-    {
-        $s = $s -replace $item.$fromColor, $item.$toColor
+function Convert-ColorCode($s) {
+    foreach ($item in $colorTable) {
+        $s = $s -replace $item.$srcColor, $item.$dstColor
     }
     return $s
 }
 
+# 特殊な変換：最後から検索して１つ目のみ変換
+function Convert-SvgColorCodeEx($lines) {
+
+    for($i = $lines.Count - 1; $i -ge 0 ; $i--) {
+        $newLine = Convert-ColorCode $lines[$i]
+        if ($lines[$i] -ne $newLine) {
+            $lines[$i] = $newLine
+            break
+        }
+    }
+    return $lines
+}
 
 # color change (red -> blue)
-function Convert-SvgColorCode($source, $output)
-{
-    (Get-Content $source) | ForEach-Object { Convert-ColorCode $_ } | Set-Content $output
+function Convert-SvgColorCode($source, $output) {
+    #(Get-Content $source) | ForEach-Object { Convert-ColorCode $_ } | Set-Content $output
+    $lines = Get-Content $source
+    $lines = Convert-SvgColorCodeEx $lines
+    Set-Content -Path $output -Value $lines
 }
 
 
-
-$files = Get-ChildItem -Name $inputDir-$fromColor\*.svg
-
-foreach($file in $files)
-{
-    Convert-SvgColorCode $inputDir-$fromColor\$file $outputDir\$file
+$files = Get-ChildItem -Name $inputDir\*.svg
+foreach ($file in $files) {
+    Convert-SvgColorCode $inputDir\$file $outputDir\$file
 }
 
 
