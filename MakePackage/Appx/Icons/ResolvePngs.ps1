@@ -1,5 +1,7 @@
+# 不足している AltForm 素材をコピーして作成する
+
 Param(
-    [string]$workDir = "Pngs"
+    [string]$workDir = "_Pngs"
 )
 
 # error to break

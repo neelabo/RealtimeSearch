@@ -1,4 +1,5 @@
 # SVGの色変更
+# 目的によってコードをカスタマイズしているので汎用性はない
 
 $srcColor = "Src"
 $dstColor = "Dst"

@@ -1,7 +1,9 @@
+# Svg から Png に変換する
 
 Param(
     [string]$inputDir = "Svgs",
-    [string]$outputDir = "Pngs"
+    [string]$outputDir = "_Pngs",
+    [string]$outputExDir = "_PngsEx"
 )
 
 $inkscape = 'E:\Bin\inkscape-1.2.2\bin\inkscape.exe'
@@ -23,14 +25,10 @@ if (!(Test-Path $outputDir))
     New-Item -Path . -Name $outputDir -ItemType Directory
 }
 
-<#
-$files = (Get-ChildItem $inputDir\*.svg).Name
-foreach($file in $files)
+if (!(Test-Path $outputExDir))
 {
-    $png = [System.IO.Path]::ChangeExtension($file,".png")
-    Export-Png $inputDir\$file $outputDir\$png
+    New-Item -Path . -Name $outputExDir -ItemType Directory
 }
-#>
 
 Export-Png $inputDir\AppList.targetsize-16.svg $outputDir\AppList.targetsize-16.png 16
 Export-Png $inputDir\AppList.targetsize-24.svg $outputDir\AppList.targetsize-24.png 24
@@ -38,7 +36,7 @@ Export-Png $inputDir\AppList.targetsize-32.svg $outputDir\AppList.targetsize-32.
 Export-Png $inputDir\AppList.targetsize-48.svg $outputDir\AppList.targetsize-48.png 48
 Export-Png $inputDir\AppList.targetsize-256.svg $outputDir\AppList.targetsize-256.png 256
 
-Export-Png $inputDir\AppList.targetsize-400.svg $outputDir\IconSource.png 400
+Export-Png $inputDir\AppList.targetsize-400.svg $outputExDir\IconSource.png 400
 
 Export-Png $inputDir\AppList.targetsize-44.svg $outputDir\AppList.scale-100.png 44
 Export-Png $inputDir\AppList.targetsize-55.svg $outputDir\AppList.scale-125.png 55
