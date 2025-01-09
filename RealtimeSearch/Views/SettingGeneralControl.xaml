@@ -24,10 +24,11 @@
 
         <TextBlock Text="{tres:TextBinding Setting.Settings}"/>
         <StackPanel Style="{StaticResource Phrase}">
-            <CheckBox Margin="2" IsChecked="{Binding Setting.IncludeFolders}" VerticalAlignment="Center" Content="{tres:TextBinding Setting.IncludeFolders}"/>
             <CheckBox Margin="2" IsChecked="{Binding Setting.MonitorClipboard}" VerticalAlignment="Center" Content="{tres:TextBinding Setting.MonitorClipboard}"/>
-            <CheckBox Margin="2" IsChecked="{Binding Setting.Topmost}" VerticalAlignment="Center" Content="{tres:TextBinding Setting.Topmost}"/>
+            <CheckBox Margin="2" IsChecked="{Binding Setting.IncludeFolders}" VerticalAlignment="Center" Content="{tres:TextBinding Setting.IncludeFolders}"/>
+            <CheckBox Margin="2" IsChecked="{Binding Setting.UsePushpin}" VerticalAlignment="Center" Content="{tres:TextBinding Setting.UsePushpin}"/>
             <CheckBox Margin="2" IsChecked="{Binding Setting.UseCache}" VerticalAlignment="Center" Content="{tres:TextBinding Setting.UseCache}" />
+            <CheckBox Margin="2" IsChecked="{Binding Setting.Topmost}" VerticalAlignment="Center" Content="{tres:TextBinding Setting.Topmost}"/>
         </StackPanel>
 
         <TextBlock Text="{tres:TextBinding Setting.WebSearchFormat}"/>

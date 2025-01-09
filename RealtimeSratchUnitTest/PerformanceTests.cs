@@ -50,6 +50,7 @@ namespace RealtimeSearchUnitTest
 #pragma warning restore CS0067
 
             public bool IncludeFolders { get; set; } = true;
+            public bool UsePushpin { get; set; } = true;
         }
 
 

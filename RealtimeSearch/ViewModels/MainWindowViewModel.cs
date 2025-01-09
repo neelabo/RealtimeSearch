@@ -136,6 +136,11 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
             set { _settings.IncludeFolders = value; }
         }
 
+        public bool UsePushpin
+        {
+            get { return _settings.UsePushpin; }
+        }
+
         public ExternalProgramCollection Programs => _programs;
 
 
@@ -226,6 +231,11 @@ namespace NeeLaboratory.RealtimeSearch.ViewModels
 
                 case nameof(_settings.IncludeFolders):
                     OnPropertyChanged(nameof(IncludeFolders));
+                    _ = SearchAsync(true);
+                    break;
+
+                case nameof(_settings.UsePushpin):
+                    OnPropertyChanged(nameof(UsePushpin));
                     _ = SearchAsync(true);
                     break;
             }

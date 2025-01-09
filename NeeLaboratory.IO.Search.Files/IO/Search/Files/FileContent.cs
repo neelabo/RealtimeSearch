@@ -63,9 +63,9 @@ namespace NeeLaboratory.IO.Search.Files
         }
 
         /// <summary>
-        /// PushPinフラグ
+        /// Pushpinフラグ
         /// </summary>
-        public bool IsPushPin { get; set; }
+        public bool IsPushpin { get; set; }
 
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace NeeLaboratory.IO.Search.Files
                 case "directory":
                     return new BooleanSearchValue(IsDirectory);
                 case "pinned":
-                    return new BooleanSearchValue(IsPushPin);
+                    return new BooleanSearchValue(IsPushpin);
                 default:
                     throw new NotSupportedException();
             }

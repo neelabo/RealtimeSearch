@@ -123,6 +123,10 @@ namespace NeeLaboratory.IO.Search.Files
                 case nameof(ISearchContext.IncludeFolders):
                     UpdateSearchProperties();
                     break;
+
+                case nameof(ISearchContext.UsePushpin):
+                    UpdateSearchProperties();
+                    break;
             }
         }
 
@@ -145,7 +149,7 @@ namespace NeeLaboratory.IO.Search.Files
             _searcher.PreKeys = _context.IncludeFolders ? new() : new() { new SearchKey(SearchConjunction.And, ExtraSearchPropertyProfiles.IsDirectory, null, SearchFilterProfiles.Equal, "false") };
 
             // pushpin
-            _searcher.PostKeys = new() { new SearchKey(SearchConjunction.PreOr, ExtraSearchPropertyProfiles.IsPinned, null, SearchFilterProfiles.Equal, "true") };
+            _searcher.PostKeys = _context.UsePushpin ? new() { new SearchKey(SearchConjunction.PreOr, ExtraSearchPropertyProfiles.IsPinned, null, SearchFilterProfiles.Equal, "true") } : new();
         }
 
 

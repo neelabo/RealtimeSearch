@@ -5,5 +5,6 @@ namespace NeeLaboratory.IO.Search.Files
     public interface ISearchContext : INotifyPropertyChanged
     {
         bool IncludeFolders { get; set; }
+        bool UsePushpin { get; set; }
     }
 }

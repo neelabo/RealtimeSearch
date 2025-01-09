@@ -45,7 +45,7 @@
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
 
             <Style.Triggers>
-                <DataTrigger Binding="{Binding IsPushPin}" Value="True">
+                <DataTrigger Binding="{Binding IsPushpin}" Value="True">
                     <Setter Property="Background" Value="#EEE"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -215,7 +215,7 @@
                         <DataTemplate x:Key="ItemFileNameTemplate">
                             <DockPanel ToolTip="{Binding Converter={StaticResource FileContentToDetailConverter}}" ToolTipService.InitialShowDelay="1000"
                                        ToolTipService.IsEnabled="{Binding ElementName=ResultListView, Path=DataContext.IsTipsVisible}">
-                                <CheckBox DockPanel.Dock="Right" Template="{StaticResource PushpinCheckBoxTemplate}" Width="32" Height="16" IsChecked="{Binding IsPushPin}" >
+                                <CheckBox DockPanel.Dock="Right" Template="{StaticResource PushpinCheckBoxTemplate}" Width="32" Height="16" IsChecked="{Binding IsPushpin}" >
                                     <CheckBox.Style>
                                         <Style TargetType="CheckBox">
                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -225,6 +225,9 @@
                                                 </Trigger>
                                                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=IsMouseOver}" Value="True">
                                                     <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListView}, Path=DataContext.UsePushpin}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>

@@ -74,7 +74,7 @@
         </Style>
 
 
-        <!-- PushPin CheckBox Template -->
+        <!-- Pushpin CheckBox Template -->
         <ControlTemplate x:Key="PushpinCheckBoxTemplate" TargetType="{x:Type CheckBox}">
             <Grid>
                 <Rectangle x:Name="baseRectangle" StrokeThickness="1" Fill="Transparent"/>

@@ -27,6 +27,7 @@ namespace NeeLaboratory.RealtimeSearch.Models
         private string _webSearchFormat = _defaultWebSearchFormat;
         private bool _showDetail;
         private bool _useCache = true;
+        private bool _usePushpin = true;
         private ObservableCollection<ExternalProgram> _externalPrograms;
 
 
@@ -61,6 +62,12 @@ namespace NeeLaboratory.RealtimeSearch.Models
         {
             get { return _topmost; }
             set { SetProperty(ref _topmost, value); }
+        }
+
+        public bool UsePushpin
+        {
+            get { return _usePushpin; }
+            set { SetProperty(ref _usePushpin, value); }
         }
 
         public bool UseCache
