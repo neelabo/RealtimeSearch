@@ -958,15 +958,18 @@ $packageAppxDir_x64 = "${product}${appVersion}-appx-x64"
 $packageAppxDir_x86 = "${product}${appVersion}-appx-x84"
 $packageX86Appx = "${product}${appVersion}-x86.msix"
 $packageX64Appx = "${product}${appVersion}.msix"
-$packageCanaryDir = "${product}Canary"
-$packageCanaryDir_AnyCPU = "${product}Canary-AnyCPU"
-$packageCanary = "${product}Canary${dateVersion}.zip"
-$packageCanary_AnyCPU = "${product}Canary${dateVersion}_AnyCPU.zip"
-$packageCanaryWild = "${product}Canary*.zip"
-$packageBetaDir = "${product}Beta"
-$packageBeta = "${product}Beta${dateVersion}.zip"
-$packageBetaWild = "${product}Beta*.zip"
 
+$packageNameCanary = "${product}${appVersion}-Canary${dateVersion}"
+$packageCanaryDir = "$packageNameCanary"
+$packageCanaryDir_AnyCPU = "$packageNameCanary-AnyCPU"
+$packageCanary = "$packageNameCanary.zip"
+$packageCanary_AnyCPU = "packageNameCanary_AnyCPU.zip"
+$packageCanaryWild = "${product}${appVersion}-Canary*.zip"
+
+$packageNameBeta = "${product}${appVersion}-Beta${dateVersion}"
+$packageBetaDir = "$packageNameBeta"
+$packageBeta = "$packageNameBeta.zip"
+$packageBetaWild = "${product}${appVersion}-Beta*.zip"
 
 if (-not $continue) {
 	Build-Clear

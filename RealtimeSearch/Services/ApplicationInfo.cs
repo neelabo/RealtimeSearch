@@ -47,19 +47,19 @@ namespace NeeLaboratory.RealtimeSearch.Services
         public string CompanyName { get; private set; } = "";
 
         /// <summary>
-        /// プロダクト名
+        /// プロダクト名 (RealtimeSearch)
         /// </summary>
         public string ProductName { get; private set; } = "";
 
         /// <summary>
-        /// プロダクトバージョン
+        /// アプリバージョン (Major.Minor)
         /// </summary>
-        public string ProductVersion { get; private set; } = "";
+        public string ApplicationVersion { get; private set; } = "";
 
         /// <summary>
-        /// プロダクトフルバージョン
+        /// プロダクトフルバージョン (Major.Minor.Build)
         /// </summary>
-        public string ProductFullVersion { get; private set; } = "";
+        public string ProductVersion { get; private set; } = "";
 
         /// <summary>
         /// プロダクトバージョン(int)
@@ -149,8 +149,8 @@ namespace NeeLaboratory.RealtimeSearch.Services
 
             // バージョンの取得
             var version = asm.GetName().Version ?? new Version();
-            ProductVersion = $"{version.Major}.{version.Minor}";
-            ProductFullVersion = $"{version.Major}.{version.Minor}.{version.Build}";
+            ApplicationVersion = $"{version.Major}.{version.Minor}";
+            ProductVersion = $"{version.Major}.{version.Minor}.{version.Build}";
             ProductVersionNumber = GenerateProductVersionNumber(version.Major, version.Minor, version.Build);
         }
 

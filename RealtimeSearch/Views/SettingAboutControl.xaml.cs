@@ -28,7 +28,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
         {
             InitializeComponent();
 
-            this.VersionTextBlock.Text = "version " + ApplicationInfo.Current.ProductVersion;
+            this.VersionTextBlock.Text = "Version " + GetDetailedVersion();
         }
 
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
@@ -73,5 +73,30 @@ namespace NeeLaboratory.RealtimeSearch.Views
             }
         }
 
+        /// <summary>
+        /// 詳細バージョン
+        /// </summary>
+        public static string GetDetailedVersion()
+        {
+            var version = ApplicationInfo.Current.ApplicationVersion;
+            var appConfig = AppConfig.Current;
+
+            if (appConfig.PackageType == ".dev")
+            {
+                return version + $"-dev";
+            }
+            else if (appConfig.PackageType == ".canary")
+            {
+                return version + $"-Canary{appConfig.DateVersion} / Rev. {appConfig.Revision}";
+            }
+            else if (appConfig.PackageType == ".beta")
+            {
+                return version + $"-Beta{appConfig.DateVersion} / Rev. {appConfig.Revision}";
+            }
+            else
+            {
+                return version;
+            }
+        }
     }
 }
