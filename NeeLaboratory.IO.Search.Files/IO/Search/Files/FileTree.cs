@@ -847,7 +847,7 @@ namespace NeeLaboratory.IO.Search.Files
 
         public List<FileNodeMemento> CreateTreeMemento(Node<FileContent> node)
         {
-            return node.WalkWithDepth().Select(e => CreateFileNode(e.Node, e.Depth)).ToList();
+            return node.WalkWithDepth().Where(e => e.Node.Content is not null).Select(e => CreateFileNode(e.Node, e.Depth)).ToList();
         }
 
         private FileNodeMemento CreateFileNode(Node<FileContent> node, int depth)
