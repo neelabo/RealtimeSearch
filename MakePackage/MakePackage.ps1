@@ -132,6 +132,60 @@ function Replace-Content {
 	$file_contents | Out-File -Encoding UTF8 $filepath
 }
 
+function ConvertTo-PascalCase
+{
+    [OutputType('System.String')]
+    param(
+        [Parameter(Position=0)]
+        [string] $Value
+    )
+
+    # https://devblogs.microsoft.com/oldnewthing/20190909-00/?p=102844
+    return [regex]::replace($Value.ToLower(), '(^|_)(.)', { $args[0].Groups[2].Value.ToUpper()})
+}
+
+# Replace HTML blockquote alerts
+# Blockquote alerts like GitHub
+# NOTE: 限定された構造のHTMLのみ対応しているので汎用性はない
+function Replace-Alert([string]$filepath) {
+	if ($(Test-Path $filepath) -ne $True) {
+		Write-Error "file not found"
+		return
+	}
+	$file_contents = $(Get-Content -Encoding UTF8 $filepath)
+
+	$blockquoteSection = $false
+	$blockquoteStartIndex = 0
+	for ($i=0; $i -lt $file_contents.Count; $i++) {
+		$line = $file_contents[$i]
+		if ($blockquoteSection) {
+			$pattern = "\[!([a-zA-Z]+)\](.*)$"
+			if ($line -match $pattern) {
+				$name = $Matches[1].ToLower()
+				$rest = $Matches[2]
+				$file_contents[$blockquoteStartIndex] = "<blockquote class=""alert $name"">"
+				$title = ConvertTo-PascalCase $name
+				if (($rest -eq "</p>") -or ($rest -eq "<br />")) {
+					$rest = ""
+				}
+				$file_contents[$i] = $line -replace $pattern, "<span class=""alert $name"">$title</span></p><p>$rest"
+				$blockquoteSection = $false
+			}
+			elseif ($line -match "</blockquote>") {
+				$blockquoteSection = $false
+			}
+		}
+		else {
+			if ($line -eq "<blockquote>") {
+				$blockquoteSection = $true
+				$blockquoteStartIndex = $i
+			}
+		}
+	}
+
+	$file_contents | Out-File -Encoding UTF8 $filepath
+}
+
 
 #-----------------------
 # variables
@@ -345,6 +399,7 @@ function New-Readme($packageDir, $culture, $target) {
 		throw "pandoc error"
 	}
 
+	Replace-Alert $output
 
 	$searchOptionHtml = "SearchOptions.html"
 	$searchOptionTitle = "$product Search Options"
@@ -361,6 +416,8 @@ function New-Readme($packageDir, $culture, $target) {
 	if ($? -ne $true) {
 		throw "pandoc error"
 	}
+
+	Replace-Alert $searchOptionOutput
 
 	Remove-Item $readmeDir -Recurse
 }

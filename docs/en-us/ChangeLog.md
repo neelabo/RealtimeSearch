@@ -1,22 +1,25 @@
 # Change Log
 
 ## 4.0
-(Unreleased)
+(2025-01-12)
 
-**Note:** Operating environment is Windows 10  (64bit) or later.  
-**Note:** Configuration data is not compatible with previous versions. Please make new settings.
+> [!IMPORTANT]
+> Operating environment is Windows 10  (64bit) or later.  
+
+> [!IMPORTANT]
+> Configuration data is not compatible with previous versions. Please make new settings.
 
 ### Added
 
-- Store app now available (As soon as ready).
-- Language support (English and Japanese).
+- Store app now available.
+- Languages support (English and Japanese).
 - Indexes are cached so that searches can be performed immediately after the next startup.
 
 ### Changed
 
 - Updated environment to .NET 9.
-- Supported environment is changed to Windows 10 (64bit) or later.
 - Revamped UI of the settings window.
+- Added ON/OFF setting for pushpin function.
 - Listed external app settings, no limit on registration.
 - Added setting to external app settings to expand multiple files into parameters instead of launching multiple apps.
 - Change button icons to Windows built-in font.
