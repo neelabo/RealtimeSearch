@@ -137,8 +137,6 @@ namespace NeeLaboratory.Collections
                     return AddChild(node);
                 }
                 
-                Debug.WriteLine($"Children.Insert: [{~index}] = {node.Name}"); // ##
-                
                 Children.Insert(~index, node);
                 node.Parent = this;
                 return node;
