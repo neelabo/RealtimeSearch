@@ -43,13 +43,6 @@
             </Setter>
 
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsPushpin}" Value="True">
-                    <Setter Property="Background" Value="#EEE"/>
-                </DataTrigger>
-            </Style.Triggers>
-
         </Style>
 
         <Style x:Key="{x:Type GridViewColumnHeader}" TargetType="{x:Type GridViewColumnHeader}">
