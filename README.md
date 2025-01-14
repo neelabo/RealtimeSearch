@@ -10,15 +10,13 @@
 
 ## 動作環境
 
-  * Windows Windows 10 (64bit)
+  * Windows 10 (64bit)
 
 ## ダウンロード
 
 - [GitHub Releases](https://github.com/neelabo/RealtimeSearch/releases)
+- [Microsoft Store](  https://www.microsoft.com/store/apps/9NC7FZK2QKZ7)
 - [Vector](https://www.vector.co.jp/soft/winnt/util/se511864.html)
-<!--
-- [Microsoft Store](https://www.microsoft.com/store/apps/9NVP5Q4XM0X7)
--->
 
 ### 配布パッケージの種類
 
@@ -37,3 +35,4 @@
 ## 詳細
 
 - [更新履歴](docs/ja-jp/ChangeLog.md)
+- [検索オプション](docs/ja-jp/SearchOptions.md)
