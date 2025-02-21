@@ -75,17 +75,18 @@ namespace NeeLaboratory.RealtimeSearch.Clipboards
                 return;
             }
 
-            // どうにも例外(CLIPBRD_E_CANT_OPEN)が発生してしまうのでリトライさせることにした
-            for (int i = 0; i < 10; ++i)
+            try
             {
-                try
-                {
-                    // text
-                    if (Clipboard.ContainsText())
-                    {
-                        string text = Clipboard.GetText();
+                // クリップボードのデータを取得
+                var data = await GetClipboardDataObject();
 
-                        // 自アプリからコピーしたテキストは無視す
+                // text
+                if (data.GetDataPresent(DataFormats.UnicodeText))
+                {
+                    var text = data.GetData(DataFormats.UnicodeText) as string;
+                    if (!string.IsNullOrEmpty(text))
+                    {
+                        // 自アプリからコピーしたテキストは無視する
                         if (_copyText == text)
                         {
                             Debug.WriteLine($"Clipboard: same text. {text}");
@@ -102,12 +103,25 @@ namespace NeeLaboratory.RealtimeSearch.Clipboards
                             Keyword = new Regex(@"\s+").Replace(text, " ").Trim()
                         });
                     }
-                    // file
-                    else if (Clipboard.ContainsFileDropList())
-                    {
-                        _copyText = null;
+                }
+                // file drop
+                else if (data.GetDataPresent(DataFormats.FileDrop))
+                {
+                    _copyText = null;
 
-                        var files = Clipboard.GetFileDropList();
+                    string[]? files;
+                    try
+                    {
+                        files = data.GetData(DataFormats.FileDrop) as string[];
+                    }
+                    catch (COMException ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                        files = null;
+                    }
+
+                    if (files is not null && files.Length > 0)
+                    {
                         var file = files[0];
 
                         var name = System.IO.Directory.Exists(file)
@@ -120,11 +134,28 @@ namespace NeeLaboratory.RealtimeSearch.Clipboards
                             Keyword = name ?? ""
                         });
                     }
-                    else
-                    {
-                        _copyText = null;
-                    }
-                    return;
+                }
+                else
+                {
+                    _copyText = null;
+                }
+                return;
+            }
+            catch (Exception ex)
+            {
+                // 何かしらの例外が発生した場合は無視する。動作に大きな影響はない。
+                Debug.WriteLine(ex.Message);
+            }
+        }
+
+        private static async Task<IDataObject> GetClipboardDataObject()
+        {
+            // どうにも例外(CLIPBRD_E_CANT_OPEN)が発生してしまうのでリトライさせることにした
+            for (int i = 0; i < 10; ++i)
+            {
+                try
+                {
+                    return Clipboard.GetDataObject();
                 }
                 catch (COMException ex)
                 {
@@ -132,7 +163,7 @@ namespace NeeLaboratory.RealtimeSearch.Clipboards
                     await Task.Delay(100);
                 }
             }
-            throw new ApplicationException("クリップボードの参照に失敗しました。");
+            throw new TimeoutException("Clipboard reference failed.");
         }
 
         public void ResetClipboardText()
