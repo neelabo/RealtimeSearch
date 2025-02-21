@@ -234,7 +234,7 @@
                                         <TextBlock Style="{StaticResource IconFont}" FontSize="12" Text="&#xF143;" Foreground="SteelBlue"/>
                                     </Grid>
                                 </Grid>
-                                
+
                                 <TextBlock x:Name="FileNameTextBlock" Text="{Binding Name}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
                             </DockPanel>
                         </DataTemplate>
@@ -328,25 +328,7 @@
                     <StackPanel Orientation="Horizontal" Margin="10">
                         <Grid Width="34"/>
                         <TextBlock x:Name="textBlock_Busy" Text="{tres:TextBinding Message.Processing}" Foreground="Gray"/>
-                        <TextBlock x:Name="BusyText" Margin="2,0" Width="30" Foreground="Gray">
-                            <TextBlock.Triggers>
-                                <EventTrigger RoutedEvent="TextBlock.Loaded">
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <StringAnimationUsingKeyFrames Storyboard.TargetName="BusyText"
-                                                                       Storyboard.TargetProperty="Text"
-                                                                       Duration="0:0:2.5"
-                                                                       RepeatBehavior="Forever">
-                                                <DiscreteStringKeyFrame Value="." KeyTime="0:0:0.0" />
-                                                <DiscreteStringKeyFrame Value=".." KeyTime="0:0:0.5" />
-                                                <DiscreteStringKeyFrame Value="..." KeyTime="0:0:1.0" />
-                                                <DiscreteStringKeyFrame Value="...." KeyTime="0:0:1.5" />
-                                            </StringAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </EventTrigger>
-                            </TextBlock.Triggers>
-                        </TextBlock>
+                        <local:ProgressPeriod Margin="2,0" Width="30" Foreground="Gray" />
                     </StackPanel>
                 </Grid>
 
