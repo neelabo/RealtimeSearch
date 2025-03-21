@@ -642,8 +642,7 @@ function New-Appx($arch, $packageDir, $packageAppendDir, $appx) {
 	New-Readme $contentDir "en-us" ".appx"
 	New-Readme $contentDir "ja-jp" ".appx"
 
-	. $env:CersPath/_$product.Parameter.ps1
-	$param = Get-AppxParameter
+	$param = Get-Content -Raw $env:CersPath/_$product.Parameter.json | ConvertFrom-Json
 	$appxName = $param.name
 	$appxPublisher = $param.publisher
 
