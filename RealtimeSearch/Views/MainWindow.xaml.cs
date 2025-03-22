@@ -301,7 +301,14 @@ namespace NeeLaboratory.RealtimeSearch.Views
 
                         var data = new DataObject();
                         data.SetData(DataFormats.FileDrop, paths.ToArray());
-                        DragDrop.DoDragDrop(s, data, DragDropEffects.Copy);
+                        try
+                        {
+                            DragDrop.DoDragDrop(s, data, DragDropEffects.Copy);
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine(ex.Message);
+                        }
                     }
                 }
             }
