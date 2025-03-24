@@ -206,6 +206,8 @@ MakePackage/RealtimeSearch*/
 MakePackage/*.zip
 MakePackage/*.xml
 MakePackage/*.msi
+MakePackage/*.msix*
+MakePackage/*.appx*
 MakePackage/*.wixpdb
 MakePackage/_*
 MakePackage/Appx/_*
