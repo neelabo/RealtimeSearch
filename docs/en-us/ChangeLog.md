@@ -1,5 +1,12 @@
 # Change Log
 
+## 4.1
+(2025-03-25)
+
+### Fixed
+
+- Fixed a slight GPU load when doing nothing.
+
 ## 4.0
 (2025-01-12)
 

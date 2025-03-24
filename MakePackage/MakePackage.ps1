@@ -320,7 +320,8 @@ function New-Readme($packageDir, $culture, $target) {
 		Get-GitLogMarkdown "$product <VERSION/> - ChangeLog" | Set-Content -Encoding UTF8 "$readmeDir\ChangeLog.md"
 	}
 	else {
-		Get-ChangeLog -Path "$readmeSource\ChangeLog.md" | Set-Content -Path "$readmeDir\ChangeLog.md"
+		#Get-ChangeLog -Path "$readmeSource\ChangeLog.md" | Set-Content -Path "$readmeDir\ChangeLog.md"
+		.\SelectChangelog.ps1 -Path "$readmeSource\ChangeLog.md" -Culture $culture | Set-Content -Path "$readmeDir\ChangeLog.md"
 	}
 
 	$postfix = $appVersion
