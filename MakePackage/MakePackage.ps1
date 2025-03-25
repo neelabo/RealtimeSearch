@@ -78,31 +78,43 @@ function Get-AppVersion($version) {
 }
 
 # get git log
-function Get-GitLog() {
+function Get-GitLog {
+	param (
+		[string]$IssuesUrl
+	)
+
 	$branch = Invoke-Expression "git rev-parse --abbrev-ref HEAD"
 	$descrive = Invoke-Expression "git tag" | Where-Object { $_ -match "^\d+\.\d+$" } | Select-Object -Last 1
 	$date = Invoke-Expression 'git log -1 --pretty=format:"%ad" --date=iso'
-	$result = Invoke-Expression "git log $descrive..head --encoding=Shift_JIS --pretty=format:`"%s`""
-	$result = $result | Where-Object { -not ($_ -match '^Merged |^chore:|^docs:|^-|^\.\.') } 
-	$result = $result | ForEach-Object { $_ -replace "#(\d+)", "[#`$1]($issuesUrl/`$1)" }
+	$result = Invoke-Expression "git log $descrive..head --encoding=$([Console]::OutputEncoding.WebName) --pretty=format:`"%s`""
+	$result = $result | Where-Object { -not ($_ -match '^Merge |^chore:|^docs:|^refactor:|^-|^\.\.') } 
+	#$result = $result | Select-Object -Unique
+	if ($IssuesUrl -ne "") {
+		$result = $result | ForEach-Object { $_ -replace "#(\d+)", "[#`$1]($IssuesUrl/`$1)" }
+	}
 
 	return "[${branch}] $descrive to head", $date, $result
 }
 
 # get git log (markdown)
-function Get-GitLogMarkdown($title) {
-	$result = Get-GitLog
+function Get-GitLogMarkdown {
+	param (
+		[string]$Title,
+		[string]$IssuesUrl
+	)
+
+	$result = Get-GitLog $IssuesUrl
 	$header = $result[0]
 	$date = $result[1]
 	$logs = $result[2]
 
-	"## $title"
+	"## $Title"
 	"### $header"
 	"Rev. $revision / $date"
 	""
 	$logs | ForEach-Object { "- $_" }
 	""
-	"This list of changes was auto generated."
+	"This change log was generated automatically."
 }
 
 # replace keyword
@@ -242,145 +254,83 @@ function New-Package($platform, $productName, $productDir, $packageDir) {
 	New-Readme $packageDir "ja-jp" $target
 }
 
-# generate ChangeLog
-function Get-ChangeLog {
-	param (
-		[string]$Path = "Readme\ja-jp\ChangeLog.md",
-		[int]$Version = 0
+function Edit-Markdown {
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory = $True, ValueFromPipeline = $True)]
+		[object[]]$Value,
+		[switch]$IncrementDepth,
+		[switch]$DecrementDepth,
+		[switch]$ChopTitle
 	)
 
-	function Get-IndentLine($line) {
-		# increment section depth
-		if ($line.StartsWith("#")) {
-			$line = "#" + $line
-		}
-        
-		return $line
+	begin {
+		$chop = $false
 	}
 
-	$versions = @{ header = @() }
-	$current = "header"
-	$latestVersion = 1
-    
-	$lines = Get-Content $Path
-	foreach ($line in $lines) {
-		if ($line.StartsWith("#")) {
-			if ($line -match "^## (\d+)\.(\d+)") {
-				$current = $Matches[1] + '.' + $Matches[2]
-				$versions.add($current, @())
-				$number = [int]$Matches[1]
-				if ($number -gt $latestVersion) {
-					$latestVersion = $number
+	process {
+		foreach ($line in $Value) {
+			if ($line.StartsWith("#")) {
+				if ($ChopTitle -and !$chop) {
+					$chop = $true
+				}
+				elseif ($IncrementDepth) {
+					"#" + $line
+				}
+				elseif ($DecrementDepth) {
+					$line.Remove(0, 1)
+				}
+				else {
+					$line
 				}
 			}
-		}
-		$fixLine = Get-IndentLine $line
-		$versions[$current] += $fixLine
-	}
-
-	if ($Version -eq 0) {
-		$Version = $latestVersion
-	}
-
-	Write-Output $versions.header
-
-	foreach ($item in $versions.GetEnumerator()) {
-		if ($item.key -match "^$Version\.") {
-			Write-Output $item.value
+			else {
+				$line
+			}
 		}
 	}
 }
 
-# generate README.html
-function New-Readme($packageDir, $culture, $target) {
+function Get-MarkdownSection {
+
+	[CmdletBinding()]
+	param (
+		[Parameter(Mandatory = $True, ValueFromPipeline = $True)]
+		[object[]]$Content,
+		[string]$Section
+	)
+	begin {
+		$phase = 0
+	}
+	process {
+		foreach ($line in $Content) {
+			if ($phase -eq 0) {
+				if ($line -match "<!--\s*section:\s*([^\s].+[^\s])\s*-->") {
+					$name = $Matches[1]
+					if ($name -eq $Section) {
+						$phase = 1
+					}
+					else {
+					}
+				}
+			}
+			elseif ($phase -eq 1) {
+				if ($line -match "<!--\s*end_section[^a-zA-Z0-9_]") {
+					$phase = 2
+				}
+				else {
+					Write-Output $line
+				}
+			}
+		}
+	}
+}
+
+# generate SearchOptions.html
+function New-SearchOptions {
+	param ([string]$packageDir, [string]$culture) 
+	
 	$readmeSource = "$solutionDir\docs\$culture"
-
-	$readmeDir = $packageDir + "\readme.$culture"
-
-	New-Item $readmeDir -ItemType Directory > $null
-
-	Copy-Item "$readmeSource\Overview.md" $readmeDir
-	Copy-Item "$readmeSource\Canary.md" $readmeDir
-	Copy-Item "$readmeSource\Environment.md" $readmeDir
-	Copy-Item "$readmeSource\Package-zip.md" $readmeDir
-	Copy-Item "$readmeSource\Package-zip-fd.md" $readmeDir
-	Copy-Item "$readmeSource\Package-msi.md" $readmeDir
-	Copy-Item "$readmeSource\Contact.md" $readmeDir
-	Copy-Item "$readmeSource\SearchOptions.md" $readmeDir
-
-	if (Test-Path "$readmeSource\LicenseAppendix.md") {
-		Copy-Item "$readmeSource\LicenseAppendix.md" $readmeDir
-	}
-
-	Copy-Item "$solutionDir\LICENSE.md" $readmeDir
-	Copy-Item "$solutionDir\THIRDPARTY_LICENSES.md" $readmeDir
-	Copy-Item "$solutionDir\NeeLaboratory.IO.Search\THIRDPARTY_LICENSES.md" "$readmeDir\NeeLaboratory.IO.Search_THIRDPARTY_LICENSES.md"
-
-	if ($target -eq ".canary") {
-		Get-GitLogMarkdown "$product <VERSION/> - ChangeLog" | Set-Content -Encoding UTF8 "$readmeDir\ChangeLog.md"
-	}
-	else {
-		#Get-ChangeLog -Path "$readmeSource\ChangeLog.md" | Set-Content -Path "$readmeDir\ChangeLog.md"
-		.\SelectChangelog.ps1 -Path "$readmeSource\ChangeLog.md" -Culture $culture | Set-Content -Path "$readmeDir\ChangeLog.md"
-	}
-
-	$postfix = $appVersion
-	$announce = ""
-	if ($target -eq ".canary") {
-		$postfix = "Canary ${dateVersion}"
-		$announce = "Rev. ${revision}`r`n`r`n" + (Get-Content -Path "$readmeDir/Canary.md" -Raw -Encoding UTF8)
-	}
-
-	# edit README.md
-	Replace-Content "$readmeDir\Overview.md" "<VERSION/>" "$postfix"
-	Replace-Content "$readmeDir\Overview.md" "<ANNOUNCE/>" "$announce"
-	Replace-Content "$readmeDir\Environment.md" "<VERSION/>" "$postfix"
-	Replace-Content "$readmeDir\Contact.md" "<VERSION/>" "$postfix"
-	Replace-Content "$readmeDir\ChangeLog.md" "<VERSION/>" "$postfix"
-	Replace-Content "$readmeDir\LICENSE.md" "@HEAD" "## License"
-
-	$readmeHtml = "README.html"
-
-	if (-not ($culture -eq "en-us")) {
-		$readmeHtml = "README.$culture.html"
-	}
-
-	$inputs = @()
-	$inputs += "$readmeDir\Overview.md"
-
-	if ($target -ne ".appx") {
-		$inputs += "$readmeDir\Environment.md"
-	}
-	
-	if (($target -eq ".zip") -or ($target -eq ".beta")) {
-		$inputs += "$readmeDir\Package-zip.md"
-	}
-	elseif (($target -eq ".zip-fd") -or ($target -eq ".canary")) {
-		$inputs += "$readmeDir\Package-zip-fd.md"
-	}
-
-	$inputs += "$readmeDir\Contact.md"
-
-	$inputs += "$readmeDir\LICENSE.md"
-
-	if (Test-Path "$readmeDir\LicenseAppendix.md") {
-		$inputs += "$readmeDir\LicenseAppendix.md"
-	}
-
-	$inputs += "$readmeDir\THIRDPARTY_LICENSES.md"
-	$inputs += "$readmeDir\NeeLaboratory.IO.Search_THIRDPARTY_LICENSES.md"
-	$inputs += "$readmeDir\ChangeLog.md"
-
-	$output = "$packageDir\$readmeHtml"
-	$css = "Style.html"
-	
-	# markdown to html by pandoc
-	pandoc -s -t html5 -o $output --metadata title="$product $postfix" -H $css $inputs
-	if ($? -ne $true) {
-		throw "pandoc error"
-	}
-
-	Replace-Alert $output
 
 	$searchOptionHtml = "SearchOptions.html"
 	$searchOptionTitle = "$product Search Options"
@@ -389,18 +339,121 @@ function New-Readme($packageDir, $culture, $target) {
 		$searchOptionTitle = "$product 検索オプション"
 	}
 
-	$searchOptionInputs = @()
-	$searchOptionInputs += "$readmeDir\SearchOptions.md"
+	$source = Get-Content "$readmeSource\search-options.md" | Edit-Markdown -ChopTitle
 	$searchOptionOutput = "$packageDir\$searchOptionHtml"
 
-	pandoc -s -t html5 -o $searchOptionOutput --metadata title="$searchOptionTitle" -H $css $searchOptionInputs
+	$source | pandoc -s -t html5 -o $searchOptionOutput --metadata title="$searchOptionTitle" -H $css
 	if ($? -ne $true) {
 		throw "pandoc error"
 	}
 
 	Replace-Alert $searchOptionOutput
+}
 
-	Remove-Item $readmeDir -Recurse
+# generate README.html
+function New-Readme {
+	param ([string]$packageDir, [string]$culture, [string]$target) 
+	
+	$readmeSource = "$solutionDir\docs\$culture"
+
+	$postfix = $appVersion
+	if ($target.StartsWith("Canary")) {
+		$postfix = "$appVersion-Canary${dateVersion}"
+	}
+	elseif ($target.StartsWith("Beta")) {
+		$postfix = "$appVersion-Beta${dateVersion}"
+	}
+
+	$source = @()
+
+	$rev = "Rev. ${revision}"
+	if ($target.StartsWith("Canary")) {
+		$source += Get-Content "$readmeSource\package-canary.md" | Edit-Markdown -IncrementDepth | ForEach-Object { $_.replace("<custom-revision/>", $rev) }
+	}
+	elseif ($target.StartsWith("Beta")) {
+		$source += Get-Content "$readmeSource\package-beta.md" | Edit-Markdown -IncrementDepth | ForEach-Object { $_.replace("<custom-revision/>", $rev) }
+	}
+
+	$overviewContent = Get-Content "$readmeSource\index.md" | Get-MarkdownSection -Section "overview"
+	$source += @("")
+	$source += $overviewContent
+	
+	$source += @("")
+	if (($target -eq "Zip") -or ($target -eq "Canary") -or ($target -eq "Beta")) {
+		$source += Get-Content "$readmeSource\package-zip.md" | Edit-Markdown -IncrementDepth
+	}
+	elseif (($target -eq "Zip-fd") -or ($target -eq "Canary-fd") -or ($target -eq "Beta-fd")) {
+		$source += Get-Content "$readmeSource\package-zip-fd.md" | Edit-Markdown -IncrementDepth
+	}
+	elseif ($target -eq "Msi") {
+		$source += Get-Content "$readmeSource\package-installer.md" | Edit-Markdown -IncrementDepth
+	}
+	elseif ($target -eq "Appx") {
+		$source += Get-Content "$readmeSource\package-storeapp.md" | Edit-Markdown -IncrementDepth
+	}
+
+	$source += @("")
+	if ($culture -eq "ja-jp") {
+		$source += @("## ポータル サイト")
+		$source += @("- [RealtimeSearch Portal Site](https://neelabo.github.io/RealtimeSearch)")
+	}
+	else {
+		$source += @("## Portal Site")
+		$source += @("- [RealtimeSearch Portal Site](https://neelabo.github.io/RealtimeSearch)")
+	}
+
+	$contactContent = Get-Content "$readmeSource\contact.md" | Edit-Markdown -IncrementDepth
+	$source += @("")
+	$source += $contactContent
+
+	$licenseContent = Get-Content "$solutionDir\LICENSE.md"
+	$licenseContent = @("## License") + $licenseContent
+	if (Test-Path "$readmeSource\license-appendix.md") {
+		$licenseAppendixContent = Get-Content "$readmeSource\license-appendix.md"
+		$licenseContent += @("")
+		$licenseContent += $licenseAppendixContent
+	}
+	$source += @("")
+	$source += $licenseContent
+
+	$thirdPartyLicenseContent = Get-Content "$solutionDir\THIRDPARTY_LICENSES.md"
+	$thirdPartyLicenseContent += Get-Content "$solutionDir\NeeLaboratory.IO.Search\THIRDPARTY_LICENSES.md"
+	$source += @("")
+	$source += $thirdPartyLicenseContent
+
+	if ($target.StartsWith("Canary")) {
+		$changeLogContent = Get-GitLogMarkdown -Title "$product $postfix - Changelog"  -IssuesUrl $issuesUrl
+
+		#Get-GitLogMarkdown "$product <VERSION/> - ChangeLog" | Set-Content -Encoding UTF8 "$readmeDir\ChangeLog.md"
+
+	}
+	else {
+		$changeLogContent = .\SelectChangelog.ps1 -Path "$readmeSource\changelog.md" -Culture $culture
+	}
+	$source += @("")
+	$source += $changeLogContent
+
+
+	if (-not ($culture -eq "en-us")) {
+		$readmeHtml = "README.$culture.html"
+	}
+	else {
+		$readmeHtml = "README.html"
+	}
+
+	$output = "$packageDir\$readmeHtml"
+	$css = "Style.html"
+
+	# markdown to html by pandoc
+	$source | pandoc -s -t html5 -o $output --metadata title="$product $postfix" -H $css
+	if ($? -ne $true) {
+		throw "pandoc error"
+	}
+
+	Replace-Alert $output
+
+	# Create SearchOption.html
+	New-SearchOptions $packageDir $culture
 }
 
 # remove ZIP
