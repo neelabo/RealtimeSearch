@@ -1,1 +1,0 @@
-- [RealtimeSearch project website](https://github.com/neelabo/RealtimeSearch)

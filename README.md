@@ -1,5 +1,7 @@
 # RealtimeSearch
 
+**[RealtimeSearch Portal Site (English/日本語)](https://neelabo.github.io/RealtimeSearch)**
+
 ![App Icon](MakePackage/Appx/Resources/Assets/StoreLogo.scale-100.png)
 
 ファイル検索を行うツールです。
@@ -34,5 +36,5 @@
 
 ## 詳細
 
-- [更新履歴](docs/ja-jp/ChangeLog.md)
-- [検索オプション](docs/ja-jp/SearchOptions.md)
+- [更新履歴](https://neelabo.github.io/RealtimeSearch/changelog.html)
+- [検索オプション](https://neelabo.github.io/RealtimeSearch/search-options.html)

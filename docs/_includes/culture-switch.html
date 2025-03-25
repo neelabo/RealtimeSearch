@@ -1,0 +1,59 @@
+<div id="culture_home"></div>
+<div id="culture_switch"></div>
+
+<script>
+    function getCurrentCulture() {
+        const path = location.pathname.split('/');
+        if (path.includes("ja-jp")) {
+            return "ja-jp";
+        }
+        else if (path.includes("en-us")) {
+            return "en-us";
+        }
+        else {
+            return null;
+        }
+    }
+
+    function setCultureSwitch(culture) {
+        switch (culture) {
+            case "ja-jp":
+                var nextCulture = "en-us";
+                var nextCultureString = "ENGLISH"
+                break;
+            case "en-us":
+                var nextCulture = "ja-jp";
+                var nextCultureString = "日本語"
+                break;
+            default:
+                return;
+        }
+
+        const path = location.pathname.split('/');
+        const index = path.indexOf(culture);
+        if (index < 0) return;
+        path[index] = nextCulture;
+        const nextPath = path.join('/');
+
+        const element = document.getElementById("culture_switch");
+        if (element == null) return;
+        element.innerHTML = `<a href=\"${nextPath}\">${nextCultureString}</a>`;
+    }
+
+    function setCultureHome(culture) {
+        if (culture == null) return;
+        const element = document.getElementById("culture_home");
+        if (element == null) return;
+        element.innerHTML = `<a href=\"{{ site.baseurl }}/${culture}/\">HOME</a>`;
+    }
+
+    function setCultureElement() {
+        const culture = getCurrentCulture();
+        if (culture == null) return;
+        setCultureSwitch(culture);
+        setCultureHome(culture);
+    }
+
+    setCultureElement();
+
+</script>

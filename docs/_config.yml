@@ -1,0 +1,18 @@
+theme: jekyll-theme-slate
+
+repository: neelabo/RealtimeSearch
+title: RealtimeSearch
+description: File search tool. Use clipboard text as search key.
+
+defaults:
+- scope:
+    path: 'en-us'
+  values:
+    language: en-US
+    description: File search tool. Use clipboard text as search key.
+- scope:
+    path: 'ja-jp'
+  values:
+    language: ja-JP
+    description: ファイル検索ツールです。クリップボードのテキストを検索キーとして使用します。
+

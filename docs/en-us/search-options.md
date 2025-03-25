@@ -1,10 +1,10 @@
-### Search Options
+# Search Options
 
 - If no search option is specified, an AND standard search is performed (the same as specifying “/and /text /m2”).
 - The search options affect only the immediately following search word.
 - Search options are not case sensitive.
 
-#### Conjunction Options
+### Conjunction Options
 
 Name|Description
 -|-
@@ -12,7 +12,7 @@ Name|Description
 /or|OR search
 /not|NOT search
 
-#### Property Options
+### Property Options
 
 Name|Description|Supplement
 -|-|-
@@ -20,7 +20,7 @@ Name|Description|Supplement
 /date|Date and Time|DateTime. Date of last update.
 /size|Size|Numerals. File size.
 
-#### Match Options
+### Match Options
 
 Name|Description|Supplement
 -|-|-

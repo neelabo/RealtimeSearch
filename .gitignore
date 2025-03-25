@@ -226,6 +226,4 @@ launchSettings.json
 /docs/.jekyll-metadata
 /docs/Gemfile*
 /docs/_site
-/docs/sample.md
-/docs/_RunDocker.ps1
-/docs/_CreateRedirect.ps1
+/docs/_*.ps1

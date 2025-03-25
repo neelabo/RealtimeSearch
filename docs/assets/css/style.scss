@@ -1,0 +1,195 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+:root {
+    --alert-note-color: #0969da;
+    --alert-tip-color: #1a7f37;
+    --alert-important-color: #8250df;
+    --alert-warning-color: #9a6700;
+    --alert-caution-color: #cf222e;
+}
+
+body {
+    background: #f2f2f2;
+}
+
+body:lang(ja) {
+    font-family: Arial, sans-serif;
+}
+
+b {
+    font-weight: bold;
+}
+
+h2:lang(ja) {
+    margin-top: 40px;
+    font-size: 26px;
+    letter-spacing: inherit;
+}
+
+h3:lang(ja) {
+    margin-top: 30px;
+    font-size: 20px;
+    letter-spacing: inherit;
+}
+
+h4:lang(ja) {
+    margin-top: 30px;
+    font-size: 18px;
+    letter-spacing: inherit;
+}
+
+h5:lang(ja) {
+    margin-top: 20px;
+    font-size: 16px;
+    letter-spacing: inherit;
+}
+
+h6:lang(ja) {
+    margin-top: 20px;
+    font-size: 14px;
+    letter-spacing: inherit;
+}
+
+#project_tagline:lang(ja) {
+    margin-top: 10px
+}
+
+blockquote {
+    color: #555;
+    border-left: 3px solid #888;
+}
+
+table {
+    border: 0px;
+    border-collapse: collapse;
+    margin: 20px 0 30px;
+}
+
+td,
+th {
+    border: 0px;
+    text-align: left;
+    padding: 10px 20px;
+}
+
+td {
+    border-top: 1px solid #CCC;
+    border-bottom: 1px solid #CCC;
+}
+
+th {
+    color: initial;
+    background: none;
+    font-weight: bold;
+}
+
+blockquote.alert {
+    margin: 1em 0;
+    color: inherit;
+    border-left: .25em solid gray;
+}
+
+blockquote.alert.note {
+    border-left-color: var(--alert-note-color);
+}
+
+blockquote.alert.tip {
+    border-left-color: var(--alert-tip-color);
+}
+
+blockquote.alert.important {
+    border-left-color: var(--alert-important-color);
+}
+
+blockquote.alert.warning {
+    border-left-color: var(--alert-warning-color);
+}
+
+blockquote.alert.caution {
+    border-left-color: var(--alert-caution-color);
+}
+
+p.alert {
+    font-weight: bold;
+    padding: 0px 0px 0px 24px;
+}
+
+p.alert.note {
+    color: var(--alert-note-color);
+    background: url(../octicons/info.svg) no-repeat 0px center / 16px auto;
+}
+
+p.alert.tip {
+    color: var(--alert-tip-color);
+    background: url(../octicons/light-bulb.svg) no-repeat 0px center / 16px auto;
+}
+
+p.alert.important {
+    color: var(--alert-important-color);
+    background: url(../octicons/report.svg) no-repeat 0px center / 16px auto;
+}
+
+p.alert.warning {
+    color: var(--alert-warning-color);
+    background: url(../octicons/alert.svg) no-repeat 0px center / 16px auto;
+}
+
+p.alert.caution {
+    color: var(--alert-caution-color);
+    background: url(../octicons/stop.svg) no-repeat 0px center / 16px auto;
+}
+
+.inner {
+    max-width: 920px;
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
+.td-middle {
+    min-width: 300px;
+}
+
+.remarks {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+#project_title,
+#project_tagline {
+    margin: 10px 0;
+    font-family: 'Lucida Grande', 'Calibri', Helvetica, Arial, sans-serif;
+    letter-spacing: -1px;
+}
+
+#project_tagline {
+    padding-bottom: 10px;
+}
+
+#culture_switch {
+    text-align: right;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    color: #fff;
+}
+
+#culture_switch a {
+    color: #fff;
+}
+
+#culture_home {
+    text-align: left;
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    color: #fff;
+}
+
+#culture_home a {
+    color: #fff;
+}
