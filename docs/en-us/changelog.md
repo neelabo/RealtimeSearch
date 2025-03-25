@@ -115,7 +115,6 @@
 - (Changed) Added saving the order and width of items in the search results list.
 - (Changed) Changed file icons to simplified versions. This improves the speed of list display.
 
-
 ## 1.2 
 (2016-01-21)
 
