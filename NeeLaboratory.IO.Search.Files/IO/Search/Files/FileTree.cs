@@ -55,9 +55,10 @@ namespace NeeLaboratory.IO.Search.Files
             _area = area;
 
             _path = LoosePath.TrimDirectoryEnd(area.Path);
-            if (!Directory.Exists(_path)) throw new DirectoryNotFoundException($"Directory not found: {_path}");
-
-            _memento = memento;
+            if (Directory.Exists(_path))
+            {
+                _memento = memento;
+            }
 
             _jobEngine = new DelaySlimJobEngine(nameof(FileTree));
 
