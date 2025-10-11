@@ -56,6 +56,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
             this.KeyDown += MainWindow_KeyDown;
             this.MouseLeftButtonDown += (s, e) => this.RenameManager.Stop();
             this.MouseRightButtonDown += (s, e) => this.RenameManager.Stop();
+            this.Activated += MainWindow_Activated;
             this.Deactivated += (s, e) => this.RenameManager.Stop();
 
             RestoreListViewMemento(AppModel.Settings.ListLayout);
@@ -126,6 +127,13 @@ namespace NeeLaboratory.RealtimeSearch.Views
 
             _vm.Loaded(this);
             _vm.StartClipboardWatch(this);
+        }
+
+        private void MainWindow_Activated(object? sender, EventArgs e)
+        {
+            // Topmost 状態でファイル名変更するとウィンドウフォーカスを失う問題の対処 (Windows11)
+            // [参考情報](https://stackoverflow.com/questions/76174893/c-sharp-wpf-strange-mainwindow-focus-loss-when-clicking-on-a-windows-toast-not)
+            this.Activate();
         }
 
         private void Window_Closing(object? sender, EventArgs e)
@@ -524,7 +532,7 @@ namespace NeeLaboratory.RealtimeSearch.Views
                 var folderText = content.DirectoryName;
                 return nameText + "\n" + sizeText + "\n" + dateText + "\n" + folderText;
             }
-        
+
             return "";
         }
 
