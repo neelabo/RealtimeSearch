@@ -155,7 +155,12 @@ namespace NeeLaboratory.RealtimeSearch.Clipboards
             {
                 try
                 {
-                    return Clipboard.GetDataObject();
+                    var data = Clipboard.GetDataObject();
+                    if (data is null)
+                    {
+                        throw new InvalidOperationException("Clipboard data is null.");
+                    }
+                    return data;
                 }
                 catch (COMException ex)
                 {
